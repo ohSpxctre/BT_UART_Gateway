@@ -6,5 +6,9 @@
         "board/esp32c6-builtin.cfg"
     ],
     "idf.portWin": "COM5",
-    "idf.toolsPathWin": "${env:USERPROFILE}\\.espressif"
+    "idf.toolsPathWin": "${env:USERPROFILE}\\.espressif",
+    "cmake.cmakePath": "${env:USERPROFILE}\\.espressif\\tools\\cmake\\3.30.2\\bin\\cmake.exe",
+    "idf.customExtraVars": {
+        "IDF_TARGET": "esp32c6"
+    }
 }
