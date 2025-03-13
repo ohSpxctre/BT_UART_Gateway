@@ -1,7 +1,7 @@
 {
     "C_Cpp.intelliSenseEngine": "default",
     "idf.espIdfPathWin": "${env:USERPROFILE}\\esp\\v5.4\\esp-idf",
-    "idf.pythonInstallPath": "${env:USERPROFILE}\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
+    "idf.pythonInstallPath": "/opt/esp/python_env/idf5.5_py3.12_env/bin/python",
     "idf.openOcdConfigs": [
         "board/esp32c6-builtin.cfg"
     ],
@@ -10,5 +10,6 @@
     "cmake.cmakePath": "${env:USERPROFILE}\\.espressif\\tools\\cmake\\3.30.2\\bin\\cmake.exe",
     "idf.customExtraVars": {
         "IDF_TARGET": "esp32c6"
-    }
+    },
+    "idf.port": "/dev/ttyACM0"
 }
