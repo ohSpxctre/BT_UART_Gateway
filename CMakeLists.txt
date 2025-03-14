@@ -9,4 +9,5 @@ set(COMPONENTS main)
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(BT_UART_Gateway)
 
-idf_build_set_property(MINIMAL_BUILD "ON")
+# Does not work but does the same as components set  to main
+#idf_build_set_property(MINIMAL_BUILD "ON")
