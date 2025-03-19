@@ -11,5 +11,12 @@
     "idf.customExtraVars": {
         "IDF_TARGET": "esp32c6"
     },
-    "idf.port": "/dev/ttyACM0"
+    "idf.port": "/dev/ttyACM0",
+    "files.associations": {
+        "cstdint": "cpp",
+        "initializer_list": "cpp",
+        "functional": "cpp",
+        "memory": "cpp",
+        "cassert": "cpp"
+    }
 }

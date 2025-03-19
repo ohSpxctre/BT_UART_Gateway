@@ -1,2 +1,3 @@
-idf_component_register(SRCS "main.c"
-                    INCLUDE_DIRS ".")
+idf_component_register(SRCS "src/main.cpp"
+                    PRIV_INCLUDE_DIRS "include"
+                    REQUIRES "rtos_cpp")
