@@ -18,5 +18,6 @@
         "functional": "cpp",
         "memory": "cpp",
         "cassert": "cpp"
-    }
+    },
+    "idf.flashType": "JTAG"
 }
