@@ -1,3 +1,5 @@
-idf_component_register(SRCS "src/main.cpp"
-                    PRIV_INCLUDE_DIRS "include"
-                    REQUIRES "rtos_cpp")
+idf_component_register(SRC_DIRS "src"
+                        INCLUDE_DIRS "include"
+                        PRIV_REQUIRES "rtos_cpp"
+                                    "esp_driver_uart"
+                                    "esp_driver_gpio")

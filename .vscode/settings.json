@@ -17,7 +17,14 @@
         "initializer_list": "cpp",
         "functional": "cpp",
         "memory": "cpp",
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "*.inc": "cpp",
+        "thread": "cpp",
+        "format": "cpp",
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "span": "cpp"
     },
     "idf.flashType": "JTAG"
 }
