@@ -37,7 +37,8 @@ static const uart_config_t DEFAULT_CONFIG = {
     .stop_bits = UART_STOP_BITS_1,
     .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
     .rx_flow_ctrl_thresh = UART_HW_FLOWCTRL_DISABLE,
-    .source_clk = UART_SCLK_DEFAULT
+    .source_clk = UART_SCLK_DEFAULT,
+    .flags = {allow_pd: false, backup_before_sleep: false}
 };
 static const uart_port_t DEFAULT_PORT = UART_NUM_0;
 static const gpio_num_t DEFAULT_TX_PIN = GPIO_NUM_4;
