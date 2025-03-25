@@ -8,7 +8,7 @@
  * @note This class is designed to work with the ESP-IDF framework.
  * 
  * @author meths1
- * @date [Date]
+ * @date 21.03.2025
  */
 
 #include "uart.hpp"
@@ -48,7 +48,7 @@ void Uart::init(rtos::MessageQueue<uart_event_t>* uart_queue)
     ESP_ERROR_CHECK(uart_param_config(_port, &_uart_config)); 
     ESP_ERROR_CHECK(uart_set_pin(_port, (int) _tx_pin, (int) _rx_pin, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
     QueueHandle_t queueHandle = _uart_queue->handle();
-    ESP_ERROR_CHECK(uart_driver_install(_port, UART_BUFFER_SIZE, UART_BUFFER_SIZE, EVENT_QUEUE_SIZE, &queueHandle, 0)); 
+    ESP_ERROR_CHECK(uart_driver_install(_port, 2 * UART_BUFFER_SIZE, 2 * UART_BUFFER_SIZE, EVENT_QUEUE_SIZE, &queueHandle, 0)); 
 }
 
 /**

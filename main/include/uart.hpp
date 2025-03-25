@@ -13,8 +13,8 @@
  * 
  * @note This class is designed to work with the ESP-IDF framework.
  * 
-* @author meths1
- * @date [Date]
+ * @author meths1
+ * @date 21.03.2025
  */
 
 #pragma once
@@ -27,7 +27,7 @@
  * @brief Constants/defaults for UART communication.
  */
 /* Defines the size of the UART ring buffer */
-const int UART_BUFFER_SIZE = 1024;
+static const int UART_BUFFER_SIZE = 1024;
 /* Defines the maximum number of events that can be held in the event queue */
 static const int EVENT_QUEUE_SIZE = 10;
 static const uart_config_t DEFAULT_CONFIG = {
@@ -94,7 +94,7 @@ public:
     int send(const char *data);
 
     /**
-     * @brief Receive data from UART.
+     * @brief Receive data from UART through the event handler.
      * 
      * @param data Pointer to the buffer where received data will be stored.
      * @return Number of bytes received.
