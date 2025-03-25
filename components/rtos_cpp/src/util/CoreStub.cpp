@@ -4,7 +4,7 @@ namespace rtos {
 
 bool isInterruptContextAcive()
 {
-    return true;
+    return false;
 }
 
 }
