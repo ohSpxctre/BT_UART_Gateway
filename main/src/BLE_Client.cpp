@@ -14,15 +14,15 @@
      std::cout << "BLE Client Destructor" << std::endl;
  }
  
- void BLE_Client::Init() {
+ void BLE_Client:: connSetup() {
      std::cout << "BLE Client Initialized" << std::endl;
  }
  
- void BLE_Client::Send(const std::string &data) {
+ void BLE_Client::send(const std::string &data) {
      std::cout << "BLE Client Sending: " << data << std::endl;
  }
  
- std::string BLE_Client::Receive() {
+ std::string BLE_Client::receive() {
      std::cout << "BLE Client Receiving Data" << std::endl;
      return "Received Data from BLE Server";
  }
