@@ -93,7 +93,6 @@ size_t Uart::uart_event_handler(char* data)
     // Waiting for UART event.
     if (xQueueReceive(*_uart_queue, &event, portMAX_DELAY))
     {
-        ESP_LOGI(TAG, "Received UART event: type=%d, size=%d", event.type, event.size);
         switch(event.type) {
             // Event of UART receiving data
             case UART_DATA:
@@ -134,10 +133,6 @@ size_t Uart::uart_event_handler(char* data)
                 ESP_LOGI(TAG, "Port: %d, event type: %d", _port, event.type);
                 break;
         }
-    }
-    else
-    {
-        ESP_LOGI(TAG, "No UART event received");
     }
     return receivedBytes;
 }
