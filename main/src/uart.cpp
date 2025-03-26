@@ -16,7 +16,9 @@
 #include "string.h"
 #include "esp_log.h"
 
-static const char* TAG = "UART";
+constexpr const char* TAG = "UART";
+
+namespace uart {
 
 /**
  * @brief Construct a new Uart object.
@@ -134,3 +136,5 @@ size_t Uart::uart_event_handler(char* data)
     }
     return receivedBytes;
 }
+
+} // namespace uart

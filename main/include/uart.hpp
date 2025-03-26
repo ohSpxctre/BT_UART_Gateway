@@ -23,6 +23,8 @@
 #include "driver/gpio.h"
 #include "MessageQueue.h"
 
+namespace uart {
+
 /**
  * @brief Constants/defaults for UART communication.
  */
@@ -73,7 +75,8 @@ public:
      * @param tx_pin GPIO number for TX pin. Default is DEFAULT_TX_PIN.
      * @param rx_pin GPIO number for RX pin. Default is DEFAULT_RX_PIN.
      */
-    Uart(uart_port_t port = DEFAULT_PORT, uart_config_t config = DEFAULT_CONFIG, gpio_num_t tx_pin = DEFAULT_TX_PIN, gpio_num_t rx_pin = DEFAULT_RX_PIN);
+    Uart(uart_port_t port = DEFAULT_PORT, uart_config_t config = DEFAULT_CONFIG, 
+        gpio_num_t tx_pin = DEFAULT_TX_PIN, gpio_num_t rx_pin = DEFAULT_RX_PIN);
 
     /**
      * @brief Destroy the Uart object.
@@ -104,3 +107,4 @@ public:
     int receive(char *data);
 };
 
+} // namespace uart
