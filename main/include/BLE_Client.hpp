@@ -8,10 +8,6 @@
  
  #include "Bluetooth.hpp"
 
- #include "esp_gap_ble_api.h"
- #include "esp_gatt_defs.h"
- #include "esp_gatts_api.h"
- #include "esp_gattc_api.h"
  
  
  /**
@@ -23,9 +19,9 @@
      BLE_Client();
      ~BLE_Client();
      
-     void Init() override;
-     void Send(const std::string &data) override;
-     std::string Receive() override;
+     void connSetup() override;
+     void send(const std::string &data) override;
+     std::string receive() override;
  };
  
  #endif // BLE_CLIENT_HPP
