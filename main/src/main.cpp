@@ -9,8 +9,9 @@
 #include <esp_log.h>
 
 #include "uart.hpp"
+#include "MessageQueue.h"
 
-esp_pthread_cfg_t create_config(const char *name, int core_id, int stack, int prio)
+esp_pthread_cfg_t create_config(const char *name, int stack, int prio)
 {
     auto cfg = esp_pthread_get_default_config();
     cfg.thread_name = name;
@@ -20,16 +21,34 @@ esp_pthread_cfg_t create_config(const char *name, int core_id, int stack, int pr
     return cfg;
 }
 
-void* task_fn() {
-    while (true) {
-        ESP_LOGI("task_fn", "Hello from task");
+void uartTest_task()
+{
+    // Create a UART and MessageQueue object
+    uart::Uart uart;
+    QueueHandle_t uart_queue;
+    char data[uart::UART_BUFFER_SIZE];
+
+    uart.init(&uart_queue);
+    
+    while (true)
+    {
+        // Print the received data
+        uart.receive(data);
+        ESP_LOGI(pcTaskGetName(nullptr), "Received data: %s", data);
+
+        // Send data over UART
+        uart.send(data);
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-    return NULL;
+    
 }
 
+
 extern "C" void app_main(void) {
-    std::thread testThread(task_fn);
+    // Create a thread for the UART task
+    esp_pthread_cfg_t cfg = create_config("uartTest_task", 4096, 5);
+    esp_pthread_set_cfg(&cfg);
+    std::thread testThread(uartTest_task);
 
      // Let the main task do something too
      while (true) {

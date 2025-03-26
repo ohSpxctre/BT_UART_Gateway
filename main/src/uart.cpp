@@ -42,15 +42,14 @@ Uart::~Uart()
 /**
  * @brief Initialize the UART with the given queue.
  * 
- * @param uart_queue Pointer to the UART event queue handle.
+ * @param uart_queue UART event queue handle (out param).
  */
-void Uart::init(rtos::MessageQueue<uart_event_t>* uart_queue)
+void Uart::init(QueueHandle_t* uart_queue)
 {
     _uart_queue = uart_queue;
     ESP_ERROR_CHECK(uart_param_config(_port, &_uart_config)); 
     ESP_ERROR_CHECK(uart_set_pin(_port, (int) _tx_pin, (int) _rx_pin, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
-    QueueHandle_t queueHandle = _uart_queue->handle();
-    ESP_ERROR_CHECK(uart_driver_install(_port, 2 * UART_BUFFER_SIZE, 2 * UART_BUFFER_SIZE, EVENT_QUEUE_SIZE, &queueHandle, 0)); 
+    ESP_ERROR_CHECK(uart_driver_install(_port, 2 * UART_BUFFER_SIZE, 2 * UART_BUFFER_SIZE, EVENT_QUEUE_SIZE, _uart_queue, 0)); 
 }
 
 /**
@@ -90,27 +89,29 @@ size_t Uart::uart_event_handler(char* data)
 {
     uart_event_t event;
     size_t receivedBytes = 0;
+
     // Waiting for UART event.
-    if (_uart_queue->receive(event))
+    if (xQueueReceive(*_uart_queue, &event, portMAX_DELAY))
     {
+        ESP_LOGI(TAG, "Received UART event: type=%d, size=%d", event.type, event.size);
         switch(event.type) {
             // Event of UART receiving data
             case UART_DATA:
                 receivedBytes = event.size;
                 ESP_LOGI(TAG, "Port: %d, data length: %d", _port, receivedBytes);
-                uart_read_bytes(_port, &data, receivedBytes, portMAX_DELAY);
+                uart_read_bytes(_port, data, receivedBytes, portMAX_DELAY);
                 break;
             // Event of HW FIFO overflow detected
             case UART_FIFO_OVF:
                 ESP_LOGI(TAG, "Port: %d, FIFO overflow", _port);
                 uart_flush_input(_port);
-                xQueueReset(_uart_queue->handle());
+                xQueueReset(*_uart_queue);
                 break;
             // Event of UART ring buffer full
             case UART_BUFFER_FULL:
                 ESP_LOGI(TAG, "Port: %d, Ring buffer full", _port);
                 uart_flush_input(_port);
-                xQueueReset(_uart_queue->handle());
+                xQueueReset(*_uart_queue);
                 break;
             // Event of UART RX break detected
             case UART_BREAK:
@@ -133,6 +134,10 @@ size_t Uart::uart_event_handler(char* data)
                 ESP_LOGI(TAG, "Port: %d, event type: %d", _port, event.type);
                 break;
         }
+    }
+    else
+    {
+        ESP_LOGI(TAG, "No UART event received");
     }
     return receivedBytes;
 }

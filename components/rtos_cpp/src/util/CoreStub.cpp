@@ -6,7 +6,7 @@ namespace rtos {
 
 bool isInterruptContextAcive()
 {
-    return xPortInIsrContext();
+    return false;
 }
 
 }

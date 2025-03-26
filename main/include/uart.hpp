@@ -44,8 +44,8 @@ constexpr uart_config_t DEFAULT_CONFIG = {
     .flags = {allow_pd: false, backup_before_sleep: false}
 };
 constexpr uart_port_t DEFAULT_PORT = UART_NUM_0;
-constexpr gpio_num_t DEFAULT_TX_PIN = GPIO_NUM_4;
-constexpr gpio_num_t DEFAULT_RX_PIN = GPIO_NUM_5;
+constexpr gpio_num_t DEFAULT_TX_PIN = GPIO_NUM_16;
+constexpr gpio_num_t DEFAULT_RX_PIN = GPIO_NUM_17;
 
 /**
  * @brief UART class for handling UART communication.
@@ -56,7 +56,7 @@ private:
     uart_config_t _uart_config;     // UART configuration structure.
     gpio_num_t _tx_pin;             // GPIO number for TX pin.
     gpio_num_t _rx_pin;             // GPIO number for RX pin.
-    rtos::MessageQueue<uart_event_t>* _uart_queue; // Pointer to the UART event queue object.
+    QueueHandle_t* _uart_queue;     // Pointer to the UART event queue object.
 
     /**
      * @brief Handle UART events and process received data.
@@ -88,7 +88,7 @@ public:
      * 
      * @param uart_queue Pointer to the UART event queue handle.
      */
-    void init(rtos::MessageQueue<uart_event_t>* uart_queue);
+    void init(QueueHandle_t* uart_queue);
 
     /**
      * @brief Send data over UART.
