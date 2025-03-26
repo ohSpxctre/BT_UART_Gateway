@@ -1,38 +1,43 @@
-#include <stdio.h>
-
-#include "esp_log.h"  
-
-#include "rtos.h"
+#include <thread>
+#include <chrono>
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <esp_pthread.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <esp_log.h>
 
 #include "uart.hpp"
 
-#if 0
-extern "C" void app_main(void)
+esp_pthread_cfg_t create_config(const char *name, int core_id, int stack, int prio)
 {
-    auto testTask = rtos::Task::build()
-        .name("testTask")
-        .priority(1)
-        .stackSize(16 * 1024)
-        .spawn([]() {
-            while (true) {
-                rtos::Task::sleep(100); // give time for scheduler & locks
-                ESP_LOGI("testTask", "Hello from testTask");
-                //ESP_LOGI("debug", "testTask stack free: %u", uxTaskGetStackHighWaterMark(NULL));
-                rtos::Task::sleep(1000);
-            }
-        });
-        
-    rtos::startScheduler();
-
+    auto cfg = esp_pthread_get_default_config();
+    cfg.thread_name = name;
+    //cfg.pin_to_core = core_id;
+    cfg.stack_size = stack;
+    cfg.prio = prio;
+    return cfg;
 }
-#endif
-extern "C" void task_fn(void* arg) {
+
+void* task_fn() {
     while (true) {
         ESP_LOGI("task_fn", "Hello from task");
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
+    return NULL;
 }
 
 extern "C" void app_main(void) {
-    xTaskCreate(task_fn, "task_fn", 4096, NULL, 5, NULL);
+    std::thread testThread(task_fn);
+
+     // Let the main task do something too
+     while (true) {
+        std::stringstream ss;
+        ss << "core id: " << xPortGetCoreID()
+           << ", prio: " << uxTaskPriorityGet(nullptr)
+           << ", minimum free stack: " << uxTaskGetStackHighWaterMark(nullptr) << " bytes.";
+        ESP_LOGI(pcTaskGetName(nullptr), "%s", ss.str().c_str());
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+    }
 }

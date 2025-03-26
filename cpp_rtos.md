@@ -1,4 +1,4 @@
-# Why `pthread` is used instead of the C++ task wrapper
+# Why `pthread` is used instead of the C++ FreeRTOS wrapper
 
 ## ⚠️ Background
 
