@@ -26,11 +26,12 @@
 /**
  * @brief Constants/defaults for UART communication.
  */
+
 /* Defines the size of the UART ring buffer */
-static const int UART_BUFFER_SIZE = 1024;
+constexpr int UART_BUFFER_SIZE = 1024;
 /* Defines the maximum number of events that can be held in the event queue */
-static const int EVENT_QUEUE_SIZE = 10;
-static const uart_config_t DEFAULT_CONFIG = {
+constexpr int EVENT_QUEUE_SIZE = 10;
+constexpr uart_config_t DEFAULT_CONFIG = {
     .baud_rate = 115200,
     .data_bits = UART_DATA_8_BITS,
     .parity = UART_PARITY_DISABLE,
@@ -40,9 +41,9 @@ static const uart_config_t DEFAULT_CONFIG = {
     .source_clk = UART_SCLK_DEFAULT,
     .flags = {allow_pd: false, backup_before_sleep: false}
 };
-static const uart_port_t DEFAULT_PORT = UART_NUM_0;
-static const gpio_num_t DEFAULT_TX_PIN = GPIO_NUM_4;
-static const gpio_num_t DEFAULT_RX_PIN = GPIO_NUM_5;
+constexpr uart_port_t DEFAULT_PORT = UART_NUM_0;
+constexpr gpio_num_t DEFAULT_TX_PIN = GPIO_NUM_4;
+constexpr gpio_num_t DEFAULT_RX_PIN = GPIO_NUM_5;
 
 /**
  * @brief UART class for handling UART communication.
