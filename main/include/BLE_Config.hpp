@@ -55,37 +55,7 @@ struct gatts_profile_inst {
 // The length of adv data must be less than 31 bytes
 //static uint8_t test_manufacturer[TEST_MANUFACTURER_DATA_LEN] =  {0x12, 0x23, 0x45, 0x56};
 //adv data
-static esp_ble_adv_data_t adv_data = {
-  .set_scan_rsp = false,
-  .include_name = true,
-  .include_txpower = true,
-  .min_interval = 0x190, //slave connection min interval, Time = min_interval * 1.25 msec
-  .max_interval = 0x320, //slave connection max interval, Time = max_interval * 1.25 msec
-  .appearance = 0x00,
-  .manufacturer_len = 0, //TEST_MANUFACTURER_DATA_LEN,
-  .p_manufacturer_data =  NULL, //&test_manufacturer[0],
-  .service_data_len = 0,
-  .p_service_data = NULL,
-  .service_uuid_len = sizeof(SERVICE_UUID),
-  .p_service_uuid = SERVICE_UUID,
-  .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
-};
 
-// optional!! is sent upon scan request
-// scan response data
-static esp_ble_adv_data_t scan_rsp_data = {
-  .set_scan_rsp = true,
-  .include_name = true,
-  .include_txpower = true,
-  .appearance = 0x00,
-  .manufacturer_len = 0, //TEST_MANUFACTURER_DATA_LEN,
-  .p_manufacturer_data =  NULL, //&test_manufacturer[0],
-  .service_data_len = 0,
-  .p_service_data = NULL,
-  .service_uuid_len = sizeof(SERVICE_UUID),
-  .p_service_uuid = SERVICE_UUID,
-  .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
-};
 #endif
 
 #endif // BLE_CONFIG_HPP
