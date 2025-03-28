@@ -51,21 +51,6 @@ constexpr gpio_num_t DEFAULT_RX_PIN = GPIO_NUM_17;
  * @brief UART class for handling UART communication.
  */
 class Uart {
-private:
-    uart_port_t _port;              // UART port number.
-    uart_config_t _uart_config;     // UART configuration structure.
-    gpio_num_t _tx_pin;             // GPIO number for TX pin.
-    gpio_num_t _rx_pin;             // GPIO number for RX pin.
-    QueueHandle_t* _uart_queue;     // Pointer to the UART event queue object.
-
-    /**
-     * @brief Handle UART events and process received data.
-     * 
-     * @param data Pointer to the buffer where received data will be stored.
-     * @return Number of bytes received.
-     */
-    size_t uart_event_handler(char* data);
-
 public:
     /**
      * @brief Construct a new Uart object.
@@ -91,12 +76,15 @@ public:
     void init(QueueHandle_t* uart_queue);
 
     /**
-     * @brief Send data over UART.
-     * 
-     * @param data Pointer to the data to be sent.
-     * @return Number of bytes sent.
+     * @brief Send data over UART with optional \r\n expansion.
+     *
+     * Appends '\n' after '\r' if CRLF expansion is enabled. Otherwise, sends raw data.
+     *
+     * @param data Pointer to data.
+     * @param len  Length of data in bytes.
+     * @return Total bytes written to UART.
      */
-    int send(const char *data);
+    int send(const char *data, size_t len);
 
     /**
      * @brief Receive data from UART through the event handler.
@@ -104,7 +92,35 @@ public:
      * @param data Pointer to the buffer where received data will be stored.
      * @return Number of bytes received.
      */
-    int receive(char *data);
+    size_t receive(char *data);
+    
+    /**
+     * @brief Enable or disable automatic \r\n expansion.
+     *
+     * When enabled, '\r' is followed by '\n' during send() for terminal compatibility.
+     *
+     * @param enable True to enable CRLF expansion, false to send raw data.
+     */
+    void setNewlineExpansion(bool enable);
+
+private:
+    uart_port_t _port;              // UART port number.
+    uart_config_t _uart_config;     // UART configuration structure.
+    gpio_num_t _tx_pin;             // GPIO number for TX pin.
+    gpio_num_t _rx_pin;             // GPIO number for RX pin.
+    QueueHandle_t* _uart_queue;     // Pointer to the UART event queue object.
+    static constexpr size_t TX_BUF_SIZE = 256;  // Size of the UART TX buffer.
+    char _txBuf[TX_BUF_SIZE];       // UART TX buffer.
+    bool _expandNewline = true;     // Flag to enable/disable CRLF expansion.
+
+    /**
+     * @brief Handle UART events and process received data.
+     * 
+     * @param data Pointer to the buffer where received data will be stored.
+     * @return Number of bytes received.
+     */
+    size_t uart_event_handler(char* data);
+
 };
 
 } // namespace uart

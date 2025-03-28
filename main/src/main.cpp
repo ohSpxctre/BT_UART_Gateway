@@ -32,13 +32,13 @@ void uartTest_task()
     
     while (true)
     {
-        // Print the received data
-        uart.receive(data);
+        int bytesReceived = uart.receive(data);
+
+        // Log the received data
         ESP_LOGI(pcTaskGetName(nullptr), "Received data: %s", data);
 
-        // Send data over UART
-        uart.send(data);
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        // Re-send the received data back to the sender
+        uart.send(data, bytesReceived);
     }
     
 }

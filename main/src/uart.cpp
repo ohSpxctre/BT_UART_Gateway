@@ -20,30 +20,14 @@ constexpr const char* TAG = "UART";
 
 namespace uart {
 
-/**
- * @brief Construct a new Uart object.
- * 
- * @param port UART port number.
- * @param config UART configuration.
- * @param tx_pin GPIO number for TX pin.
- * @param rx_pin GPIO number for RX pin.
- */
 Uart::Uart(uart_port_t port, uart_config_t config, gpio_num_t tx_pin, gpio_num_t rx_pin) :  _port(port), _uart_config(config), _tx_pin(tx_pin), _rx_pin(rx_pin)
 {
 }
 
-/**
- * @brief Destroy the Uart object.
- */
 Uart::~Uart()
 {
 }
 
-/**
- * @brief Initialize the UART with the given queue.
- * 
- * @param uart_queue UART event queue handle (out param).
- */
 void Uart::init(QueueHandle_t* uart_queue)
 {
     _uart_queue = uart_queue;
@@ -52,53 +36,67 @@ void Uart::init(QueueHandle_t* uart_queue)
     ESP_ERROR_CHECK(uart_driver_install(_port, 2 * UART_BUFFER_SIZE, 2 * UART_BUFFER_SIZE, EVENT_QUEUE_SIZE, _uart_queue, 0)); 
 }
 
-/**
- * @brief Send data over UART.
- * 
- * @param data Pointer to the data to be sent.
- * @return Number of bytes sent.
- */
-int Uart::send(const char* data)
+int Uart::send(const char* data, size_t len)
 {
-    const int len = strlen(data);
-    const int txBytes = uart_write_bytes(_port, data, len);
-    if (txBytes < 0) {
-        ESP_LOGI(TAG, "Failed to send data: %s", data);
+    size_t txPos = 0;
+    int totalWritten = 0;
+
+    if (_expandNewline) {
+        for (size_t i = 0; i < len; ++i) {
+            _txBuf[txPos++] = data[i];
+
+            if (data[i] == '\r') {
+                if (txPos < TX_BUF_SIZE) {
+                    _txBuf[txPos++] = '\n';
+                } else {
+                    int written = uart_write_bytes(_port, _txBuf, txPos);
+                    if (written < 0) return -1;
+                    totalWritten += written;
+
+                    _txBuf[0] = '\n';
+                    txPos = 1;
+                }
+            }
+
+            if (txPos >= TX_BUF_SIZE - 1) {
+                int written = uart_write_bytes(_port, _txBuf, txPos);
+                if (written < 0) return -1;
+                totalWritten += written;
+                txPos = 0;
+            }
+        }
+
+        if (txPos > 0) {
+            int written = uart_write_bytes(_port, _txBuf, txPos);
+            if (written < 0) return -1;
+            totalWritten += written;
+        }
+    } 
+    else {
+        totalWritten = uart_write_bytes(_port, data, len);
     }
-    return txBytes;
+
+    return totalWritten;
 }
 
-/**
- * @brief Receive data from UART.
- * 
- * @param data Pointer to the buffer where received data will be stored.
- * @return Number of bytes received.
- */
-int Uart::receive(char* data)
+size_t Uart::receive(char* data)
 {
     return uart_event_handler(data);
 }
 
-/**
- * @brief Handle UART events and process received data.
- * 
- * @param data Pointer to the buffer where received data will be stored.
- * @return Number of bytes received.
- */
 size_t Uart::uart_event_handler(char* data)
 {
     uart_event_t event;
-    size_t receivedBytes = 0;
 
     // Waiting for UART event.
-    if (xQueueReceive(*_uart_queue, &event, portMAX_DELAY))
+    if (xQueueReceive(*_uart_queue, (void *)&event, portMAX_DELAY))
     {
+        bzero(data, (size_t)sizeof(data));
         switch(event.type) {
             // Event of UART receiving data
             case UART_DATA:
-                receivedBytes = event.size;
-                ESP_LOGI(TAG, "Port: %d, data length: %d", _port, receivedBytes);
-                uart_read_bytes(_port, data, receivedBytes, portMAX_DELAY);
+                ESP_LOGI(TAG, "Port: %d, data length: %d", _port, event.size);
+                uart_read_bytes(_port, data, event.size, portMAX_DELAY);
                 break;
             // Event of HW FIFO overflow detected
             case UART_FIFO_OVF:
@@ -134,7 +132,12 @@ size_t Uart::uart_event_handler(char* data)
                 break;
         }
     }
-    return receivedBytes;
+    return event.size;
+}
+
+void Uart::setNewlineExpansion(bool enable)
+{
+    _expandNewline = enable;
 }
 
 } // namespace uart
