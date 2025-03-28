@@ -32,4 +32,6 @@ public:
     std::string receive() override;
 };
 
+
+
 #endif // BLE_SERVER_HPP
