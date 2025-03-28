@@ -17,6 +17,7 @@
 #include "esp_gatts_api.h"
 #include "esp_bt_main.h"
 
+
 /**
 * @class Bluetooth
 * @brief Abstract base class for BLE communication.

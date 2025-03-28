@@ -7,7 +7,19 @@
  #include <iostream>
     
 
- BLE_Server::BLE_Server() {
+ BLE_Server::BLE_Server(
+    uint8_t service_uuid128[16],
+    esp_ble_adv_params_t adv_params,
+    uint8_t adv_config_done,
+    uint8_t scan_rsp_config_done
+ ) : 
+    _service_uuid128(*service_uuid128),
+    _adv_params(adv_params),
+    _adv_config_done(adv_config_done),
+    _scan_rsp_config_done(scan_rsp_config_done)
+ {
+
+
     // Initialize NVS (needed for BLE storage)
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -15,7 +27,7 @@
         ESP_ERROR_CHECK(nvs_flash_init());
     }
 
-    std::copy(std::begin(SERVICE_UUID), std::end(SERVICE_UUID), std::begin(this->service_uuid128));
+    std::copy(std::begin(SERVICE_UUID), std::end(SERVICE_UUID), std::begin(this->_service_uuid128));
     
     // Initialize Bluetooth controller and enable BLE mode
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
@@ -39,20 +51,20 @@
     {
     case ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT:
         ESP_LOGI(TAG, "ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT");
-        adv_config_done = true;
+        this -> _adv_config_done = true;
         break;
 
     case ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT:
         ESP_LOGI(TAG, "ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT");
-        scan_rsp_config_done = true;
+        _scan_rsp_config_done = true;
         break;
     default:
         ESP_LOGI(TAG, "Unhandled GAP event: %d", event);
         break;
     }
 
-    if (adv_config_done && scan_rsp_config_done) {
-        esp_ble_gap_start_advertising(&adv_params);
+    if ( _adv_config_done && _scan_rsp_config_done) {
+        esp_ble_gap_start_advertising(&_adv_params);
         ESP_LOGI(TAG, "Advertising started");
     }
  }

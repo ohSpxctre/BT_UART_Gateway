@@ -10,6 +10,8 @@
 
 #include "uart.hpp"
 #include "MessageQueue.h"
+#include "Bluetooth.hpp"
+#include "BLE_Server.hpp"
 
 esp_pthread_cfg_t create_config(const char *name, int stack, int prio)
 {
@@ -43,12 +45,29 @@ void uartTest_task()
     
 }
 
+void bluetoothTest_task()
+{
+    // Create a BLE_Server object
+    BLE_Server bleServer;
+    
+    while (true)
+    {
+        // Log BLE server status
+        ESP_LOGI(pcTaskGetName(nullptr), "BLE Server running...");
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+}
+
 
 extern "C" void app_main(void) {
     // Create a thread for the UART task
     esp_pthread_cfg_t cfg = create_config("uartTest_task", 4096, 5);
     esp_pthread_set_cfg(&cfg);
     std::thread testThread(uartTest_task);
+
+    esp_pthread_cfg_t cfg2 = create_config("bluetoothTest_task", 4096, 5);
+    esp_pthread_set_cfg(&cfg2);
+    std::thread testThread2(bluetoothTest_task);
 
      // Let the main task do something too
      while (true) {
