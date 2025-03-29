@@ -21,7 +21,6 @@
 
 #include "driver/uart.h"
 #include "driver/gpio.h"
-#include "MessageQueue.h"
 
 namespace uart {
 
