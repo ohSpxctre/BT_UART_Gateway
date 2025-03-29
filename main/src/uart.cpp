@@ -26,6 +26,17 @@ Uart::Uart(uart_port_t port, uart_config_t config, gpio_num_t tx_pin, gpio_num_t
 
 Uart::~Uart()
 {
+    // Delete the UART driver
+    ESP_ERROR_CHECK(uart_driver_delete(_port));
+    ESP_LOGI(TAG, "UART driver deleted for port %d", _port);
+
+    // Set the UART queue pointer to null
+    _uart_queue = nullptr;
+    ESP_LOGI(TAG, "UART queue pointer set to null for port %d", _port);
+
+    // Clear the TX buffer
+    _txBuf[0] = '\0';
+    ESP_LOGI(TAG, "UART TX buffer cleared for port %d", _port);
 }
 
 void Uart::init(QueueHandle_t* uart_queue)
