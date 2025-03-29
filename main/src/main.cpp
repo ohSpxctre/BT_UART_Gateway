@@ -9,7 +9,7 @@
 #include <esp_log.h>
 
 #include "uart.hpp"
-#include "MessageQueue.h"
+#include "MessageHandler.hpp"
 
 esp_pthread_cfg_t create_config(const char *name, int stack, int prio)
 {
@@ -25,10 +25,20 @@ void uartTest_task()
 {
     // Create a UART and MessageQueue object
     uart::Uart uart;
-    QueueHandle_t uart_queue;
+    //QueueHandle_t uart_queue;
     char data[uart::UART_BUFFER_SIZE];
 
-    uart.init(&uart_queue);
+    MessageHandler msgHandler;
+
+    MessageHandler::Message message{};
+    std::string msg = "Hello from UART!";
+    std::copy(msg.begin(), msg.end(), message.begin());
+
+    msgHandler.send(MessageHandler::QueueType::UART_QUEUE, message);
+    msgHandler.receive(MessageHandler::QueueType::UART_QUEUE, message);
+    ESP_LOGI(pcTaskGetName(nullptr), "Received message: %s", message.data());
+
+    uart.init(msgHandler.getUartEventQueue());
     
     while (true)
     {
