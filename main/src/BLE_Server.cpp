@@ -11,11 +11,6 @@
 // Define the static instance pointer
 BLE_Server* BLE_Server::instance = nullptr;
 
-uint8_t SERVICE_UUID[16] = {
-    0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
-    0x34, 0x12, 0x78, 0x56, 0x78, 0x56, 0x34, 0x12
-};
-  
    //uint8_t char_str[] = {0x11,0x22,0x33};
   
   //esp_attr_value_t gatts_char_value = {
@@ -31,6 +26,7 @@ uint8_t SERVICE_UUID[16] = {
 
     uint8_t adv_config_done,
     uint8_t scan_rsp_config_done,
+    esp_gatt_srvc_id_t service_id,
     uint16_t service_handle
  ) : 
     _adv_params(adv_params),
@@ -39,11 +35,11 @@ uint8_t SERVICE_UUID[16] = {
 
     _adv_config_done(adv_config_done),
     _scan_rsp_config_done(scan_rsp_config_done),
+    _service_id(service_id),
     _service_handle(service_handle)
  {
     instance = this;
-    std::copy(std::begin(SERVICE_UUID), std::end(SERVICE_UUID), std::begin(_service_uuid128));
-
+    
     // Initialize NVS (needed for BLE storage)
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -65,7 +61,13 @@ uint8_t SERVICE_UUID[16] = {
  }
  
  BLE_Server::~BLE_Server() {
-     std::cout << "BLE Server Destructor" << std::endl;
+    // Clean up resources if needed
+    instance = nullptr;
+    esp_bluedroid_disable();
+    esp_bluedroid_deinit();
+    esp_bt_controller_disable();
+    esp_bt_controller_deinit();
+    nvs_flash_deinit();
  }
 
  void BLE_Server::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
@@ -117,7 +119,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         //configuring scan response data
         esp_ble_gap_config_adv_data(&_scan_rsp_data);
         //creating the gatt service
-        esp_ble_gatts_create_service(gatts_if, (esp_gatt_srvc_id_t*)SERVICE_UUID, PROFILE_NUM);
+        esp_ble_gatts_create_service(gatts_if, &_service_id, PROFILE_NUM);
         ESP_LOGI(TAG, "GATT Service created");
 
     break;

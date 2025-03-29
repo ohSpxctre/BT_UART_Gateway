@@ -5,4 +5,5 @@ idf_component_register(SRC_DIRS "src"
                                         "nvs_flash"
                                         "esp_driver_uart"
                                         "esp_driver_gpio"
-                                        "pthread")
+                                        "pthread"
+                                        "partition_table")
