@@ -17,31 +17,48 @@ constexpr char device_name[ESP_BLE_ADV_NAME_LEN_MAX] = "ESP_GATT_Server";
 constexpr uint16_t PROFILE_APP_ID = 0x00;
 constexpr uint16_t PROFILE_NUM = 1;
 constexpr uint8_t SERVICE_INST_ID = 0;
+constexpr uint16_t CHAR_INST_ID = 0;
 
-constexpr uint8_t SERVICE_UUID[16] = {
-  0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
-  0x34, 0x12, 0x78, 0x56, 0x78, 0x56, 0x34, 0x12
+constexpr esp_bt_uuid_t CHAR_UUID = {
+  .len = ESP_UUID_LEN_128,
+  .uuid = {.uuid128 = {
+    0xF1, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
+    0x34, 0x12, 0x78, 0x56, 0x78, 0x56, 0x34, 0x12
+  }}
 };
+
+constexpr esp_bt_uuid_t SERVICE_UUID = {
+  .len = ESP_UUID_LEN_128,
+  .uuid = {.uuid128 = {
+    0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
+    0x34, 0x12, 0x78, 0x56, 0x78, 0x56, 0x34, 0x12
+  }}
+};
+
+
+
+constexpr esp_attr_value_t GATTS_CHAR_VALUE_DEFAULT = {
+  .attr_max_len = ESP_GATT_MAX_ATTR_LEN,
+  .attr_len = 0,
+  .attr_value = nullptr
+};
+
 
 //-----------------------------------------------------
 // idea to maybe use constexpr helper functions to generate all the structs?
 //------------------------------------------------------
 
-constexpr esp_gatt_srvc_id_t service_id_config = {
+constexpr esp_gatt_srvc_id_t SERVICE_ID_DEFAULT = {
   .id = {
-      .uuid = {
-          .len = ESP_UUID_LEN_128,   // Specify that this is a 128-bit UUID
-          .uuid = { .uuid128 = {     // Copy your 128-bit UUID
-              0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
-              0x34, 0x12, 0x78, 0x56, 0x78, 0x56, 0x34, 0x12
-          }}
-      },
+      .uuid = SERVICE_UUID,
       .inst_id = SERVICE_INST_ID,  // Usually set to 0 unless multiple instances are needed
   },
   .is_primary = true // Define it as a primary service
 };
 
-constexpr esp_ble_adv_params_t adv_params_config = {
+
+
+constexpr esp_ble_adv_params_t ADV_PARAMS_DEFAULT = {
   .adv_int_min = 0x190,                                   //minimum intervall is 100ms
   .adv_int_max = 0x320,                                   //max interval is 200ms
   .adv_type = ADV_TYPE_IND,                               //Connectable undirected advertisement (any device can connect)
@@ -53,7 +70,7 @@ constexpr esp_ble_adv_params_t adv_params_config = {
 };
 
 
-constexpr esp_ble_adv_data_t adv_data_config = {
+constexpr esp_ble_adv_data_t ADV_DATA_DEFAULT = {
   .set_scan_rsp = false,
   .include_name = true,
   .include_txpower = true,
@@ -64,14 +81,14 @@ constexpr esp_ble_adv_data_t adv_data_config = {
   .p_manufacturer_data =  NULL, //&test_manufacturer[0],
   .service_data_len = 0,
   .p_service_data = NULL,
-  .service_uuid_len = sizeof(SERVICE_UUID),
-  .p_service_uuid = const_cast<uint8_t*>(SERVICE_UUID),
+  .service_uuid_len = 0,
+  .p_service_uuid = NULL,
   .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
 };
 
 // optional!! is sent upon scan request
 // scan response data
-constexpr esp_ble_adv_data_t scan_rsp_data_config = {
+constexpr esp_ble_adv_data_t SCAN_RSP_DATA_DEFAULT = {
   .set_scan_rsp = true,
   .include_name = true,
   .include_txpower = true,
@@ -82,8 +99,8 @@ constexpr esp_ble_adv_data_t scan_rsp_data_config = {
   .p_manufacturer_data =  NULL, //&test_manufacturer[0],
   .service_data_len = 0,
   .p_service_data = NULL,
-  .service_uuid_len = sizeof(SERVICE_UUID),
-  .p_service_uuid =  const_cast<uint8_t*>(SERVICE_UUID),
+  .service_uuid_len = 0,
+  .p_service_uuid =  NULL,
   .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
 };
 
@@ -102,12 +119,27 @@ private:
   esp_ble_adv_data_t _adv_data;
   esp_ble_adv_data_t _scan_rsp_data;
 
-  uint8_t _adv_config_done;
-  uint8_t _scan_rsp_config_done;
+  bool _is_advertising = false;
+  bool _is_connected = false;
+
 
   esp_gatt_srvc_id_t _service_id;
-
   uint16_t _service_handle;
+
+  esp_gatt_char_prop_t _char_property;
+  uint16_t _char_handle;
+
+
+
+  esp_attr_value_t _char_value = {
+    .attr_max_len = ESP_GATT_MAX_ATTR_LEN,
+    .attr_len = 0,
+    .attr_value = nullptr
+  };
+
+  gatts_profile_inst_t _gatts_profile_inst;
+
+  uint8_t _char_value_buffer[ESP_GATT_MAX_ATTR_LEN] = {"Hello this is BLE Server"}; // Buffer for characteristic value
 
   static void gatts_event_handler (esp_gatts_cb_event_t, esp_gatt_if_t, esp_ble_gatts_cb_param_t *);
   static void gap_event_handler(esp_gap_ble_cb_event_t, esp_ble_gap_cb_param_t *);
@@ -116,13 +148,11 @@ private:
   void handle_event_gap(esp_gap_ble_cb_event_t, esp_ble_gap_cb_param_t *);
 
 public:
-    BLE_Server( esp_ble_adv_params_t adv_params = adv_params_config,
-                esp_ble_adv_data_t adv_data = adv_data_config,
-                esp_ble_adv_data_t scan_rsp_data = scan_rsp_data_config,
+    BLE_Server( esp_ble_adv_params_t adv_params = ADV_PARAMS_DEFAULT,
+                esp_ble_adv_data_t adv_data = ADV_DATA_DEFAULT,
+                esp_ble_adv_data_t scan_rsp_data = SCAN_RSP_DATA_DEFAULT,
 
-                uint8_t adv_config_done = 0,
-                uint8_t scan_rsp_config_done = 0,
-                esp_gatt_srvc_id_t service_id = service_id_config,
+                esp_gatt_srvc_id_t service_id = SERVICE_ID_DEFAULT,
                 uint16_t service_handle = 0
               );
 
