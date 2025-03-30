@@ -49,6 +49,8 @@ void bluetoothTest_task()
 {
     // Create a BLE_Server object
     BLE_Server bleServer;
+    bleServer.connSetup();
+    //bleServer.send("Hello from ESP32 BLE Server");
     
     while (true)
     {
