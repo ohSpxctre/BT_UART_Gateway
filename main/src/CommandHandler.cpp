@@ -23,31 +23,31 @@
 
 #include <sstream>
 
-void CommandHandler::processCommand(Command cmd) {
-
+std::string CommandHandler::processCommand(Command cmd) {
+    std::string result;
     switch (cmd) {
         case Command::CHIP_INFO: {
-            std::string info = getChipInfo();
+            result = getChipInfo();
             break;
         }
         case Command::IDF_VERSION: {
-            std::string version = getIdfVersion();
+            result = getIdfVersion();
             break;
         }
         case Command::FREE_HEAP: {
-            std::string freeHeap = getFreeHeap();
+            result = getFreeHeap();
             break;
         }
         case Command::FREE_INTERNAL_HEAP: {
-            std::string freeInternalHeap = getFreeInternalHeap();
+            result = getFreeInternalHeap();
             break;
         }
         case Command::FREE_MIN_HEAP: {
-            std::string freeMinHeap = getFreeMinHeap();
+            result = getFreeMinHeap();
             break;
         }
         case Command::CLOCK_SPEED: {
-            std::string clockSpeed = getClockSpeed();
+            result = getClockSpeed();
             break;
         }
         case Command::RESET: {
@@ -59,6 +59,7 @@ void CommandHandler::processCommand(Command cmd) {
             break;
         }
     }
+    return result;
 }
 
 std::string CommandHandler::getChipInfo() const {

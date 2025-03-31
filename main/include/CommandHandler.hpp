@@ -33,25 +33,41 @@ public:
      * @brief Destructor for the CommandHandler class.
      */
     ~CommandHandler() = default;
+
+    /**
+     * @brief Enum representing supported commands.
+     */
+    enum class Command {
+        CHIP_INFO,
+        IDF_VERSION,
+        FREE_HEAP,
+        FREE_INTERNAL_HEAP,
+        FREE_MIN_HEAP,
+        CLOCK_SPEED,
+        RESET,
+        UNKNOWN,
+        NO_COMMAND
+    };
     
     /**
      * @brief Processes a command.
      * 
      * Possible commands:
-     * - "chip_info": Retrieves chip information.
-     * - "idf_version": Retrieves the IDF version.
-     * - "free_heap": Retrieves the free heap size.
-     * - "free_internal_heap": Retrieves the free internal heap size.
-     * - "free_min_heap": Retrieves the minimum free heap size.
-     * - "clock_speed": Retrieves the clock speed in MHz.
-     * - "reset": Restarts the system.
+     * - CHIP_INFO: Retrieves chip information.
+     * - IDF_VERSION: Retrieves the IDF version.
+     * - FREE_HEAP: Retrieves the free heap size.
+     * - FREE_INTERNAL_HEAP: Retrieves the free internal heap size.
+     * - FREE_MIN_HEAP: Retrieves the minimum free heap size.
+     * - CLOCK_SPEED: Retrieves the clock speed in MHz.
+     * - RESET: Restarts the system.
+     * - UNKNOWN: Represents an unknown or unsupported command.
      * 
      * @param command The command to process.
      */
-    void processCommand(const std::string& command);
+    std::string processCommand(Command command);
 
 private:
-    /**
+    /** 
      * @brief Gets the chip information.
      * @return A string containing the chip information. (Model, features, revision, cores)
      */
