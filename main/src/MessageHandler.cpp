@@ -4,9 +4,9 @@
 static const char* TAG = "MessageHandler";
 
 MessageHandler::MessageHandler(size_t queueSize) {
-    _uartQueue = std::make_shared<rtos::MessageQueue<Message>>(queueSize);
-    _bleQueue = std::make_shared<rtos::MessageQueue<Message>>(queueSize);
-    _dataParserQueue = std::make_shared<rtos::MessageQueue<Message>>(queueSize);
+    _uartQueue = std::make_unique<rtos::MessageQueue<Message>>(queueSize);
+    _bleQueue = std::make_unique<rtos::MessageQueue<Message>>(queueSize);
+    _dataParserQueue = std::make_unique<rtos::MessageQueue<Message>>(queueSize);
 }
 
 bool MessageHandler::send(QueueType queueType, const Message& message) {
@@ -27,7 +27,7 @@ bool MessageHandler::receive(QueueType queueType, Message& message) {
     return queue->receive(message);
 }
 
-std::shared_ptr<rtos::MessageQueue<MessageHandler::Message>>&
+std::unique_ptr<rtos::MessageQueue<MessageHandler::Message>>&
 MessageHandler::getQueue(QueueType queueType) {
     switch (queueType) {
         case QueueType::UART_QUEUE: return _uartQueue;
@@ -35,7 +35,7 @@ MessageHandler::getQueue(QueueType queueType) {
         case QueueType::DATA_PARSER_QUEUE: return _dataParserQueue;
         default:
             ESP_LOGE(TAG, "Invalid queue type");
-            static std::shared_ptr<rtos::MessageQueue<Message>> nullQueue = nullptr;
+            static std::unique_ptr<rtos::MessageQueue<Message>> nullQueue = nullptr;
             return nullQueue;
     }
 }

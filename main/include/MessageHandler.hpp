@@ -89,10 +89,10 @@ public:
     }
 
 private:
-    /* Shared pointers to message queues for different communication types. */
-    std::shared_ptr<rtos::MessageQueue<Message>> _uartQueue;
-    std::shared_ptr<rtos::MessageQueue<Message>> _bleQueue;
-    std::shared_ptr<rtos::MessageQueue<Message>> _dataParserQueue;
+    /* Shared unique to message queues for different communication types. */
+    std::unique_ptr<rtos::MessageQueue<Message>> _uartQueue;
+    std::unique_ptr<rtos::MessageQueue<Message>> _bleQueue;
+    std::unique_ptr<rtos::MessageQueue<Message>> _dataParserQueue;
 
     /* Pointer to the externally created UART event queue. */
     QueueHandle_t _uartEventQueue = nullptr;  // Not owned
@@ -100,7 +100,7 @@ private:
     /**
      * @brief Retrieves the message queue corresponding to the specified queue type.
      * @param queueType The type of queue to retrieve.
-     * @return Reference to the shared pointer of the requested message queue.
+     * @return Reference to the unique pointer of the requested message queue.
      */
-    std::shared_ptr<rtos::MessageQueue<Message>>& getQueue(QueueType queueType);
+    std::unique_ptr<rtos::MessageQueue<Message>>& getQueue(QueueType queueType);
 };
