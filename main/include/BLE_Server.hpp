@@ -16,14 +16,15 @@
 #include <cstdint> // Include for fixed-width integer types
 
 
-constexpr char device_name[ESP_BLE_ADV_NAME_LEN_MAX] = "ESP_GATT_Server";
+constexpr char DEVICE_NAME[ESP_BLE_ADV_NAME_LEN_MAX] = "ESP_GATT_Server";
+constexpr char CHAR_VALUE_DEFAULT [ESP_BLE_ADV_NAME_LEN_MAX] = "ESP_GATT_Server_Default";
 
 constexpr uint16_t PROFILE_APP_ID = 0x00;
 constexpr uint16_t PROFILE_NUM = 1;
 constexpr uint8_t SERVICE_INST_ID = 0;
 constexpr uint16_t CHAR_INST_ID = 0;
 
-constexpr esp_bt_uuid_t CHAR_UUID = {
+constexpr esp_bt_uuid_t CHAR_UUID_DEFAULT = {
   .len = ESP_UUID_LEN_128,
   .uuid = {.uuid128 = {
     0xF1, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
@@ -31,7 +32,7 @@ constexpr esp_bt_uuid_t CHAR_UUID = {
   }}
 };
 
-constexpr esp_bt_uuid_t SERVICE_UUID = {
+constexpr esp_bt_uuid_t SERVICE_UUID_DEFAULT = {
   .len = ESP_UUID_LEN_128,
   .uuid = {.uuid128 = {
     0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
@@ -41,7 +42,13 @@ constexpr esp_bt_uuid_t SERVICE_UUID = {
 
 constexpr esp_gatt_srvc_id_t SERVICE_ID_DEFAULT = {
   .id = {
-      .uuid = SERVICE_UUID,
+      .uuid = {
+        .len = SERVICE_UUID_DEFAULT.len,
+        .uuid = {.uuid128 = {
+          0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
+          0x34, 0x12, 0x78, 0x56, 0x78, 0x56, 0x34, 0x12
+        }}
+      },
       .inst_id = SERVICE_INST_ID,  // Usually set to 0 unless multiple instances are needed
   },
   .is_primary = true // Define it as a primary service
@@ -78,8 +85,8 @@ constexpr esp_ble_adv_data_t ADV_DATA_DEFAULT = {
   .p_manufacturer_data =  NULL, //&test_manufacturer[0],
   .service_data_len = 0,
   .p_service_data = NULL,
-  .service_uuid_len = 0,
-  .p_service_uuid = NULL,
+  .service_uuid_len = SERVICE_UUID_DEFAULT.len,
+  .p_service_uuid = const_cast<uint8_t*>(SERVICE_ID_DEFAULT.id.uuid.uuid.uuid128),
   .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
 };
 
@@ -133,21 +140,24 @@ private:
   gatts_profile_inst _gatts_profile_inst = {
     .gatts_cb = gatts_event_handler,
     .gatts_if = ESP_GATT_IF_NONE,
+
     .app_id = PROFILE_APP_ID,
     .conn_id = 0,
+
     .service_handle = 0,
     .service_id = SERVICE_ID_DEFAULT,
     .char_handle = 0,
-    .char_uuid = CHAR_UUID,
+    .char_uuid = CHAR_UUID_DEFAULT,
+
     .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
     .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE,
     .descr_handle = 0,
     .descr_uuid = 0,
-    .char_value_buffer = {"Hello this is BLE Server"}, // Initialize with zeros
+    .char_value_buffer = {}, // Initialize with default value
     .char_value= {
       .attr_max_len = ESP_GATT_MAX_ATTR_LEN,
-      .attr_len = sizeof(_gatts_profile_inst.char_value_buffer),
-      .attr_value = _gatts_profile_inst.char_value_buffer
+      .attr_len = 0,
+      .attr_value = 0
     }
   };
 

@@ -50,12 +50,12 @@ void bluetoothTest_task()
     // Create a BLE_Server object
     BLE_Server bleServer;
     bleServer.connSetup();
-    //bleServer.send("Hello from ESP32 BLE Server");
     
     while (true)
     {
         // Log BLE server status
-        ESP_LOGI(pcTaskGetName(nullptr), "BLE Server running...");
+        //ESP_LOGI(pcTaskGetName(nullptr), "BLE Server running...");
+        bleServer.send("Hello from ESP32 BLE Server");
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
