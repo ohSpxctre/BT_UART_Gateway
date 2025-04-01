@@ -7,6 +7,8 @@
  #include <iostream>
 
  constexpr const char* TAG = "BLE_Server";
+ constexpr const char* TAG_GAP = "GAP";
+ constexpr const char* TAG_GATTS = "GATT";
 
 // Define the static instance pointer
 BLE_Server* BLE_Server::instance = nullptr;
@@ -28,15 +30,29 @@ BLE_Server* BLE_Server::instance = nullptr;
     }
     instance = this;
 
-    _adv_data.service_uuid_len = ESP_UUID_LEN_128;
-    _adv_data.p_service_uuid = (uint8_t *)&_gatts_profile_inst.service_id.id.uuid;
+    _adv_data.service_uuid_len = _gatts_profile_inst.service_id.id.uuid.len;
+    _adv_data.p_service_uuid = (uint8_t *)&_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
 
-    _adv_data.service_data_len = sizeof(service_data_buffer);
-    _adv_data.p_service_data = service_data_buffer;
+    _adv_data.service_data_len = sizeof(_char_value_buffer);
+    _adv_data.p_service_data = (uint8_t *)_char_value_buffer;
 
     //configuring scan response data
-    _scan_rsp_data.service_uuid_len = ESP_UUID_LEN_128;
-    _scan_rsp_data.p_service_uuid = (uint8_t *)&_gatts_profile_inst.service_id.id.uuid;
+    _scan_rsp_data.service_uuid_len = _gatts_profile_inst.service_id.id.uuid.len;
+    _scan_rsp_data.p_service_uuid = (uint8_t *)&_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
+
+    // Initialize NVS (needed for BLE storage)
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ESP_ERROR_CHECK(nvs_flash_init());
+    }
+
+    // Initialize Bluetooth controller and enable BLE mode
+    esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+    esp_bt_controller_init(&bt_cfg);
+    esp_bt_controller_enable(ESP_BT_MODE_BLE);
+    esp_bluedroid_init();
+    esp_bluedroid_enable();
  }
  
  BLE_Server::~BLE_Server() {
@@ -50,31 +66,12 @@ BLE_Server* BLE_Server::instance = nullptr;
  }
 
  void BLE_Server::connSetup() {
-    // Initialize NVS (needed for BLE storage)
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ESP_ERROR_CHECK(nvs_flash_init());
-    }
-
-    memcpy(_gatts_profile_inst.char_value_buffer, CHAR_VALUE_DEFAULT, sizeof(CHAR_VALUE_DEFAULT));
-    _gatts_profile_inst.char_value.attr_len = sizeof(_gatts_profile_inst.char_value_buffer);
-    _gatts_profile_inst.char_value.attr_value = _gatts_profile_inst.char_value_buffer;
-
-    ESP_LOGW(TAG, "BLE Server initialized with default values");
-    ESP_LOGI(TAG, "BLE Server char len: %D", _gatts_profile_inst.char_value.attr_len);
-
-        
-    // Initialize Bluetooth controller and enable BLE mode
-    esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-    esp_bt_controller_init(&bt_cfg);
-    esp_bt_controller_enable(ESP_BT_MODE_BLE);
-    esp_bluedroid_init();
-    esp_bluedroid_enable();
 
     esp_ble_gap_register_callback(gap_event_handler);
     esp_ble_gatts_register_callback(gatts_event_handler);
     esp_ble_gatts_app_register(PROFILE_APP_ID);
+    esp_ble_gatt_set_local_mtu(ESP_GATT_MAX_ATTR_LEN);
+    ESP_LOGI(TAG, "BLE Server initialized and callbacks registered");
     }
 
  void BLE_Server::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
@@ -92,46 +89,59 @@ BLE_Server* BLE_Server::instance = nullptr;
 
  void BLE_Server::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
 
-    esp_err_t start_adv_ret = ESP_OK;
+    ESP_LOGW(TAG, "GAP event: %d", event);
 
     switch (event)
     {
+    //--------------------------------------------------------------------------------------------------------
+    // GAP event for setting advertising data
+    //--------------------------------------------------------------------------------------------------------
     case ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT:
-        start_adv_ret = esp_ble_gap_start_advertising(&_adv_params);
-        if (start_adv_ret) {
-            ESP_LOGE(TAG, "Failed to start advertising, error code = %x", start_adv_ret);
-        } else {
-            ESP_LOGI(TAG, "Advertising started successfully");
-        }
-        break;
+        _adv_config_done &= (~adv_config_flag);
+        if (_adv_config_done == 0) {
+            esp_ble_gap_start_advertising(&_adv_params);
+            }
+    break;    
 
+    //--------------------------------------------------------------------------------------------------------
+    // GAP event for setting scan response data
+    //--------------------------------------------------------------------------------------------------------
     case ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT:
-        ESP_LOGI(TAG, "ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT");
-        esp_ble_gap_start_advertising(&_adv_params);
-        break;
+        _adv_config_done &= (~scan_rsp_config_flag);
+        if (_adv_config_done == 0) {
+            esp_ble_gap_start_advertising(&_adv_params);
+        }
+    break;
 
+    //--------------------------------------------------------------------------------------------------------
+    // GAP event for starting advertising complete
+    //--------------------------------------------------------------------------------------------------------
     case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
+        //advertising start complete event to indicate advertising start successfully or failed
         if (param->adv_start_cmpl.status != ESP_BT_STATUS_SUCCESS) {
-            _is_advertising = false;
-            ESP_LOGE(TAG, "Advertising start failed: %s", esp_err_to_name(param->adv_start_cmpl.status));
+            ESP_LOGE(TAG_GAP, "Advertising start failed, status %d", param->adv_start_cmpl.status);
         } else {
-            _is_advertising = true;
-            ESP_LOGI(TAG, "Advertising started successfully");
+            ESP_LOGI(TAG_GAP, "Advertising start successfully");
         }
         break;
-
+    //--------------------------------------------------------------------------------------------------------
+    // GAP event for stopping advertising complete
+    //--------------------------------------------------------------------------------------------------------
     case ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT:
         if (param->adv_stop_cmpl.status != ESP_BT_STATUS_SUCCESS) {
             _is_advertising = true;
-            ESP_LOGE(TAG, "Advertising stop failed: %s", esp_err_to_name(param->adv_stop_cmpl.status));
+            ESP_LOGE(TAG_GAP, "Advertising stop failed: %s", esp_err_to_name(param->adv_stop_cmpl.status));
         } else {
             _is_advertising = false;
-            ESP_LOGI(TAG, "Advertising stopped successfully");
+            ESP_LOGI(TAG_GAP, "Advertising stopped successfully");
         }
         break;
 
     break;
-
+    
+    //--------------------------------------------------------------------------------------------------------
+    // GAP event for connection parameters update
+    //--------------------------------------------------------------------------------------------------------
     case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
         ESP_LOGI(TAG, "Connection parameters updated: addr= %d, min_int= %d, max_int= %d, latency= %d, timeout= %d",
             param->update_conn_params.bda,
@@ -140,7 +150,10 @@ BLE_Server* BLE_Server::instance = nullptr;
             param->update_conn_params.latency,
             param->update_conn_params.timeout);
         break;
-
+        
+    //--------------------------------------------------------------------------------------------------------
+    // GAP default case
+    //--------------------------------------------------------------------------------------------------------
     default:
         ESP_LOGI(TAG, "Unhandled GAP event: %d", event);
         break;
@@ -150,209 +163,255 @@ BLE_Server* BLE_Server::instance = nullptr;
 
 void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
     
-    esp_ble_gatts_cb_param_t *connect_param = (esp_ble_gatts_cb_param_t *)param;
-    esp_err_t set_adv_data_ret = ESP_OK;
-    esp_err_t set_dev_name_ret = ESP_OK;
-    esp_err_t add_char_ret = ESP_OK;
-    esp_err_t add_sevc_ret = ESP_OK;
-    esp_gatt_rsp_t  gatt_rsp = {};
-    const char *response = "Hello response from BLE Server"; 
-    char uuid_str[ESP_UUID_LEN_128 * 2 + 1] = {0}; // Platz für 32 Hex-Zeichen + Nullterminator
+    esp_ble_conn_update_params_t conn_params = {0};
+    esp_err_t ret = ESP_OK;
+    
+    uint16_t length = 0;
+    const uint8_t *prf_char;
 
+    esp_gatt_rsp_t  rsp = {};
+
+    //char uuid_str[ESP_UUID_LEN_128 * 2 + 1] = {0}; // Platz für 32 Hex-Zeichen + Nullterminator
+
+    //Loging event type
+    ESP_LOGW(TAG, "GATT event: %d", event);
 
     switch (event)
     {
+    //--------------------------------------------------------------------------------------------------------
+    // GATT Server reg event
+    //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_REG_EVT:
         _gatts_profile_inst.gatts_if = gatts_if;
-        ESP_LOGI(TAG, "GATT Server registered, gatts_if: %d", gatts_if);
-        set_dev_name_ret = esp_ble_gap_set_device_name(DEVICE_NAME);
-        if (set_dev_name_ret){
-            ESP_LOGE(TAG, "set device name failed, error code = %x", set_dev_name_ret);
+        ESP_LOGI(TAG_GATTS, "GATT server register, status %d, app_id %d, gatts_if %d", param->reg.status, param->reg.app_id, gatts_if);
+        
+        //setting up the service id
+        ret = esp_ble_gap_set_device_name(DEVICE_NAME);
+        if (ret){
+            ESP_LOGE(TAG, "set device name failed, error code = %x", ret);
         }
         
         //configuring advertising data
-        set_adv_data_ret = esp_ble_gap_config_adv_data(&_adv_data);
-        if (set_adv_data_ret) {
-            ESP_LOGE(TAG, "set adv data failed, error code = %x", set_adv_data_ret);
-        } else {
-            ESP_LOGI(TAG, "Advertising data set successfully");
+        ret = esp_ble_gap_config_adv_data(&_adv_data);
+        if (ret) {
+            ESP_LOGE(TAG_GATTS, "set adv data failed, error code = %x", ret);
         }
+        _adv_config_done |= adv_config_flag;
         
-        esp_ble_gap_config_adv_data(&_scan_rsp_data);
-        
+        //configuring scan response data
+        ret = esp_ble_gap_config_adv_data(&_scan_rsp_data);
+        if (ret) {
+            ESP_LOGE(TAG_GATTS, "set scan response data failed, error code = %x", ret);
+        }
+        _adv_config_done |= scan_rsp_config_flag;
+
         //creating the gatt service
-        add_sevc_ret = esp_ble_gatts_create_service(gatts_if, &_gatts_profile_inst.service_id, PROFILE_NUM);
-        
-        if(add_sevc_ret) {
-            ESP_LOGE(TAG, "create service failed, error code = %x", add_sevc_ret);
-        } else {
-            ESP_LOGI(TAG, "Service creation started successfully");
+        ret = esp_ble_gatts_create_service(gatts_if, &_gatts_profile_inst.service_id, PROFILE_NUM);
+        if(ret) {
+            ESP_LOGE(TAG_GATTS, "create service failed, error code = %x", ret);
         }
-
     break;
 
+    //--------------------------------------------------------------------------------------------------------
+    // GATT Server create service event
+    //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_CREATE_EVT:
-        if (param->create.status != ESP_GATT_OK) {
-            ESP_LOGE(TAG, "Service creation failed: %s", esp_err_to_name(param->create.status));
+        ESP_LOGI(TAG_GATTS, "Service create, status %d, service_handle %d", param->create.status, param->create.service_handle);
+        
+        //saving the service handle
+        _gatts_profile_inst.service_handle = param->create.service_handle;
+        //starting the service
+        ret = esp_ble_gatts_start_service(_gatts_profile_inst.service_handle);
+        if (ret)
+        {
+            ESP_LOGE(TAG_GATTS, "start service failed, error code = %x", ret);
         }
-        else {
-            _gatts_profile_inst.service_handle = param->create.service_handle;
-            ESP_LOGI(TAG, "Service created successfully, handle: %d", _gatts_profile_inst.service_handle);
-            
-            esp_ble_gatts_start_service(_gatts_profile_inst.service_handle);
-                       
+        else
+        {   //when started successfully, add char to the service
+            ESP_LOGI(TAG_GATTS, "Service started successfully");
+            ret = esp_ble_gatts_add_char(
+                _gatts_profile_inst.service_handle,
+                &_gatts_profile_inst.char_uuid,
+                _gatts_profile_inst.perm,
+                _gatts_profile_inst.property,
+                &_char_value,
+                NULL
+            );
+            if (ret) {
+                ESP_LOGE(TAG_GATTS, "add char failed, error code = %x", ret);
+            }
         }
     break;
 
+   //--------------------------------------------------------------------------------------------------------
+    // GATT Read event
+    //--------------------------------------------------------------------------------------------------------
+   // case ESP_GATTS_READ_EVT:
+   //     ESP_LOGI(TAG_GATTS, "Characteristic read, conn_id %d, trans_id %" PRIu32 ", handle %d", param->read.conn_id, param->read.trans_id, param->read.handle);
+   //     memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
+   //     
+   //     rsp.attr_value.handle = param->read.handle;
+   //     rsp.attr_value.len = sizeof(response);
+   //     memcpy(rsp.attr_value.value, response, rsp.attr_value.len);
+   //     esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
+   // break;
+
+
+    //--------------------------------------------------------------------------------------------------------
+    // GATT Write event
+    //--------------------------------------------------------------------------------------------------------
+    //case ESP_GATTS_WRITE_EVT:
+    //    ESP_LOGE(TAG_GATTS, "Write event (not implemented), conn_id: %d", param->write.conn_id);
+    //break;
+
+
+    //--------------------------------------------------------------------------------------------------------
+    // GATT Execute Write event
+    //--------------------------------------------------------------------------------------------------------
+    //case ESP_GATTS_EXEC_WRITE_EVT:
+    //    ESP_LOGE(TAG_GATTS, "Execute write event (not implemented), conn_id: %d", param->exec_write.conn_id);
+    //break;
+
+    //--------------------------------------------------------------------------------------------------------
+    // GATT MTU exchange event
+    //--------------------------------------------------------------------------------------------------------
+    // This event is triggered when the MTU size is exchanged between the client and server.
+    case ESP_GATTS_MTU_EVT:
+        ESP_LOGI(TAG_GATTS, "MTU exchange, MTU %d", param->mtu.mtu);
+        _is_connected = true;
+    break;
+
+    //--------------------------------------------------------------------------------------------------------
+    // GATT Unregister event (does nothing for now)
+    //--------------------------------------------------------------------------------------------------------
+    //case ESP_GATTS_UNREG_EVT:
+    //break;
+
+
+    //--------------------------------------------------------------------------------------------------------
+    // GATT Server start service event
+    //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_START_EVT:
         if (param->start.status != ESP_GATT_OK) {
             
             ESP_LOGI(TAG, "Service start failed: %s", esp_err_to_name(param->start.status));
         } else {
             ESP_LOGI(TAG, "Service started successfully");
-            for (int i = 0; i < ESP_UUID_LEN_128; i++) {
-                sprintf(&uuid_str[i * 2], "%02x", _gatts_profile_inst.char_uuid.uuid.uuid128[i]);
-            }
-            for (int i = 0; i < ESP_UUID_LEN_128; i++) {
-                sprintf(&uuid_str[i * 2], "%02x", _gatts_profile_inst.service_id.id.uuid.uuid.uuid128[i]);
-            }
-            ESP_LOGI(TAG, "Characteristic handle: %d", _gatts_profile_inst.char_handle);
-            ESP_LOGI(TAG, "Characteristic UUID: %s", uuid_str);
-            ESP_LOGI(TAG, "Char uuid len: %d", _gatts_profile_inst.char_uuid.len);
-            ESP_LOGI(TAG, "Service handle: %d", _gatts_profile_inst.service_handle);
-            for (int i = 0; i < ESP_UUID_LEN_128; i++) {
-                sprintf(&uuid_str[i * 2], "%02x", _gatts_profile_inst.service_id.id.uuid.uuid.uuid128[i]);
-            }
-            ESP_LOGI(TAG, "Service UUID: %s\n", uuid_str);
-            ESP_LOGI(TAG, "permitions: %d, property: %d", _gatts_profile_inst.perm, _gatts_profile_inst.property);
-            ESP_LOGI(TAG, "char value len: %d", _gatts_profile_inst.char_value.attr_len);             
+            //for (int i = 0; i < ESP_UUID_LEN_128; i++) {
+            //    sprintf(&uuid_str[i * 2], "%02x", _gatts_profile_inst.char_uuid.uuid.uuid128[i]);
+            //}
+            //for (int i = 0; i < ESP_UUID_LEN_128; i++) {
+            //    sprintf(&uuid_str[i * 2], "%02x", _gatts_profile_inst.service_id.id.uuid.uuid.uuid128[i]);
+            //}
+            //ESP_LOGI(TAG, "Characteristic handle: %d", _gatts_profile_inst.char_handle);
+            //ESP_LOGI(TAG, "Characteristic UUID: %s", uuid_str);
+            //ESP_LOGI(TAG, "Char uuid len: %d", _gatts_profile_inst.char_uuid.len);
+            //ESP_LOGI(TAG, "Service handle: %d", _gatts_profile_inst.service_handle);
+            //for (int i = 0; i < ESP_UUID_LEN_128; i++) {
+            //    sprintf(&uuid_str[i * 2], "%02x", _gatts_profile_inst.service_id.id.uuid.uuid.uuid128[i]);
+            //}
+            //ESP_LOGI(TAG, "Service UUID: %s\n", uuid_str);
+            //ESP_LOGI(TAG, "permitions: %d, property: %d", _gatts_profile_inst.perm, _gatts_profile_inst.property);
+            //ESP_LOGI(TAG, "char value len: %d", _gatts_profile_inst.char_value.attr_len);             
         }
-
-        //esp_ble_gatts_get_attr_value(param->add_char.attr_handle, &_gatts_profile_inst.char_value.attr_len, _gatts_profile_inst.char_value.attr_value);
-        ESP_LOGI(TAG, "Characteristic value: %s", (char *)_gatts_profile_inst.char_value.attr_value);
-        ESP_LOGI(TAG, "Characteristic value length: %d", _gatts_profile_inst.char_value.attr_len);
-        //add_char_ret = esp_ble_gatts_add_char(
-        //    _gatts_profile_inst.service_handle,
-        //    &_gatts_profile_inst.char_uuid,
-        //    _gatts_profile_inst.perm,
-        //    _gatts_profile_inst.property,
-        //    &_gatts_profile_inst.char_value,
-        //    NULL
-        //); // No descriptor for now
-        if (add_char_ret) {
-            ESP_LOGE(TAG, "Add char failed, error code = %x", add_char_ret);
-        } else {
-            ESP_LOGI(TAG, "Adding Characteristic started successfully");
-        }
-        break;
-       
-
     break;
 
+    //--------------------------------------------------------------------------------------------------------
+    // GATT Server add char event
+    //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_ADD_CHAR_EVT:
-    switch (param->add_char.status) {
-        case ESP_GATT_OK:
-            _gatts_profile_inst.char_handle = param->add_char.attr_handle;
-            ESP_LOGI(TAG, "✅ Characteristic added successfully.");
-            break;
-    
-        case ESP_GATT_INVALID_HANDLE:
-            ESP_LOGE(TAG, "❌ Error: Invalid handle.");
-            break;
-    
-        case ESP_GATT_INVALID_PDU:
-            ESP_LOGE(TAG, "❌ Error: Invalid PDU.");
-            break;
-    
-        case ESP_GATT_INSUF_AUTHENTICATION:
-            ESP_LOGE(TAG, "❌ Error: Insufficient authentication.");
-            break;
-    
-        case ESP_GATT_INSUF_AUTHORIZATION:
-            ESP_LOGE(TAG, "❌ Error: Insufficient authorization.");
-            break;
-    
-        case ESP_GATT_INSUF_ENCRYPTION:
-            ESP_LOGE(TAG, "❌ Error: Insufficient encryption.");
-            break;
-    
-        case ESP_GATT_INVALID_OFFSET:
-            ESP_LOGE(TAG, "❌ Error: Invalid offset.");
-            break;
-    
-        case ESP_GATT_NO_RESOURCES:
-            ESP_LOGE(TAG, "❌ Error: No resources available.");
-            break;
-    
-        case ESP_GATT_INTERNAL_ERROR:
-            ESP_LOGE(TAG, "❌ Error: Internal error.");
-            break;
-    
-        case ESP_GATT_ERROR:
-            ESP_LOGE(TAG, "❌ Error: Generic GATT error.");
-            break;
-    
-        default:
-            ESP_LOGE(TAG, "❌ Error: Unknown status code: %d", param->add_char.status);
-            break;
-    }
-    
+        ESP_LOGI(TAG_GATTS, "Characteristic add, status %d, attr_handle %d, service_handle %d",
+            param->add_char.status, param->add_char.attr_handle, param->add_char.service_handle);
+        //reading the char handle
+        _gatts_profile_inst.char_handle = param->add_char.attr_handle;
+        
+        ret = esp_ble_gatts_get_attr_value(param->add_char.attr_handle,  &length, &prf_char);
+        if (ret == ESP_FAIL){
+            ESP_LOGE(TAG_GATTS, "ILLEGAL HANDLE");
+        }
+
+        ESP_LOGI(TAG_GATTS, "the gatts demo char length = %x", length);
+        for(int i = 0; i < length; i++){
+            ESP_LOGI(TAG_GATTS, "prf_char[%x] =%x",i,prf_char[i]);
+        }
+
+
+        ret = esp_ble_gatts_add_char_descr(
+            _gatts_profile_inst.service_handle,
+            &_gatts_profile_inst.descr_uuid,
+            _gatts_profile_inst.perm,
+            NULL,
+            NULL
+        );
+
+        if (ret) {
+            ESP_LOGE(TAG_GATTS, "Add descriptor failed, error code = %x", ret);
+        }
     break;
 
-
-    case ESP_GATTS_CONNECT_EVT:
-       
-        ESP_LOGI(TAG, "Device connected, conn_id: %d", connect_param->connect.conn_id);
-
-        // Store connection ID (for sending notifications later)
-        _gatts_profile_inst.conn_id = connect_param->connect.conn_id;
-        _gatts_profile_inst.gatts_if = gatts_if;
-        _is_connected = true;
-        esp_ble_gap_stop_advertising();
-        _is_advertising = false;
-        ESP_LOGI(TAG, "Advertising stopped after connection");
-    break;
-
- 
-
-    case ESP_GATTS_DISCONNECT_EVT:
-        ESP_LOGI(TAG, "Device disconnected, conn_id: %d", param->disconnect.conn_id);
-        _is_connected = false;
-        esp_ble_gap_start_advertising(&_adv_params);
-        _is_advertising = true;
-        ESP_LOGI(TAG, "Advertising restarted after disconnection");
-    break;
-
-    case ESP_GATTS_WRITE_EVT:
-        ESP_LOGI(TAG, "Write event, conn_id: %d", param->write.conn_id);
-        ESP_LOGI(TAG, "Data written: %s", (char *)param->write.value);
-        break;
-
-    case ESP_GATTS_READ_EVT:
-        ESP_LOGI(TAG, "Read event, conn_id: %d", param->read.conn_id);
-        gatt_rsp.attr_value.handle = param->read.handle;
-        gatt_rsp.attr_value.len = sizeof(response);
-        memcpy(gatt_rsp.attr_value.value, response, gatt_rsp.attr_value.len);
-        esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &gatt_rsp);
-
-        break;
-    
-    case ESP_GATTS_EXEC_WRITE_EVT:
-    case ESP_GATTS_MTU_EVT:
-    case ESP_GATTS_CONF_EVT:
-    case ESP_GATTS_UNREG_EVT:
-    case ESP_GATTS_ADD_INCL_SRVC_EVT:
+    //--------------------------------------------------------------------------------------------------------
+    // GATT Server add char descriptor event
+    //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_ADD_CHAR_DESCR_EVT:
-    case ESP_GATTS_DELETE_EVT:
-    case ESP_GATTS_STOP_EVT:
-    case ESP_GATTS_OPEN_EVT:
-    case ESP_GATTS_CANCEL_OPEN_EVT:
-    case ESP_GATTS_CLOSE_EVT:
-    case ESP_GATTS_LISTEN_EVT:
-    case ESP_GATTS_CONGEST_EVT:
-        ESP_LOGI(TAG, "Unhandled but expected GATT event: %d", event);
-        break;
+        _gatts_profile_inst.descr_handle = param->add_char_descr.attr_handle;
+        ESP_LOGI(TAG_GATTS, "Descriptor add, status %d, attr_handle %d, service_handle %d",
+                param->add_char_descr.status, param->add_char_descr.attr_handle, param->add_char_descr.service_handle);
+    break;
 
+
+    //--------------------------------------------------------------------------------------------------------
+    // GATT Connect event
+    //--------------------------------------------------------------------------------------------------------
+    case ESP_GATTS_CONNECT_EVT:
+        _is_connected = true;
+        _gatts_profile_inst.conn_id = param->connect.conn_id;
+        ESP_LOGI(TAG_GATTS, "Connected, conn_id %u, remote "ESP_BD_ADDR_STR"", param->connect.conn_id, ESP_BD_ADDR_HEX(param->connect.remote_bda));
+
+        memcpy(conn_params.bda, param->connect.remote_bda, sizeof(esp_bd_addr_t));
+        
+        /* For the IOS system, please reference the apple official documents about the ble connection parameters restrictions. */
+        conn_params.latency = 0;
+        conn_params.max_int = 0x20;    // max_int = 0x20*1.25ms = 40ms
+        conn_params.min_int = 0x10;    // min_int = 0x10*1.25ms = 20ms
+        conn_params.timeout = 400;    // timeout = 400*10ms = 4000ms
+
+        //start sent the update connection parameters to the peer device.
+        ret = esp_ble_gap_update_conn_params(&conn_params);
+        if (ret) {
+            ESP_LOGE(TAG_GATTS, "Update connection params failed, error code = %x", ret);
+        }
+        ret = esp_ble_gap_stop_advertising();
+        if (ret) {
+            ESP_LOGE(TAG_GATTS, "Stop advertising failed, error code = %x", ret);
+        }
+    break;
+
+    //--------------------------------------------------------------------------------------------------------
+    // GATT Disconnect event
+    //--------------------------------------------------------------------------------------------------------
+    case ESP_GATTS_DISCONNECT_EVT:
+        ESP_LOGI(TAG_GATTS, "Disconnected, remote "ESP_BD_ADDR_STR", reason 0x%02x", ESP_BD_ADDR_HEX(param->disconnect.remote_bda), param->disconnect.reason);
+        _is_connected = false;
+        ret = esp_ble_gap_start_advertising(&_adv_params);
+        if (ret) {
+            ESP_LOGE(TAG_GATTS, "Start advertising failed, error code = %x", ret);
+        }
+        _is_advertising = true;
+    break;
+
+    //--------------------------------------------------------------------------------------------------------
+    // GATT confirmation event
+    //--------------------------------------------------------------------------------------------------------
+    case ESP_GATTS_CONF_EVT:
+        ESP_LOGI(TAG_GATTS, "Confirm receive, status %d, attr_handle %d", param->conf.status, param->conf.handle);
+        if (param->conf.status != ESP_GATT_OK){
+            ESP_LOG_BUFFER_HEX(TAG_GATTS, param->conf.value, param->conf.len);
+        }
+    break;
+
+    //--------------------------------------------------------------------------------------------------------
+    // default case
+    //--------------------------------------------------------------------------------------------------------
     default:
         ESP_LOGI(TAG, "Unhandled GATTS event: %d", event);
         break;
@@ -363,8 +422,8 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
  void BLE_Server::send(const std::string &data) {
         if (_is_connected) {
             ESP_LOGI(TAG, "Sending data: %s", data.c_str());
-            _gatts_profile_inst.char_value.attr_len = data.length();
-            _gatts_profile_inst.char_value.attr_value = (uint8_t *)data.c_str();
+            _char_value.attr_len = data.length();
+            memcpy(_char_value_buffer, data.c_str(), data.length());
             
             esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle,
                                         data.length(), (uint8_t *)data.c_str(), false);
