@@ -19,37 +19,7 @@
 #define scan_rsp_config_flag (1 << 1)
 
 
-constexpr char DEVICE_NAME[ESP_BLE_ADV_NAME_LEN_MAX] = "ESP_GATT_Server";
 constexpr char CHAR_VALUE_DEFAULT [ESP_BLE_ADV_NAME_LEN_MAX] = "ESP_GATT_Server_Default";
-
-constexpr uint16_t PROFILE_APP_ID = 0x00;
-constexpr uint16_t PROFILE_NUM = 1;
-constexpr uint8_t SERVICE_INST_ID = 0;
-constexpr uint16_t CHAR_INST_ID = 0;
-
-constexpr esp_bt_uuid_t CHAR_UUID_DEFAULT = {
-  .len = ESP_UUID_LEN_128,
-  .uuid = {.uuid128 = {
-    0xF1, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
-    0x34, 0x12, 0x78, 0x56, 0x78, 0x56, 0x34, 0x12
-  }}
-};
-
-constexpr esp_bt_uuid_t SERVICE_UUID_DEFAULT = {
-  .len = ESP_UUID_LEN_128,
-  .uuid = {.uuid128 = {
-    0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
-    0x34, 0x12, 0x78, 0x56, 0x78, 0x56, 0x34, 0x12
-  }}
-};
-
-constexpr esp_bt_uuid_t DESCR_UUID_DEFAULT = {
-  .len = ESP_UUID_LEN_128,
-  .uuid = {.uuid128 = {
-    0xF2, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
-    0x34, 0x12, 0x78, 0x56, 0x78, 0x56, 0x34, 0x12
-  }}
-};
 
 constexpr esp_gatt_srvc_id_t SERVICE_ID_DEFAULT = {
   .id = {
@@ -64,8 +34,6 @@ constexpr esp_attr_value_t GATTS_CHAR_VALUE_DEFAULT = {
   .attr_len = 0,
   .attr_value = nullptr
 };
-
-
 
 constexpr esp_ble_adv_params_t ADV_PARAMS_DEFAULT = {
   .adv_int_min = 0x190,                                   //minimum intervall is 100ms
@@ -139,7 +107,7 @@ class BLE_Server : public Bluetooth {
 
 private:
 
-  static BLE_Server* instance; // Static instance pointer
+  static BLE_Server* Server_instance; // Static instance pointer
 
   gatts_profile_inst _gatts_profile_inst = {
     .gatts_cb = gatts_event_handler,

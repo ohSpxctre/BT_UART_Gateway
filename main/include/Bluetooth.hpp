@@ -15,7 +15,10 @@
 #include "esp_gatt_defs.h" // Include the header for GATT definitions
 #include "esp_gatt_common_api.h"
 #include "esp_gatts_api.h"
+#include "esp_gattc_api.h"
 #include "esp_bt_main.h"
+#include "BLE_Config.hpp"
+#include "esp_mac.h"
 
 
 /**

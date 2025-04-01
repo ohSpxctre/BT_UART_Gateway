@@ -6,12 +6,8 @@
  #include "BLE_Server.hpp"
  #include <iostream>
 
- constexpr const char* TAG = "BLE_Server";
- constexpr const char* TAG_GAP = "GAP";
- constexpr const char* TAG_GATTS = "GATT";
-
 // Define the static instance pointer
-BLE_Server* BLE_Server::instance = nullptr;
+BLE_Server* BLE_Server::Server_instance = nullptr;
 
 
  BLE_Server::BLE_Server(
@@ -24,11 +20,11 @@ BLE_Server* BLE_Server::instance = nullptr;
     _scan_rsp_data(scan_rsp_data)
  {
     // Initialize the static instance pointer
-    if (instance != nullptr) {
+    if (Server_instance != nullptr) {
         ESP_LOGE(TAG, "BLE_Server instance already exists!");
         return;
     }
-    instance = this;
+    Server_instance = this;
 
     _adv_data.service_uuid_len = _gatts_profile_inst.service_id.id.uuid.len;
     _adv_data.p_service_uuid = (uint8_t *)&_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
@@ -57,12 +53,13 @@ BLE_Server* BLE_Server::instance = nullptr;
  
  BLE_Server::~BLE_Server() {
     // Clean up resources if needed
-    instance = nullptr;
+    Server_instance = nullptr;
     esp_bluedroid_disable();
     esp_bluedroid_deinit();
     esp_bt_controller_disable();
     esp_bt_controller_deinit();
     nvs_flash_deinit();
+    ESP_LOGI(TAG, "BLE Server Deinitialized");
  }
 
  void BLE_Server::connSetup() {
@@ -75,21 +72,19 @@ BLE_Server* BLE_Server::instance = nullptr;
     }
 
  void BLE_Server::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
-    if (instance) {
-        instance->handle_event_gap(event, param);
+    if (Server_instance) {
+        Server_instance->handle_event_gap(event, param);
     }
  }
 
  void BLE_Server::gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
-    if (instance) {
-        instance->handle_event_gatts(event, gatts_if, param);
+    if (Server_instance) {
+        Server_instance->handle_event_gatts(event, gatts_if, param);
     }
  }
 
 
  void BLE_Server::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
-
-    ESP_LOGW(TAG, "GAP event: %d", event);
 
     switch (event)
     {
@@ -150,7 +145,7 @@ BLE_Server* BLE_Server::instance = nullptr;
             param->update_conn_params.latency,
             param->update_conn_params.timeout);
         break;
-        
+    
     //--------------------------------------------------------------------------------------------------------
     // GAP default case
     //--------------------------------------------------------------------------------------------------------
@@ -186,7 +181,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         ESP_LOGI(TAG_GATTS, "GATT server register, status %d, app_id %d, gatts_if %d", param->reg.status, param->reg.app_id, gatts_if);
         
         //setting up the service id
-        ret = esp_ble_gap_set_device_name(DEVICE_NAME);
+        ret = esp_ble_gap_set_device_name(DEVICE_NAME_SERVER);
         if (ret){
             ESP_LOGE(TAG, "set device name failed, error code = %x", ret);
         }
