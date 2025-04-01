@@ -55,7 +55,7 @@ void bluetoothTest_task()
     {
         // Log BLE server status
         //ESP_LOGI(pcTaskGetName(nullptr), "BLE Server running...");
-        bleServer.send("Hello from ESP32 BLE Server");
+        //bleServer.send("Hello from ESP32 BLE Server");
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
@@ -71,7 +71,7 @@ extern "C" void app_main(void) {
     esp_pthread_set_cfg(&cfg2);
     std::thread testThread2(bluetoothTest_task);
 
-     // Let the main task do something too
+    //Let the main task do something too
      while (true) {
         std::stringstream ss;
         ss << "core id: " << xPortGetCoreID()

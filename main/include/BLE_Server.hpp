@@ -85,8 +85,8 @@ constexpr esp_ble_adv_data_t ADV_DATA_DEFAULT = {
   .p_manufacturer_data =  NULL, //&test_manufacturer[0],
   .service_data_len = 0,
   .p_service_data = NULL,
-  .service_uuid_len = SERVICE_UUID_DEFAULT.len,
-  .p_service_uuid = const_cast<uint8_t*>(SERVICE_ID_DEFAULT.id.uuid.uuid.uuid128),
+  .service_uuid_len = 0,
+  .p_service_uuid = NULL,
   .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
 };
 
@@ -168,6 +168,8 @@ private:
   bool _is_advertising = false;
   bool _is_connected = false;
 
+  uint8_t service_data_buffer[ESP_GATT_MAX_ATTR_LEN] = {"Advertising my stipid chip"};
+  
 
   static void gatts_event_handler (esp_gatts_cb_event_t, esp_gatt_if_t, esp_ble_gatts_cb_param_t *);
   static void gap_event_handler(esp_gap_ble_cb_event_t, esp_ble_gap_cb_param_t *);
@@ -179,7 +181,6 @@ public:
     BLE_Server( esp_ble_adv_params_t adv_params = ADV_PARAMS_DEFAULT,
                 esp_ble_adv_data_t adv_data = ADV_DATA_DEFAULT,
                 esp_ble_adv_data_t scan_rsp_data = SCAN_RSP_DATA_DEFAULT
-
               );
 
     ~BLE_Server();

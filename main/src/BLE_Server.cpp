@@ -11,13 +11,6 @@
 // Define the static instance pointer
 BLE_Server* BLE_Server::instance = nullptr;
 
-   //uint8_t char_str[] = {0x11,0x22,0x33};
-  
-  //esp_attr_value_t gatts_char_value = {
-  //  .attr_max_len = sizeof(char_str),
-  //  .attr_len = sizeof(char_str),
-  //  .attr_value = char_str
-  //};
 
  BLE_Server::BLE_Server(
     esp_ble_adv_params_t adv_params,
@@ -34,6 +27,16 @@ BLE_Server* BLE_Server::instance = nullptr;
         return;
     }
     instance = this;
+
+    _adv_data.service_uuid_len = ESP_UUID_LEN_128;
+    _adv_data.p_service_uuid = (uint8_t *)&_gatts_profile_inst.service_id.id.uuid;
+
+    _adv_data.service_data_len = sizeof(service_data_buffer);
+    _adv_data.p_service_data = service_data_buffer;
+
+    //configuring scan response data
+    _scan_rsp_data.service_uuid_len = ESP_UUID_LEN_128;
+    _scan_rsp_data.p_service_uuid = (uint8_t *)&_gatts_profile_inst.service_id.id.uuid;
  }
  
  BLE_Server::~BLE_Server() {
@@ -53,6 +56,14 @@ BLE_Server* BLE_Server::instance = nullptr;
         ESP_ERROR_CHECK(nvs_flash_erase());
         ESP_ERROR_CHECK(nvs_flash_init());
     }
+
+    memcpy(_gatts_profile_inst.char_value_buffer, CHAR_VALUE_DEFAULT, sizeof(CHAR_VALUE_DEFAULT));
+    _gatts_profile_inst.char_value.attr_len = sizeof(_gatts_profile_inst.char_value_buffer);
+    _gatts_profile_inst.char_value.attr_value = _gatts_profile_inst.char_value_buffer;
+
+    ESP_LOGW(TAG, "BLE Server initialized with default values");
+    ESP_LOGI(TAG, "BLE Server char len: %D", _gatts_profile_inst.char_value.attr_len);
+
         
     // Initialize Bluetooth controller and enable BLE mode
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
@@ -64,10 +75,6 @@ BLE_Server* BLE_Server::instance = nullptr;
     esp_ble_gap_register_callback(gap_event_handler);
     esp_ble_gatts_register_callback(gatts_event_handler);
     esp_ble_gatts_app_register(PROFILE_APP_ID);
-
-    memcpy(_gatts_profile_inst.char_value_buffer, CHAR_VALUE_DEFAULT, sizeof(CHAR_VALUE_DEFAULT));
-    _gatts_profile_inst.char_value.attr_len = sizeof(_gatts_profile_inst.char_value_buffer);
-    _gatts_profile_inst.char_value.attr_value = _gatts_profile_inst.char_value_buffer;
     }
 
  void BLE_Server::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
@@ -100,7 +107,7 @@ BLE_Server* BLE_Server::instance = nullptr;
 
     case ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT:
         ESP_LOGI(TAG, "ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT");
-        //esp_ble_gap_start_advertising(&_adv_params);
+        esp_ble_gap_start_advertising(&_adv_params);
         break;
 
     case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
@@ -164,17 +171,13 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         }
         
         //configuring advertising data
-        //_adv_data.service_uuid_len = sizeof(_gatts_profile_inst.service_id.id.uuid);
-        //_adv_data.p_service_uuid = (uint8_t *)&_gatts_profile_inst.service_id.id.uuid;
         set_adv_data_ret = esp_ble_gap_config_adv_data(&_adv_data);
         if (set_adv_data_ret) {
             ESP_LOGE(TAG, "set adv data failed, error code = %x", set_adv_data_ret);
         } else {
             ESP_LOGI(TAG, "Advertising data set successfully");
         }
-        //configuring scan response data
-        _scan_rsp_data.service_uuid_len = sizeof(_gatts_profile_inst.service_id.id.uuid);
-        _scan_rsp_data.p_service_uuid = (uint8_t *)&_gatts_profile_inst.service_id.id.uuid;
+        
         esp_ble_gap_config_adv_data(&_scan_rsp_data);
         
         //creating the gatt service
@@ -228,18 +231,18 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         //esp_ble_gatts_get_attr_value(param->add_char.attr_handle, &_gatts_profile_inst.char_value.attr_len, _gatts_profile_inst.char_value.attr_value);
         ESP_LOGI(TAG, "Characteristic value: %s", (char *)_gatts_profile_inst.char_value.attr_value);
         ESP_LOGI(TAG, "Characteristic value length: %d", _gatts_profile_inst.char_value.attr_len);
-        add_char_ret = esp_ble_gatts_add_char(
-            _gatts_profile_inst.service_handle,
-            &_gatts_profile_inst.char_uuid,
-            _gatts_profile_inst.perm,
-            _gatts_profile_inst.property,
-            &_gatts_profile_inst.char_value,
-            NULL
-        ); // No descriptor for now
+        //add_char_ret = esp_ble_gatts_add_char(
+        //    _gatts_profile_inst.service_handle,
+        //    &_gatts_profile_inst.char_uuid,
+        //    _gatts_profile_inst.perm,
+        //    _gatts_profile_inst.property,
+        //    &_gatts_profile_inst.char_value,
+        //    NULL
+        //); // No descriptor for now
         if (add_char_ret) {
             ESP_LOGE(TAG, "Add char failed, error code = %x", add_char_ret);
         } else {
-            ESP_LOGI(TAG, "Characteristic added successfully");
+            ESP_LOGI(TAG, "Adding Characteristic started successfully");
         }
         break;
        
