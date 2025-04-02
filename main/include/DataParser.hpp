@@ -6,41 +6,50 @@
 class DataParser {
 public:
     /**
-     * @brief Constructor for the DataParser class.
+     * @brief Constructs a DataParser instance.
      * 
-     * @param commandHandler Reference to a CommandHandler instance.
+     * @param commandHandler Reference to an external CommandHandler used for command execution.
      */
     explicit DataParser(CommandHandler& commandHandler);
 
     /**
-     * @brief Destructor for the DataParser class.
+     * @brief Default destructor.
      */
     ~DataParser() = default;
 
     /**
-     * @brief Parses the received data and extracts the command.
+     * @brief Parses the input data string to detect and classify command keywords.
      * 
-     * @param data The received data.
-     * @return The extracted command.
+     * The function checks if the string starts with the prefix "CMD" (case-insensitive).
+     * - If followed by a known command (e.g. "RESET"), it returns the corresponding Command enum.
+     * - If followed by the keyword "OTHER", it strips "OTHER" and rewrites the input as a new CMD message
+     *   (e.g. "CMD OTHER something" → "CMD something") and returns NO_COMMAND to indicate forwarding.
+     * - If followed by an unknown command, it returns UNKNOWN.
+     * - If the message does not start with "CMD", it returns NO_COMMAND.
+     * 
+     * @param[in,out] data The incoming message to be parsed. Modified if forwarding is detected.
+     * @return CommandHandler::Command The extracted command classification.
      */
-    CommandHandler::Command parse(const std::string& data) const;
+    CommandHandler::Command parse(std::string& data) const;
 
     /**
-     * @brief Parses the received data and executes the command.
+     * @brief Executes the given command and stores the result in the output string.
      * 
      * @param command The command to execute.
-     * @param data The string return data of the command.
-     * @return True if a command was executed 
+     * @param[out] data String to be populated with the response.
+     * @return true if the command was executed; false if it was NO_COMMAND.
      */
     bool executeCommand(CommandHandler::Command command, std::string& data);
 
     /**
-     * @brief Data parser task function.
+     * @brief Runs a continuous task that receives and processes messages from the parser queue.
      * 
-     * This function runs in a separate thread and continuously receives data from the data parser queue.
-     * It parses the data and executes or sends the message to the UART or BLE queue.
-     *
-     * @param dataParser Pointer to the DataParser instance.
+     * This function is designed to be executed as a FreeRTOS task. It continuously waits for messages
+     * on the `DATA_PARSER_QUEUE`, parses each incoming message, and either:
+     * - Executes the command and returns the result to the source (UART/BLE), or
+     * - Forwards unrecognized "OTHER" messages to the opposite interface.
+     * 
+     * @param msgHandler Pointer to the shared MessageHandler instance.
      */
     void dataParserTask(MessageHandler* msgHandler);
 

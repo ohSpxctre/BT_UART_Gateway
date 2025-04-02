@@ -50,26 +50,46 @@ public:
     using Message = std::array<char, MaxMessageLength>;
 
     /**
+     * @enum ParserMessageID
+     * @brief Enum representing the message IDs for the data parser.
+     */
+    enum class ParserMessageID {
+        MSG_ID_UART,
+        MSG_ID_BLE,
+        OTHER
+    };
+
+    /**
      * @brief Constructor for the MessageHandler class.
      * @param queueSize The size of the message queues. Defaults to DefaultQueueSize.
      */
     MessageHandler(size_t queueSize = DefaultQueueSize);
 
     /**
-     * @brief Sends a message to the specified queue.
-     * @param queueType The type of queue to send the message to.
-     * @param message The message to send.
-     * @return True if the message was successfully sent, false otherwise.
+     * @brief Sends a message to the specified internal message queue.
+     * 
+     * If the target queue is DATA_PARSER_QUEUE, the optional `id` parameter will be attached to the message.
+     * For all other queues, `id` is ignored.
+     * 
+     * @param queueType The type of queue to send to.
+     * @param message The message content.
+     * @param id Optional: only used when queueType is DATA_PARSER_QUEUE.
+     * @return true if the message was sent successfully, false otherwise.
      */
-    bool send(QueueType queueType, const Message& message);
+    bool send(QueueType queueType, const Message& message, ParserMessageID id = ParserMessageID::OTHER);
 
     /**
-     * @brief Receives a message from the specified queue.
-     * @param queueType The type of queue to receive the message from.
-     * @param message Reference to store the received message.
-     * @return True if a message was successfully received, false otherwise.
+     * @brief Receives a message from the specified internal queue.
+     * 
+     * If the message comes from DATA_PARSER_QUEUE and `id` is not null, the message ID will be stored in `id`.
+     * For all other queues, `id` is ignored.
+     * 
+     * @param queueType The type of queue to receive from.
+     * @param message Output parameter to receive the message.
+     * @param id Optional output parameter to retrieve the message ID for DATA_PARSER_QUEUE.
+     * @return true if a message was received successfully, false otherwise.
      */
-    bool receive(QueueType queueType, Message& message);
+    bool receive(QueueType queueType, Message& message, ParserMessageID* id = nullptr);
 
     /**
      * @brief Sets an externally created UART event queue.
@@ -89,18 +109,31 @@ public:
     }
 
 private:
+    /**
+     * @struct ParserMessage
+     * @brief Struct representing a message with an associated ID for the data parser.
+     */
+    struct ParserMessage {
+        ParserMessageID id;
+        Message message;
+    };
+
     /* Shared unique to message queues for different communication types. */
     std::unique_ptr<rtos::MessageQueue<Message>> _uartQueue;
     std::unique_ptr<rtos::MessageQueue<Message>> _bleQueue;
-    std::unique_ptr<rtos::MessageQueue<Message>> _dataParserQueue;
+    std::unique_ptr<rtos::MessageQueue<ParserMessage>> _dataParserQueue;
 
     /* Pointer to the externally created UART event queue. */
     QueueHandle_t _uartEventQueue = nullptr;  // Not owned
 
     /**
-     * @brief Retrieves the message queue corresponding to the specified queue type.
-     * @param queueType The type of queue to retrieve.
-     * @return Reference to the unique pointer of the requested message queue.
+     * @brief Internal helper to retrieve the appropriate message queue.
+     * 
+     * Only supports UART_QUEUE and BLE_QUEUE. For DATA_PARSER_QUEUE,
+     * access is handled separately and not through this method.
+     * 
+     * @param queueType The queue type to retrieve.
+     * @return Reference to the matching message queue.
      */
     std::unique_ptr<rtos::MessageQueue<Message>>& getQueue(QueueType queueType);
 };
