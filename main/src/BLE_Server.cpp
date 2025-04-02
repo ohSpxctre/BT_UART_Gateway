@@ -38,6 +38,9 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
     _scan_rsp_data.service_uuid_len = _gatts_profile_inst.service_id.id.uuid.len;
     _scan_rsp_data.p_service_uuid = (uint8_t *)&_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
 
+    print_adv_data(_adv_data.p_service_data, _adv_data.service_data_len);
+    print_adv_data(_scan_rsp_data.p_service_uuid, _scan_rsp_data.service_uuid_len);
+
     // Initialize NVS (needed for BLE storage)
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -195,6 +198,8 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         
         //configuring advertising data
         ret = esp_ble_gap_config_adv_data(&_adv_data);
+        // Check if the advertising data was set successfully
+        print_adv_data(_adv_data.p_service_data, _adv_data.service_data_len);
         if (ret) {
             ESP_LOGE(TAG_GATTS, "set adv data failed, error code = %x", ret);
         }
@@ -202,6 +207,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         
         //configuring scan response data
         ret = esp_ble_gap_config_adv_data(&_scan_rsp_data);
+        print_adv_data(_scan_rsp_data.p_service_uuid, _scan_rsp_data.service_uuid_len);
         if (ret) {
             ESP_LOGE(TAG_GATTS, "set scan response data failed, error code = %x", ret);
         }
@@ -574,4 +580,13 @@ void BLE_Server::handle_exec_write_event (prepare_type_env_t *prepare_write_env,
  }
 
 
- 
+void BLE_Server::print_adv_data(const uint8_t *adv_data, uint8_t adv_data_len) {
+    char adv_str[3 * adv_data_len + 1]; // Each byte needs 2 chars + space, +1 for null terminator
+    char *ptr = adv_str;
+    
+    for (int i = 0; i < adv_data_len; i++) {
+        ptr += sprintf(ptr, "%02X ", adv_data[i]);
+    }
+    
+    ESP_LOGI("BLE", "Advertisement Data: %s", adv_str);
+}

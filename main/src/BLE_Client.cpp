@@ -102,44 +102,44 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
             
             if (scan_result->scan_rst.search_evt == ESP_GAP_SEARCH_INQ_RES_EVT) {
                 adv_name = esp_ble_resolve_adv_data_by_type(scan_result->scan_rst.ble_adv,
-                    scan_result->scan_rst.adv_data_len + scan_result->scan_rst.scan_rsp_len,
-                    ESP_BLE_AD_TYPE_NAME_CMPL,
-                    &adv_name_len);
-                    ESP_LOGI(TAG_GAP, "Scan result, device "ESP_BD_ADDR_STR", name len %d", ESP_BD_ADDR_HEX(scan_result->scan_rst.bda), adv_name_len);
-                    ESP_LOG_BUFFER_CHAR(TAG_GAP, adv_name, adv_name_len);
+                                                            scan_result->scan_rst.adv_data_len + scan_result->scan_rst.scan_rsp_len,
+                                                            ESP_BLE_AD_TYPE_NAME_CMPL,
+                                                            &adv_name_len);
+                ESP_LOGI(TAG_GAP, "Scan result, device "ESP_BD_ADDR_STR", name len %d", ESP_BD_ADDR_HEX(scan_result->scan_rst.bda), adv_name_len);
+                ESP_LOG_BUFFER_CHAR(TAG_GAP, adv_name, adv_name_len);
 
-                    // Check if adv data and scan resp data are present and log them
-                    if (scan_result->scan_rst.adv_data_len > 0) {
-                        ESP_LOGI(TAG_GAP, "adv data:");
-                        ESP_LOG_BUFFER_HEX(TAG_GAP, &scan_result->scan_rst.ble_adv[0], scan_result->scan_rst.adv_data_len);
-                    }
-                    if (scan_result->scan_rst.scan_rsp_len > 0) {
-                        ESP_LOGI(TAG_GAP, "scan resp:");
-                        ESP_LOG_BUFFER_HEX(TAG_GAP, &scan_result->scan_rst.ble_adv[scan_result->scan_rst.adv_data_len], scan_result->scan_rst.scan_rsp_len);
-                    }
+                // Check if adv data and scan resp data are present and log them
+                if (scan_result->scan_rst.adv_data_len > 0) {
+                    ESP_LOGI(TAG_GAP, "adv data:");
+                    ESP_LOG_BUFFER_HEX(TAG_GAP, &scan_result->scan_rst.ble_adv[0], scan_result->scan_rst.adv_data_len);
+                }
+                if (scan_result->scan_rst.scan_rsp_len > 0) {
+                    ESP_LOGI(TAG_GAP, "scan resp:");
+                    ESP_LOG_BUFFER_HEX(TAG_GAP, &scan_result->scan_rst.ble_adv[scan_result->scan_rst.adv_data_len], scan_result->scan_rst.scan_rsp_len);
+                }
 
-                    if (adv_name != NULL) {
-                        ESP_LOGI(TAG_GAP, "Device name: %.*s", adv_name_len, adv_name);
-                    } else {
-                        ESP_LOGI(TAG_GAP, "Device name not found in advertisement data");
-                    }
+                if (adv_name != NULL) {
+                    ESP_LOGI(TAG_GAP, "Device name: %.*s", adv_name_len, adv_name);
+                } else {
+                    ESP_LOGI(TAG_GAP, "Device name not found in advertisement data");
+                }
 
-                    if (strlen(DEVICE_NAME_SERVER) == adv_name_len && strncmp((char *)adv_name, DEVICE_NAME_SERVER, adv_name_len) == 0) {
-                        ESP_LOGI(TAG_GAP, "Device found %s", DEVICE_NAME_SERVER);
-                        if (_is_connected == false) {
-                            _is_connected = true;
-                            ESP_LOGI(TAG_GAP, "Connect to the remote device");
-                            esp_ble_gap_stop_scanning();
-                            memcpy(&creat_conn_params.remote_bda, scan_result->scan_rst.bda, ESP_BD_ADDR_LEN);
-                            creat_conn_params.remote_addr_type = scan_result->scan_rst.ble_addr_type;
-                            creat_conn_params.own_addr_type = BLE_ADDR_TYPE_PUBLIC;
-                            creat_conn_params.is_direct = true;
-                            creat_conn_params.is_aux = false;
-                            creat_conn_params.phy_mask = 0x0;
-                            esp_ble_gattc_enh_open(_gattc_profile_inst.gattc_if,
-                                &creat_conn_params);
-                        }                  
-                    }
+                if (strlen(DEVICE_NAME_SERVER) == adv_name_len && strncmp((char *)adv_name, DEVICE_NAME_SERVER, adv_name_len) == 0) {
+                    ESP_LOGI(TAG_GAP, "Device found %s", DEVICE_NAME_SERVER);
+                    if (_is_connected == false) {
+                        _is_connected = true;
+                        ESP_LOGI(TAG_GAP, "Connect to the remote device");
+                        esp_ble_gap_stop_scanning();
+                        memcpy(&creat_conn_params.remote_bda, scan_result->scan_rst.bda, ESP_BD_ADDR_LEN);
+                        creat_conn_params.remote_addr_type = scan_result->scan_rst.ble_addr_type;
+                        creat_conn_params.own_addr_type = BLE_ADDR_TYPE_PUBLIC;
+                        creat_conn_params.is_direct = true;
+                        creat_conn_params.is_aux = false;
+                        creat_conn_params.phy_mask = 0x0;
+                        esp_ble_gattc_enh_open(_gattc_profile_inst.gattc_if,
+                            &creat_conn_params);
+                    }                  
+                }
             }
             //ke plan wieso das gmacht wird
            //else if (scan_result->scan_rst.search_evt == ESP_GAP_SEARCH_INQ_CMPL_EVT) {}

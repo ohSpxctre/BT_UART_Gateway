@@ -50,7 +50,7 @@ constexpr esp_ble_adv_params_t ADV_PARAMS_DEFAULT = {
 constexpr esp_ble_adv_data_t ADV_DATA_DEFAULT = {
   .set_scan_rsp = false,
   .include_name = true,
-  .include_txpower = true,
+  .include_txpower = false,
   .min_interval = 0x190, //slave connection min interval, Time = min_interval * 1.25 msec
   .max_interval = 0x320, //slave connection max interval, Time = max_interval * 1.25 msec
   .appearance = 0x00,
@@ -68,7 +68,7 @@ constexpr esp_ble_adv_data_t ADV_DATA_DEFAULT = {
 constexpr esp_ble_adv_data_t SCAN_RSP_DATA_DEFAULT = {
   .set_scan_rsp = true,
   .include_name = true,
-  .include_txpower = true,
+  .include_txpower = false,
   .min_interval = 0x190, //slave connection min interval, Time = min_interval * 1.25 msec
   .max_interval = 0x320, //slave connection max interval, Time = max_interval * 1.25 msec
   .appearance = 0x00,
@@ -164,6 +164,8 @@ private:
 
   void handle_write_event (esp_gatt_if_t gatts_if, prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param);
   void handle_exec_write_event (prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param);
+
+  void print_adv_data(const uint8_t *adv_data, uint8_t adv_data_len);
 
 public:
     BLE_Server( esp_ble_adv_params_t adv_params = ADV_PARAMS_DEFAULT,
