@@ -95,8 +95,15 @@ struct gatts_profile_inst {
   esp_gatt_perm_t perm;
   esp_gatt_char_prop_t property;
   uint16_t descr_handle;
+  uint16_t descr_value;
   esp_bt_uuid_t descr_uuid;
+  uint16_t local_mtu;
 };
+
+typedef struct {
+  uint8_t *prepare_buf;
+  uint16_t prepare_len;
+} prepare_type_env_t;
 
 /**
 * @class BLE_Server
@@ -121,7 +128,9 @@ private:
     .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
     .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE,
     .descr_handle = 0,
+    .descr_value = 0,
     .descr_uuid = DESCR_UUID_DEFAULT,
+    .local_mtu = MTU_DEFAULT,
   };
 
   esp_ble_adv_params_t _adv_params;
@@ -140,6 +149,11 @@ private:
     .attr_len = sizeof(_char_value_buffer),
     .attr_value = _char_value_buffer
   };
+
+  prepare_type_env_t _prepare_write_env = {
+    .prepare_buf = NULL,
+    .prepare_len = 0,
+  };
   
 
   static void gatts_event_handler (esp_gatts_cb_event_t, esp_gatt_if_t, esp_ble_gatts_cb_param_t *);
@@ -147,6 +161,9 @@ private:
 
   void handle_event_gatts(esp_gatts_cb_event_t, esp_gatt_if_t, esp_ble_gatts_cb_param_t *);
   void handle_event_gap(esp_gap_ble_cb_event_t, esp_ble_gap_cb_param_t *);
+
+  void handle_write_event (esp_gatt_if_t gatts_if, prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param);
+  void handle_exec_write_event (prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param);
 
 public:
     BLE_Server( esp_ble_adv_params_t adv_params = ADV_PARAMS_DEFAULT,

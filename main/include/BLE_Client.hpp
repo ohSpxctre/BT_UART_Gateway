@@ -12,6 +12,10 @@
 
  constexpr esp_bt_uuid_t REMOTE_FILTER_CHAR_UUID = CHAR_UUID_DEFAULT;
 
+ constexpr esp_bt_uuid_t REMOTE_DESCR_UUID_DEFAULT = DESCR_UUID_DEFAULT;
+
+ constexpr uint32_t SCAN_DURATION = 30; // seconds
+
 
  constexpr esp_ble_scan_params_t BLE_SCAN_PARAMS_DEFAULT = {
     .scan_type              = BLE_SCAN_TYPE_ACTIVE,
@@ -19,7 +23,7 @@
     .scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL,
     .scan_interval          = 0x50,
     .scan_window            = 0x30,
-    .scan_duplicate         = BLE_SCAN_DUPLICATE_DISABLE
+    .scan_duplicate         = BLE_SCAN_DUPLICATE_ENABLE
 };
 
  struct gattc_profile_inst {
@@ -31,6 +35,7 @@
     uint16_t service_end_handle;
     uint16_t char_handle;
     esp_bd_addr_t remote_bda;
+    uint16_t local_mtu;
 };
 
  /**
@@ -50,18 +55,21 @@
         .service_start_handle = 0,
         .service_end_handle = 0,
         .char_handle = 0,
-        .remote_bda = {0}
+        .remote_bda = {0},
+        .local_mtu = MTU_DEFAULT,
     };
 
     esp_ble_scan_params_t _scan_params;
     esp_bt_uuid_t _remote_service_uuid;
     esp_bt_uuid_t _remote_char_uuid;
+    esp_bt_uuid_t _remote_descr_uuid;
+
+    uint8_t _char_send_buffer[ESP_GATT_MAX_ATTR_LEN] = {"Hello from ESP32 BLE Client"};
  
     bool _is_connected = false;
-    bool _is_scanning = false;
-    bool _is_service_found = false;
-    bool _is_char_found = false;
-    bool _is_char_desc_found = false;
+
+    bool _get_server = false;
+  
 
     static void gattc_event_handler(esp_gattc_cb_event_t, esp_gatt_if_t, esp_ble_gattc_cb_param_t *);
     static void gap_event_handler(esp_gap_ble_cb_event_t, esp_ble_gap_cb_param_t *);
@@ -72,7 +80,8 @@
  public:
      BLE_Client(esp_ble_scan_params_t scan_params = BLE_SCAN_PARAMS_DEFAULT,
                 esp_bt_uuid_t remote_service_uuid = REMOTE_FILTER_SERVICE_UUID,
-                esp_bt_uuid_t remote_char_uuid = REMOTE_FILTER_CHAR_UUID
+                esp_bt_uuid_t remote_char_uuid = REMOTE_FILTER_CHAR_UUID,
+                esp_bt_uuid_t remote_descr_uuid = REMOTE_DESCR_UUID_DEFAULT
      );
      
      ~BLE_Client();

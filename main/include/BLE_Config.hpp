@@ -4,7 +4,8 @@
 
 #include "Bluetooth.hpp"
 
-constexpr const char* TAG = "BLE_Server";
+constexpr const char* TAG_SERVER = "BLE_Server";
+constexpr const char* TAG_CLIENT = "BLE_Client";
 constexpr const char* TAG_GAP = "GAP";
 constexpr const char* TAG_GATTS = "GATT";
 
@@ -16,6 +17,7 @@ constexpr uint16_t PROFILE_NUM = 1;
 constexpr uint8_t SERVICE_INST_ID = 0;
 constexpr uint16_t CHAR_INST_ID = 0;
 
+constexpr uint16_t MTU_DEFAULT = 23; // Default MTU size
 
 constexpr esp_bt_uuid_t CHAR_UUID_DEFAULT = {
   .len = ESP_UUID_LEN_128,
