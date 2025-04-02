@@ -29,7 +29,7 @@ namespace uart {
  */
 
 /* Defines the size of the UART ring buffer */
-constexpr int UART_BUFFER_SIZE = 1024;
+constexpr unsigned int UART_BUFFER_SIZE = 256;
 /* Defines the maximum number of events that can be held in the event queue */
 constexpr int EVENT_QUEUE_SIZE = 10;
 constexpr uart_config_t DEFAULT_CONFIG = {

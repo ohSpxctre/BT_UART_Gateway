@@ -51,6 +51,7 @@ std::string CommandHandler::processCommand(Command cmd) {
             break;
         }
         case Command::RESET: {
+            result = "System is restarting...\n";
             esp_restart();
             break;
         }
@@ -79,8 +80,6 @@ std::string CommandHandler::getChipInfo() const {
         case CHIP_ESP32P4: model = "ESP32-P4"; break;
         case CHIP_ESP32C61: model = "ESP32-C61"; break;
         case CHIP_ESP32C5: model = "ESP32-C5"; break;
-        case CHIP_ESP32H21: model = "ESP32-H21"; break;
-        case CHIP_ESP32H4: model = "ESP32-H4"; break;
         case CHIP_POSIX_LINUX: model = "POSIX/Linux Simulator"; break;
         default: model = "Unknown"; break;
     }
@@ -95,7 +94,7 @@ std::string CommandHandler::getChipInfo() const {
         << ((chip_info.features & CHIP_FEATURE_EMB_PSRAM) ? "Embedded PSRAM " : "")
         << "\n"
         << "Revision: " << chip_info.revision << "\n"
-        << "Cores: " << chip_info.cores;
+        << "Cores: " << chip_info.cores << "\n";
     return oss.str();
 }
 
@@ -105,19 +104,19 @@ std::string CommandHandler::getIdfVersion() const {
 
 std::string CommandHandler::getFreeHeap() const {
     std::ostringstream oss;
-    oss << "Free heap size: " << esp_get_free_heap_size() << " bytes";
+    oss << "Free heap size: " << esp_get_free_heap_size() << " bytes" << "\n";
     return oss.str();
 }
 
 std::string CommandHandler::getFreeInternalHeap() const {
     std::ostringstream oss;
-    oss << "Free internal heap size: " << esp_get_free_internal_heap_size() << " bytes";
+    oss << "Free internal heap size: " << esp_get_free_internal_heap_size() << " bytes" << "\n";
     return oss.str();
 }
 
 std::string CommandHandler::getFreeMinHeap() const {
     std::ostringstream oss;
-    oss << "Minimum free heap size: " << esp_get_minimum_free_heap_size() << " bytes";
+    oss << "Minimum free heap size: " << esp_get_minimum_free_heap_size() << " bytes" << "\n";
     return oss.str();
 }
 
@@ -126,6 +125,6 @@ std::string CommandHandler::getClockSpeed() const {
     esp_clk_tree_src_get_freq_hz(SOC_MOD_CLK_CPU, ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED, &cpu_freq);
 
     std::ostringstream oss;
-    oss << "CPU clock speed: " << (cpu_freq / 1000000) << " MHz";
+    oss << "CPU clock speed: " << (cpu_freq / 1000000) << " MHz" << "\n";
     return oss.str();
 }
