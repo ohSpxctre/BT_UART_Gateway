@@ -1,5 +1,19 @@
+/**
+ * @file DataParser.cpp
+ * @brief Implementation of the DataParser class.
+ * 
+ * This file provides the logic to parse command messages, determine command types,
+ * and execute them via the CommandHandler interface. It also includes the parser task,
+ * which handles incoming messages from the MessageHandler's data parser queue.
+ * 
+ * The class supports forwarding via the "CMD OTHER ..." format and performs command
+ * execution or rerouting depending on the command type and origin.
+ * 
+ * @author meths1
+ * @date 02.04.2025
+ */
+
 #include "DataParser.hpp"
-#include "utils.hpp"
 #include "esp_log.h"
 #include <algorithm> // For std::transform
 
@@ -29,9 +43,7 @@ CommandHandler::Command DataParser::parse(std::string& data) const {
         // Handle forwarding via "OTHER"
         if (keyword == "OTHER") {
             data = "CMD" + remaining;
-            size_t firstContent = data.find_first_not_of(" \t", 3);
-            data = "CMD" + (firstContent != std::string::npos ? data.substr(firstContent) : "");
-            return CommandHandler::Command::NO_COMMAND;
+            return CommandHandler::Command::OTHER;
         }
 
         // Match known commands
@@ -66,12 +78,14 @@ void DataParser::dataParserTask(MessageHandler* msgHandler) {
     MessageHandler::ParserMessageID messageID;
     std::string cmdResponse;
     MessageHandler::Message responseMessage;
+    // Clear the message buffer
+    std::fill(message.begin(), message.end(), '\0');
     // Wait for a message from the DATA_PARSER_QUEUE
     if (msgHandler->receive(MessageHandler::QueueType::DATA_PARSER_QUEUE, message, &messageID)) {
         std::string data(message.data());
         CommandHandler::Command command = parse(data);
         // If a command is found, execute it
-        if (command != CommandHandler::Command::NO_COMMAND) {
+        if (command != CommandHandler::Command::NO_COMMAND && command != CommandHandler::Command::OTHER) {
             // Execute the command and get the response
             cmdResponse.clear();
             executeCommand(command, cmdResponse);
@@ -80,20 +94,27 @@ void DataParser::dataParserTask(MessageHandler* msgHandler) {
             std::copy(cmdResponse.begin(), cmdResponse.end(), responseMessage.begin());
             switch (messageID) {
                 case MessageHandler::ParserMessageID::MSG_ID_UART:
-                msgHandler->send(MessageHandler::QueueType::UART_QUEUE, responseMessage);
+                    msgHandler->send(MessageHandler::QueueType::UART_QUEUE, responseMessage);
                     break;
                 case MessageHandler::ParserMessageID::MSG_ID_BLE:
-                msgHandler->send(MessageHandler::QueueType::BLE_QUEUE, responseMessage);
+                    msgHandler->send(MessageHandler::QueueType::BLE_QUEUE, responseMessage);
                     break;
                 default:
                     ESP_LOGW(TAG, "Unknown message ID");
                     return;
             }
-        } else {
+        } 
+        else if (command == CommandHandler::Command::OTHER) {
+            // Forward the parsed data to the BLE queue
+            std::fill(responseMessage.begin(), responseMessage.end(), '\0');
+            std::copy(data.begin(), data.end(), responseMessage.begin());
+            msgHandler->send(MessageHandler::QueueType::BLE_QUEUE, responseMessage);            
+        }
+        else {
             // Forward the message to the UART or BLE queue
             switch (messageID) {
                 case MessageHandler::ParserMessageID::MSG_ID_UART:
-                msgHandler->send(MessageHandler::QueueType::BLE_QUEUE, message);
+                    msgHandler->send(MessageHandler::QueueType::BLE_QUEUE, message);
                     break;
                 case MessageHandler::ParserMessageID::MSG_ID_BLE:
                     msgHandler->send(MessageHandler::QueueType::UART_QUEUE, message);

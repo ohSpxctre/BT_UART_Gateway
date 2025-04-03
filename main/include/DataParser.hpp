@@ -1,3 +1,27 @@
+/**
+ * @file DataParser.hpp
+ * @brief Declaration of the DataParser class for parsing and executing commands.
+ * 
+ * The DataParser class is responsible for analyzing incoming messages,
+ * detecting known commands prefixed by "CMD", executing them through the
+ * CommandHandler interface, or forwarding them appropriately to another system.
+ * 
+ * Usage:
+ * - Construct with a reference to a CommandHandler instance.
+ * - Call `parse()` to extract and identify commands.
+ * - Use `executeCommand()` to handle valid commands.
+ * - Run `dataParserTask()` inside a FreeRTOS task to continuously process messages.
+ * 
+ * Command structure:
+ * - Recognized commands: prefixed with "CMD", e.g., "CMD CHIP_INFO"
+ * - Forwarding: "CMD OTHER <command>" is forwarded as "CMD <command>"
+ * 
+ * @note Designed for use with ESP-IDF and FreeRTOS.
+ * 
+ * @author meths1
+ * @date 02.04.2025
+ */
+
 #pragma once
 
 #include "CommandHandler.hpp"
