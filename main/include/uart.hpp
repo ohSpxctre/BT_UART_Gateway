@@ -1,26 +1,31 @@
 /**
  * @file uart.hpp
- * @brief Header file for UART communication class.
+ * @brief Declaration of the Uart class for managing UART communication on the ESP32-C6.
  * 
- * This file contains the declaration of the Uart class, which provides methods
- * for initializing, sending, and receiving data over UART.
+ * This class wraps the ESP-IDF UART driver and provides a simplified interface for
+ * asynchronous communication, including features like automatic newline expansion and
+ * task-based send/receive handling integrated with message queues.
  * 
- * The Uart class encapsulates the UART configuration, port, and GPIO pins for
- * TX and RX. It provides methods to initialize the UART with a given event queue,
- * send data, and receive data.
+ * Usage:
+ * - Call `init()` to initialize the UART driver and bind a FreeRTOS event queue.
+ * - Use `send()` to transmit data. Enable newline expansion via `setNewlineExpansion(true)`.
+ * - Use `receive()` or `receiveTask()` to get input from UART and push it to the parser queue.
  * 
- * The default UART configuration, port, and GPIO pins are defined as constants.
- * 
- * @note This class is designed to work with the ESP-IDF framework.
+ * @note Integrates with MessageHandler to send/receive application-level messages.
+ * @note Designed to be used with tasks in a FreeRTOS environment.
+ * @note Supports interactive input (e.g., echo + backspace) for terminal usability.
  * 
  * @author meths1
  * @date 21.03.2025
  */
 
+
 #pragma once
 
 #include "driver/uart.h"
 #include "driver/gpio.h"
+
+#include "MessageHandler.hpp"
 
 namespace uart {
 
@@ -32,6 +37,9 @@ namespace uart {
 constexpr unsigned int UART_BUFFER_SIZE = 256;
 /* Defines the maximum number of events that can be held in the event queue */
 constexpr int EVENT_QUEUE_SIZE = 10;
+constexpr uart_port_t DEFAULT_PORT = UART_NUM_0;
+constexpr gpio_num_t DEFAULT_TX_PIN = GPIO_NUM_16;
+constexpr gpio_num_t DEFAULT_RX_PIN = GPIO_NUM_17;
 constexpr uart_config_t DEFAULT_CONFIG = {
     .baud_rate = 115200,
     .data_bits = UART_DATA_8_BITS,
@@ -42,9 +50,8 @@ constexpr uart_config_t DEFAULT_CONFIG = {
     .source_clk = UART_SCLK_DEFAULT,
     .flags = {allow_pd: false, backup_before_sleep: false}
 };
-constexpr uart_port_t DEFAULT_PORT = UART_NUM_0;
-constexpr gpio_num_t DEFAULT_TX_PIN = GPIO_NUM_16;
-constexpr gpio_num_t DEFAULT_RX_PIN = GPIO_NUM_17;
+
+
 
 /**
  * @brief UART class for handling UART communication.
@@ -68,39 +75,65 @@ public:
     ~Uart();
 
     /**
-     * @brief Initialize the UART with the given queue.
-     * 
-     * @param uart_queue Pointer to the UART event queue handle.
+     * @brief Initializes the UART interface and installs the driver.
+     *
+     * @param uart_queue Pointer to a queue handle for receiving UART events.
      */
     void init(QueueHandle_t* uart_queue);
 
     /**
-     * @brief Send data over UART with optional \r\n expansion.
+     * @brief Task function to transmit data from a queue to UART.
      *
-     * Appends '\n' after '\r' if CRLF expansion is enabled. Otherwise, sends raw data.
+     * This task continuously reads messages from the UART_QUEUE and writes them to UART.
+     * Meant to be run inside a FreeRTOS task.
      *
-     * @param data Pointer to data.
-     * @param len  Length of data in bytes.
-     * @return Total bytes written to UART.
+     * @param msgHandler Pointer to MessageHandler used to access the queue.
+     */
+    void sendTask(MessageHandler* msgHandler);
+
+    /**
+     * @brief Task function to read characters from UART and buffer input.
+     *
+     * Reads character-by-character until a newline (`\n`) or carriage return (`\r`) is received.
+     * Handles backspace correctly by editing the input buffer and updating terminal output.
+     * Forwards the final message to the DATA_PARSER_QUEUE for parsing.
+     *
+     * @param msgHandler Pointer to MessageHandler used to enqueue parsed messages.
+     */
+    void receiveTask(MessageHandler* msgHandler);
+
+    /**
+     * @brief Send raw data over UART.
+     *
+     * If newline expansion is enabled, '\r' will be followed by '\n'.
+     *
+     * @param data Pointer to the data to be sent.
+     * @param len Length of the data.
+     * @return Number of bytes written, or -1 on error.
      */
     int send(const char *data, size_t len);
 
-    /**
-     * @brief Receive data from UART through the event handler.
-     * 
-     * @param data Pointer to the buffer where received data will be stored.
+     /**
+     * @brief Receive data from UART event.
+     *
+     * Waits for UART_RX event and returns the received bytes.
+     *
+     * @param data Buffer to store received data.
      * @return Number of bytes received.
      */
     size_t receive(char *data);
     
     /**
-     * @brief Enable or disable automatic \r\n expansion.
+     * @brief Enable or disable newline expansion for UART output.
      *
-     * When enabled, '\r' is followed by '\n' during send() for terminal compatibility.
+     * When enabled, each '\r' is followed by '\n' for proper terminal formatting.
      *
-     * @param enable True to enable CRLF expansion, false to send raw data.
+     * @param enable True to enable, false to disable.
      */
     void setNewlineExpansion(bool enable);
+    
+
+    
 
 private:
     uart_port_t _port;              // UART port number.
@@ -113,9 +146,9 @@ private:
     bool _expandNewline = true;     // Flag to enable/disable CRLF expansion.
 
     /**
-     * @brief Handle UART events and process received data.
-     * 
-     * @param data Pointer to the buffer where received data will be stored.
+     * @brief Internal UART event handler that reads data on RX events.
+     *
+     * @param data Buffer to store received characters.
      * @return Number of bytes received.
      */
     size_t uart_event_handler(char* data);

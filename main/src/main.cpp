@@ -35,52 +35,21 @@ esp_pthread_cfg_t create_config(const char *name, int stack, int prio)
 
 void uartReceiveTest_task()
 {
-    // Buffer to store the received data
-    char data[uart::UART_BUFFER_SIZE];
-
-    while (true)
-    {
-        // Buffer the received data till a carriage return or newline is received
-        int bytesReceived = 0;
-        bool isEndOfLine = false;
-        // Read data from the UART interface
-        while (!isEndOfLine && bytesReceived < uart::UART_BUFFER_SIZE - 1) {
-            bytesReceived += uart0.receive(data + bytesReceived);
-            // Re-send the received data back to the sender
-            uart0.send(data + bytesReceived - 1, 1);
-            // Check if the last character is a carriage return or newline
-            if (data[bytesReceived - 1] == '\r' || data[bytesReceived - 1] == '\n') {
-                isEndOfLine = true;
-            }
-        }           
-
-        MessageHandler::Message message;
-        std::copy(data, data + bytesReceived, message.begin());
-        msgHandler.send(MessageHandler::QueueType::DATA_PARSER_QUEUE, message, MessageHandler::ParserMessageID::MSG_ID_UART);
-
-        // Log the received data
-        ESP_LOGI(pcTaskGetName(nullptr), "Received data: %s", data);
-
-        
+    while (true) {
+        uart0.receiveTask(&msgHandler);
     }
-    
 }
+
 
 void uartSendTest_task(){
     // Get message from the UART queue and send it to the UART interface
-    MessageHandler::Message message;
     while (true) {
-        if (msgHandler.receive(MessageHandler::QueueType::UART_QUEUE, message)) {
-            uart0.send(message.data(), message.size());
-            ESP_LOGI(pcTaskGetName(nullptr), "Sent data: %s", message.data());
-        } else {
-            ESP_LOGW(pcTaskGetName(nullptr), "Failed to receive message from UART_QUEUE");
-        }
+        uart0.sendTask(&msgHandler);
     }
 }
 
 void dataParserTestTask() {
-    while(true){
+    while(true) {
         dataParser.dataParserTask(&msgHandler);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }

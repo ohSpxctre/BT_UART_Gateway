@@ -1,15 +1,20 @@
 /**
  * @file uart.cpp
- * @brief Implementation file for UART communication class.
+ * @brief Implementation of the Uart class for UART communication on ESP32-C6.
  * 
- * This file contains the implementation of the Uart class, which provides methods
- * for initializing, sending, and receiving data over UART.
+ * This file defines the logic for the UART driver wrapper used in the application,
+ * including initialization, sending, and receiving data via FreeRTOS queues.
+ * It supports backspace handling, newline expansion, and buffering of UART data
+ * for further parsing or forwarding.
  * 
- * @note This class is designed to work with the ESP-IDF framework.
+ * @note This implementation is designed for use with the ESP-IDF framework.
+ * @note The class supports optional expansion of `\r`/`\n` to `\r\n` sequences to ensure terminal compatibility.
+ * @note The receive task echoes characters and supports backspace processing for interactive input.
  * 
  * @author meths1
  * @date 21.03.2025
  */
+
 
 #include "uart.hpp"
 
@@ -47,6 +52,74 @@ void Uart::init(QueueHandle_t* uart_queue)
     ESP_ERROR_CHECK(uart_driver_install(_port, 2 * UART_BUFFER_SIZE, 2 * UART_BUFFER_SIZE, EVENT_QUEUE_SIZE, _uart_queue, 0)); 
 }
 
+void Uart::sendTask(MessageHandler* msgHandler)
+{
+    // Get message from the UART queue and send it to the UART interface
+    MessageHandler::Message message;
+
+    if (msgHandler->receive(MessageHandler::QueueType::UART_QUEUE, message)) {
+        this->send(message.data(), message.size());
+        ESP_LOGI(TAG, "Sent data: %s", message.data());
+    } else {
+        ESP_LOGW(TAG, "Failed to receive message from UART_QUEUE");
+    }
+}
+
+/**
+ * @brief Reads user input from UART, handling special characters like backspace,
+ *        and sends complete messages to the data parser.
+ * 
+ * This function echoes characters as they arrive, supports editing via backspace,
+ * and detects end-of-line sequences (`\r` or `\n`) to terminate the input.
+ */
+
+void Uart::receiveTask(MessageHandler* msgHandler)
+{
+    char data[uart::UART_BUFFER_SIZE];
+    MessageHandler::Message message;
+    
+    int bytesReceived = 0;
+    bool isEndOfLine = false;
+
+    // Clear the message buffer
+    std::fill(data, data + uart::UART_BUFFER_SIZE, '\0');
+    std::fill(message.begin(), message.end(), '\0');
+
+    while (!isEndOfLine && bytesReceived < uart::UART_BUFFER_SIZE - 1) {
+        int received = this->receive(data + bytesReceived);
+        for (int i = 0; i < received; ++i) {
+            char ch = data[bytesReceived + i];
+
+            // Handle backspace or delete key
+            if (ch == '\b' || ch == 0x7F) {
+                if (bytesReceived > 0) {
+                    bytesReceived--;
+                    this->send("\b \b", 3);
+                }
+                continue;
+            }
+
+            // Echo back each character (local terminal-style interaction)
+            this->send(&ch, 1);
+
+            // Store character
+            data[bytesReceived++] = ch;
+
+            // Check for newline or carriage return
+            if (ch == '\r' || ch == '\n') {
+                isEndOfLine = true;
+                break; // Skip rest of received buffer
+            }
+        }
+    }
+
+    std::copy(data, data + bytesReceived, message.begin());
+    msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, message, MessageHandler::ParserMessageID::MSG_ID_UART);
+
+    ESP_LOGI(pcTaskGetName(nullptr), "Received data: %s", data);
+    
+}
+
 int Uart::send(const char* data, size_t len)
 {
     size_t txPos = 0;
@@ -54,22 +127,28 @@ int Uart::send(const char* data, size_t len)
 
     if (_expandNewline) {
         for (size_t i = 0; i < len; ++i) {
-            _txBuf[txPos++] = data[i];
+            char ch = data[i];
 
-            if (data[i] == '\r') {
-                if (txPos < TX_BUF_SIZE) {
+            if (ch == '\r') {
+                _txBuf[txPos++] = '\r';
+                // Check if next char is '\n' — keep it as-is
+                if ((i + 1 < len) && data[i + 1] == '\n') {
                     _txBuf[txPos++] = '\n';
+                    ++i; // Skip the '\n'
                 } else {
-                    int written = uart_write_bytes(_port, _txBuf, txPos);
-                    if (written < 0) return -1;
-                    totalWritten += written;
-
-                    _txBuf[0] = '\n';
-                    txPos = 1;
+                    _txBuf[txPos++] = '\n';
                 }
             }
+            else if (ch == '\n') {
+                // Lone \n, convert to \r\n
+                _txBuf[txPos++] = '\r';
+                _txBuf[txPos++] = '\n';
+            }
+            else {
+                _txBuf[txPos++] = ch;
+            }
 
-            if (txPos >= TX_BUF_SIZE - 1) {
+            if (txPos >= TX_BUF_SIZE - 2) {
                 int written = uart_write_bytes(_port, _txBuf, txPos);
                 if (written < 0) return -1;
                 totalWritten += written;
@@ -82,8 +161,7 @@ int Uart::send(const char* data, size_t len)
             if (written < 0) return -1;
             totalWritten += written;
         }
-    } 
-    else {
+    } else {
         totalWritten = uart_write_bytes(_port, data, len);
     }
 
