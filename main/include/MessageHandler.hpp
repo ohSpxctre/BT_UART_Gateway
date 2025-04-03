@@ -1,16 +1,18 @@
 /**
  * @file MessageHandler.hpp
- * @brief Header file for the MessageHandler class.
+ * @brief Declaration of the MessageHandler class for managing message queues between components.
  * 
- * This file contains the declaration of the MessageHandler class, which is
- * responsible for managing message queues for different communication types,
- * such as UART, BLE, and data parsing.
+ * The MessageHandler class encapsulates multiple FreeRTOS queues used for communication
+ * between components like UART, BLE, and data parsing. It allows categorized message routing
+ * and supports metadata (ParserMessageID) for identifying message sources.
  * 
- * The MessageHandler class provides methods to send and receive messages
- * from specific queues, as well as to set and retrieve an externally created
- * UART event queue. It uses the FreeRTOS Cpp wrapper for message queues.
+ * Usage:
+ * - Use `send()` to place messages into categorized queues.
+ * - Use `receive()` to extract messages from them.
+ * - Set the externally created UART event queue using `setUartEventQueue()`.
  * 
- * @note This class is designed to work with the ESP-IDF framework and FreeRTOS.
+ * @note Only the DATA_PARSER_QUEUE supports and uses the optional `ParserMessageID`.
+ * @note class is designed to be thread-safe and RTOS-compatible.
  * 
  * @author meths1
  * @date 29.03.2025

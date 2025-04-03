@@ -1,3 +1,18 @@
+/**
+ * @file MessageHandler.cpp
+ * @brief Implementation of the MessageHandler class.
+ * 
+ * This file contains the logic for managing multiple categorized FreeRTOS queues.
+ * It enables sending and receiving messages tagged by source and destination type,
+ * and handles routing between UART, BLE, and the parser system.
+ * 
+ * For the DATA_PARSER_QUEUE, a special message structure is used to include an ID
+ * indicating the message's origin, allowing for bi-directional routing after parsing.
+ * 
+ * @author meths1
+ * @date 01.04.2025
+ */
+
 #include "MessageHandler.hpp"
 #include "esp_log.h"
 
@@ -30,6 +45,8 @@ bool MessageHandler::send(QueueType queueType, const Message& message, ParserMes
 
 
 bool MessageHandler::receive(QueueType queueType, Message& message, ParserMessageID* id) {
+    // Clear the message buffer
+    std::fill(message.begin(), message.end(), '\0');
     if (queueType == QueueType::DATA_PARSER_QUEUE) {
         if (!_dataParserQueue) {
             ESP_LOGW(TAG, "Receive failed: parser queue not initialized");
