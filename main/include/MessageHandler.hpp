@@ -105,7 +105,7 @@ public:
      * @brief Gets the BLE event queue.
      * @return Pointer to the BLE event queue.
      */
-    QueueHandle_t* getUartEventQueue() {
+    QueueHandle_t* getBleEventQueue() {
         return &_bleEventQueue;
     }
 

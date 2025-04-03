@@ -1,8 +1,5 @@
 #include <thread>
 #include <chrono>
-#include <iostream>
-#include <string>
-#include <sstream>
 #include <esp_pthread.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -12,16 +9,11 @@
 #include "MessageHandler.hpp"
 #include "DataParser.hpp"
 #include "CommandHandler.hpp"
+#include "Bluetooth.hpp"
+#include "BLE_Client.hpp"
+#include "BLE_Server.hpp"
 
-// Create a MessageHandler instance
-MessageHandler msgHandler;
-
-// Create a CommandHandler and DataParser instance
-CommandHandler cmdHandler;
-DataParser dataParser(cmdHandler);
-
-// Create a UART instance
-uart::Uart uart0;
+#define BLE_SERVER 0
 
 esp_pthread_cfg_t create_config(const char *name, int stack, int prio)
 {
@@ -33,55 +25,94 @@ esp_pthread_cfg_t create_config(const char *name, int stack, int prio)
     return cfg;
 }
 
-void uartReceiveTest_task()
+void uartReceiveTask(Uart &uartX, MessageHandler &msgHandler)
 {
     while (true) {
-        uart0.receiveTask(&msgHandler);
+        uartX.receiveTask(&msgHandler);
     }
 }
 
 
-void uartSendTest_task(){
+void uartSendTask(Uart &uartX, MessageHandler &msgHandler)
+{
     // Get message from the UART queue and send it to the UART interface
     while (true) {
-        uart0.sendTask(&msgHandler);
+        uartX.sendTask(&msgHandler);
     }
 }
 
-void dataParserTestTask() {
+void dataParserTask(DataParser &dataParser, MessageHandler &msgHandler) 
+{
+    // Parse the data from the UART interface and send it to the command handler
     while(true) {
         dataParser.dataParserTask(&msgHandler);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
+/*
+void bleReceiveTask(Bluetooth &bluetooth, MessageHandler &msgHandler) 
+{
+    // Receive data from the Bluetooth interface and send it to the command handler
+    while (true) {
+        bluetooth.receiveTask(&msgHandler);
+    }
+}
+
+void bleSendTask(Bluetooth &bluetooth, MessageHandler &msgHandler) 
+{
+    // Send data to the Bluetooth interface from the command handler
+    while (true) {
+        bluetooth.sendTask(&msgHandler);
+    }
+}
+*/
 
 
 extern "C" void app_main(void) {
-    // Initialize the UART interface
+    /* Create instances */
+    MessageHandler msgHandler;
+    CommandHandler cmdHandler;
+    DataParser dataParser(cmdHandler);
+/*
+#if BLE_SERVER
+    BLE_Server bleInterface(cmdHandler, msgHandler);
+#else
+    BLE_Client bleInterface(cmdHandler, msgHandler);
+#endif
+*/
+
+    /* Create a UART instance */
+    Uart uart0;
+
+    /* Initialize the UART interface for UART port 0 (default) */
     uart0.init(msgHandler.getUartEventQueue());
-
-    // Create a thread for the UART task
-    esp_pthread_cfg_t cfg = create_config("uartReceiveTest_task", 4096, 5);
+    
+    /* Create threads for the UART receive task */
+    esp_pthread_cfg_t cfg = create_config("uartReceiveTask", 4096, 4);
     esp_pthread_set_cfg(&cfg);
-    std::thread testThread(uartReceiveTest_task);
+    std::thread uartReceiveThread(uartReceiveTask, std::ref(uart0), std::ref(msgHandler));
 
-    // Create a thread for the UART send task
-    cfg = create_config("uartSendTest_task", 4096, 5);
+    /* Create a thread for the UART send task */
+    cfg = create_config("uartSendTask", 4096, 5);
     esp_pthread_set_cfg(&cfg);
-    std::thread sendThread(uartSendTest_task);
+    std::thread uartSendThread(uartSendTask, std::ref(uart0), std::ref(msgHandler));
 
-    // Create a thread for the DataParser task
-    cfg = create_config("dataParserTestTask", 4096, 5);
+    /* Create a thread for the DataParser task */
+    cfg = create_config("dataParserTask", 4096, 3);
     esp_pthread_set_cfg(&cfg);
-    std::thread parserThread(dataParserTestTask);
+    std::thread dataParserThread(dataParserTask, std::ref(dataParser), std::ref(msgHandler));
 
-     // Let the main task do something too
-     while (true) {
-        std::stringstream ss;
-        ss << "core id: " << xPortGetCoreID()
-           << ", prio: " << uxTaskPriorityGet(nullptr)
-           << ", minimum free stack: " << uxTaskGetStackHighWaterMark(nullptr) << " bytes.";
-        ESP_LOGI(pcTaskGetName(nullptr), "%s", ss.str().c_str());
-        std::this_thread::sleep_for(std::chrono::seconds(5));
-    }
+    /* Create a thread for BLE receive task */
+    /*
+    cfg = create_config("bleReceiveTask", 4096, 4);
+    esp_pthread_set_cfg(&cfg);
+    std::thread bleReceiveThread(bleReceiveTask, std::ref(bleInterface), std::ref(msgHandler));
+    */  
+
+    /* Create a thread for BLE send task */ 
+    /*   
+    cfg = create_config("bleSendTask", 4096, 5);
+    esp_pthread_set_cfg(&cfg);
+    std::thread bleSendThread(bleSendTask, std::ref(bleInterface), std::ref(msgHandler));
+    */
 }
