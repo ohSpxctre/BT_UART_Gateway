@@ -27,7 +27,7 @@
 
 #include "MessageHandler.hpp"
 
-namespace uart {
+namespace uartConfig {
 
 /**
  * @brief Constants/defaults for UART communication.
@@ -50,8 +50,7 @@ constexpr uart_config_t DEFAULT_CONFIG = {
     .source_clk = UART_SCLK_DEFAULT,
     .flags = {allow_pd: false, backup_before_sleep: false}
 };
-
-
+} // namespace uart
 
 /**
  * @brief UART class for handling UART communication.
@@ -66,8 +65,8 @@ public:
      * @param tx_pin GPIO number for TX pin. Default is DEFAULT_TX_PIN.
      * @param rx_pin GPIO number for RX pin. Default is DEFAULT_RX_PIN.
      */
-    Uart(uart_port_t port = DEFAULT_PORT, uart_config_t config = DEFAULT_CONFIG, 
-        gpio_num_t tx_pin = DEFAULT_TX_PIN, gpio_num_t rx_pin = DEFAULT_RX_PIN);
+    Uart(uart_port_t port = uartConfig::DEFAULT_PORT, uart_config_t config = uartConfig::DEFAULT_CONFIG, 
+        gpio_num_t tx_pin = uartConfig::DEFAULT_TX_PIN, gpio_num_t rx_pin = uartConfig::DEFAULT_RX_PIN);
 
     /**
      * @brief Destroy the Uart object.
@@ -130,10 +129,10 @@ public:
      *
      * @param enable True to enable, false to disable.
      */
-    void setNewlineExpansion(bool enable);
-    
-
-    
+    void setNewlineExpansion(bool enable)
+    {
+        _expandNewline = enable;
+    }
 
 private:
     uart_port_t _port;              // UART port number.
@@ -154,5 +153,3 @@ private:
     size_t uart_event_handler(char* data);
 
 };
-
-} // namespace uart

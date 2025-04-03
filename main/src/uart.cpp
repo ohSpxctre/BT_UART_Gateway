@@ -23,8 +23,6 @@
 
 constexpr const char* TAG = "UART";
 
-namespace uart {
-
 Uart::Uart(uart_port_t port, uart_config_t config, gpio_num_t tx_pin, gpio_num_t rx_pin) :  _port(port), _uart_config(config), _tx_pin(tx_pin), _rx_pin(rx_pin)
 {
 }
@@ -49,7 +47,7 @@ void Uart::init(QueueHandle_t* uart_queue)
     _uart_queue = uart_queue;
     ESP_ERROR_CHECK(uart_param_config(_port, &_uart_config)); 
     ESP_ERROR_CHECK(uart_set_pin(_port, (int) _tx_pin, (int) _rx_pin, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
-    ESP_ERROR_CHECK(uart_driver_install(_port, 2 * UART_BUFFER_SIZE, 2 * UART_BUFFER_SIZE, EVENT_QUEUE_SIZE, _uart_queue, 0)); 
+    ESP_ERROR_CHECK(uart_driver_install(_port, 2 * uartConfig::UART_BUFFER_SIZE, 2 * uartConfig::UART_BUFFER_SIZE, uartConfig::EVENT_QUEUE_SIZE, _uart_queue, 0)); 
 }
 
 void Uart::sendTask(MessageHandler* msgHandler)
@@ -75,17 +73,17 @@ void Uart::sendTask(MessageHandler* msgHandler)
 
 void Uart::receiveTask(MessageHandler* msgHandler)
 {
-    char data[uart::UART_BUFFER_SIZE];
+    char data[uartConfig::UART_BUFFER_SIZE];
     MessageHandler::Message message;
     
     int bytesReceived = 0;
     bool isEndOfLine = false;
 
     // Clear the message buffer
-    std::fill(data, data + uart::UART_BUFFER_SIZE, '\0');
+    std::fill(data, data + uartConfig::UART_BUFFER_SIZE, '\0');
     std::fill(message.begin(), message.end(), '\0');
 
-    while (!isEndOfLine && bytesReceived < uart::UART_BUFFER_SIZE - 1) {
+    while (!isEndOfLine && bytesReceived < uartConfig::UART_BUFFER_SIZE - 1) {
         int received = this->receive(data + bytesReceived);
         for (int i = 0; i < received; ++i) {
             char ch = data[bytesReceived + i];
@@ -223,10 +221,3 @@ size_t Uart::uart_event_handler(char* data)
     }
     return event.size;
 }
-
-void Uart::setNewlineExpansion(bool enable)
-{
-    _expandNewline = enable;
-}
-
-} // namespace uart
