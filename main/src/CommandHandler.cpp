@@ -94,12 +94,12 @@ std::string CommandHandler::getChipInfo() const {
         << ((chip_info.features & CHIP_FEATURE_EMB_PSRAM) ? "Embedded PSRAM " : "")
         << "\n"
         << "Revision: " << chip_info.revision << "\n"
-        << "Cores: " << chip_info.cores << "\n";
+        << "Cores: " << static_cast<int>(chip_info.cores) << "\n";
     return oss.str();
 }
 
 std::string CommandHandler::getIdfVersion() const {
-    return std::string(esp_get_idf_version());
+    return std::string(esp_get_idf_version()) + "\n";
 }
 
 std::string CommandHandler::getFreeHeap() const {

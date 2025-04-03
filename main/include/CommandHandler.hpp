@@ -46,6 +46,7 @@ public:
         CLOCK_SPEED,
         RESET,
         UNKNOWN,
+        OTHER,
         NO_COMMAND
     };
     
