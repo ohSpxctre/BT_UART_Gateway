@@ -94,20 +94,19 @@ public:
     bool receive(QueueType queueType, Message& message, ParserMessageID* id = nullptr);
 
     /**
-     * @brief Sets an externally created UART event queue.
-     * @param queue Pointer to the externally created UART event queue.
-     *              The MessageHandler does not take ownership of this queue.
-     */
-    void setUartEventQueue(QueueHandle_t queue) {
-        _uartEventQueue = queue;
-    }
-
-    /**
      * @brief Gets the UART event queue.
      * @return Pointer to the UART event queue.
      */
     QueueHandle_t* getUartEventQueue() {
         return &_uartEventQueue;
+    }
+
+    /**
+     * @brief Gets the BLE event queue.
+     * @return Pointer to the BLE event queue.
+     */
+    QueueHandle_t* getUartEventQueue() {
+        return &_bleEventQueue;
     }
 
 private:
@@ -125,8 +124,9 @@ private:
     std::unique_ptr<rtos::MessageQueue<Message>> _bleQueue;
     std::unique_ptr<rtos::MessageQueue<ParserMessage>> _dataParserQueue;
 
-    /* Pointer to the externally created UART event queue. */
+    /* Pointer to the externally created UART and BLE event queue. */
     QueueHandle_t _uartEventQueue = nullptr;  // Not owned
+    QueueHandle_t _bleEventQueue = nullptr;  // Not owned
 
     /**
      * @brief Internal helper to retrieve the appropriate message queue.
