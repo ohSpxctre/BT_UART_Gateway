@@ -11,8 +11,15 @@
 #include "uart.hpp"
 #include "MessageQueue.h"
 #include "Bluetooth.hpp"
+
+#define IS_SERVER true // Set to true for server, false for client
+
+#if IS_SERVER
 #include "BLE_Server.hpp"
+#else
 #include "BLE_Client.hpp"
+#endif
+
 
 esp_pthread_cfg_t create_config(const char *name, int stack, int prio)
 {
@@ -46,19 +53,7 @@ void uartTest_task()
     
 }
 
-
-void bluetoothClient_task()
-{
-    // Create a BLE_Server object
-    BLE_Client bleClient;
-    bleClient.connSetup();
-    
-    while (true)
-    {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-}
-
+#if IS_SERVER
 
 void bluetoothServer_task()
 {
@@ -74,7 +69,21 @@ void bluetoothServer_task()
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
+#else
+void bluetoothClient_task()
+{
+    // Create a BLE_Server object
+    BLE_Client bleClient;
+    bleClient.connSetup();
+    
+    while (true)
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+}
 
+
+#endif
 
 extern "C" void app_main(void) {
     // Create a thread for the UART task
@@ -82,13 +91,17 @@ extern "C" void app_main(void) {
     esp_pthread_set_cfg(&cfg);
     std::thread testThread(uartTest_task);
 
+#if IS_SERVER
+    // Create a thread for the Bluetooth server task
     esp_pthread_cfg_t cfg2 = create_config("bluetoothServer_task", 4096, 5);
     esp_pthread_set_cfg(&cfg2);
     std::thread testThread2(bluetoothServer_task);
-
+#else
+    // Create a thread for the Bluetooth client task
     esp_pthread_cfg_t cfg3 = create_config("bluetoothClient_task", 4096, 5);
     esp_pthread_set_cfg(&cfg3);
     std::thread testThread3(bluetoothClient_task);
+#endif
 
     //Let the main task do something too
      while (true) {

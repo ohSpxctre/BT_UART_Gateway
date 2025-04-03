@@ -4,7 +4,7 @@
  */
 
  #include "BLE_Server.hpp"
- #include <iostream>
+#include <iostream>
 
 #define PREPARE_BUFF_MAX_LEN 1024
 
@@ -29,17 +29,18 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
     Server_instance = this;
 
     _adv_data.service_uuid_len = _gatts_profile_inst.service_id.id.uuid.len;
-    _adv_data.p_service_uuid = (uint8_t *)&_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
+    _adv_data.p_service_uuid = (uint8_t *)_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
 
+    //hie isch öppis komisch gloub
     _adv_data.service_data_len = sizeof(_char_value_buffer);
     _adv_data.p_service_data = (uint8_t *)_char_value_buffer;
 
     //configuring scan response data
     _scan_rsp_data.service_uuid_len = _gatts_profile_inst.service_id.id.uuid.len;
-    _scan_rsp_data.p_service_uuid = (uint8_t *)&_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
+    _scan_rsp_data.p_service_uuid = (uint8_t *)_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
 
-    print_adv_data(_adv_data.p_service_data, _adv_data.service_data_len);
-    print_adv_data(_scan_rsp_data.p_service_uuid, _scan_rsp_data.service_uuid_len);
+   //print_adv_data(_adv_data.p_service_uuid, _adv_data.service_data_len);
+   //print_adv_data(_scan_rsp_data.p_service_uuid, _scan_rsp_data.service_uuid_len);
 
     // Initialize NVS (needed for BLE storage)
     esp_err_t ret = nvs_flash_init();
@@ -187,11 +188,12 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     // GATT Server reg event
     //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_REG_EVT:
-        _gatts_profile_inst.gatts_if = gatts_if;
-        ESP_LOGI(TAG_GATTS, "GATT server register, status %d, app_id %d, gatts_if %d", param->reg.status, param->reg.app_id, gatts_if);
-        
+
+        _gatts_profile_inst.gatts_if = gatts_if;        
         //setting up the service id
+        ESP_LOGI(TAG_GATTS, "Device Name: %s", DEVICE_NAME_SERVER);
         ret = esp_ble_gap_set_device_name(DEVICE_NAME_SERVER);
+
         if (ret){
             ESP_LOGE(TAG_GATTS, "set device name failed, error code = %x", ret);
         }
@@ -199,7 +201,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         //configuring advertising data
         ret = esp_ble_gap_config_adv_data(&_adv_data);
         // Check if the advertising data was set successfully
-        print_adv_data(_adv_data.p_service_data, _adv_data.service_data_len);
+        ESP_LOGI(TAG_GATTS, "Advertising data: %p", (void*)_adv_data.p_service_uuid);
         if (ret) {
             ESP_LOGE(TAG_GATTS, "set adv data failed, error code = %x", ret);
         }
@@ -207,7 +209,8 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         
         //configuring scan response data
         ret = esp_ble_gap_config_adv_data(&_scan_rsp_data);
-        print_adv_data(_scan_rsp_data.p_service_uuid, _scan_rsp_data.service_uuid_len);
+        ESP_LOGI(TAG_GATTS, "Scan Response data: %p", (void*)_scan_rsp_data.p_service_uuid);
+
         if (ret) {
             ESP_LOGE(TAG_GATTS, "set scan response data failed, error code = %x", ret);
         }

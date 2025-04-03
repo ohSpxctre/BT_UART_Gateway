@@ -28,29 +28,30 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
         Client_instance = this;
     
         // Initialize NVS (needed for BLE storage)
-        //esp_err_t ret = nvs_flash_init();
-        //if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        //    ESP_ERROR_CHECK(nvs_flash_erase());
-        //    ESP_ERROR_CHECK(nvs_flash_init());
-        //}
-    //
-        //// Initialize Bluetooth controller and enable BLE mode
-        //esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-        //esp_bt_controller_init(&bt_cfg);
-        //esp_bt_controller_enable(ESP_BT_MODE_BLE);
-        //esp_bluedroid_init();
-        //esp_bluedroid_enable();
+       esp_err_t ret = nvs_flash_init();
+       if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+           ESP_ERROR_CHECK(nvs_flash_erase());
+           ESP_ERROR_CHECK(nvs_flash_init());
+       }
+    
+       // Initialize Bluetooth controller and enable BLE mode
+       esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+       esp_bt_controller_init(&bt_cfg);
+       esp_bt_controller_enable(ESP_BT_MODE_BLE);
+       esp_bluedroid_init();
+       esp_bluedroid_enable();
  }
  
  BLE_Client::~BLE_Client() {
-        // Clean up resources if needed
-        //Client_instance = nullptr;
-        //esp_bluedroid_disable();
-        //esp_bluedroid_deinit();
-        //esp_bt_controller_disable();
-        //esp_bt_controller_deinit();
-        //nvs_flash_deinit();
-        //ESP_LOGI(TAG, "BLE Client Deinitialized");
+        
+        //Clean up resources if needed
+        Client_instance = nullptr;
+        esp_bluedroid_disable();
+        esp_bluedroid_deinit();
+        esp_bt_controller_disable();
+        esp_bt_controller_deinit();
+        nvs_flash_deinit();
+        ESP_LOGI(TAG_CLIENT, "BLE Client Deinitialized");
  }
 
  void BLE_Client::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
@@ -71,6 +72,9 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
 
     esp_ble_gap_cb_param_t *scan_result = (esp_ble_gap_cb_param_t *)param;
     esp_ble_gatt_creat_conn_params_t creat_conn_params = {0};
+
+    uint8_t uuid_len = 0;
+    const uint8_t *uuid_data = NULL;
 
     // Log the event type
     ESP_LOGW(TAG_CLIENT, "GAP event: %d", event);
@@ -105,8 +109,22 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                                                             scan_result->scan_rst.adv_data_len + scan_result->scan_rst.scan_rsp_len,
                                                             ESP_BLE_AD_TYPE_NAME_CMPL,
                                                             &adv_name_len);
+
                 ESP_LOGI(TAG_GAP, "Scan result, device "ESP_BD_ADDR_STR", name len %d", ESP_BD_ADDR_HEX(scan_result->scan_rst.bda), adv_name_len);
                 ESP_LOG_BUFFER_CHAR(TAG_GAP, adv_name, adv_name_len);
+
+               
+                uuid_data = esp_ble_resolve_adv_data_by_type(scan_result->scan_rst.ble_adv,
+                                                                            scan_result->scan_rst.adv_data_len + scan_result->scan_rst.scan_rsp_len,
+                                                                            ESP_BLE_AD_TYPE_128SRV_CMPL, // Change for other UUID types if needed
+                                                                            &uuid_len);
+
+                if (uuid_data && uuid_len > 0) {
+                    ESP_LOGI(TAG_GAP, "UUID Found:");
+                    ESP_LOG_BUFFER_HEX(TAG_GAP, uuid_data, uuid_len);
+                } else {
+                    ESP_LOGI(TAG_GAP, "No UUID found in advertisement.");
+                }
 
                 // Check if adv data and scan resp data are present and log them
                 if (scan_result->scan_rst.adv_data_len > 0) {
