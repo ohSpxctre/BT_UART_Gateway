@@ -67,6 +67,9 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
  }
 
  void BLE_Client::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
+
+    esp_err_t ret = ESP_OK;
+
     uint8_t *adv_name = NULL;
     uint8_t adv_name_len = 0;
 
@@ -77,7 +80,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
     const uint8_t *uuid_data = NULL;
 
     // Log the event type
-    ESP_LOGW(TAG_CLIENT, "GAP event: %d", event);
+    ESP_LOGW(TAG_CLIENT, "GAP event: %s", get_gap_event_name(event));
     switch (event) {
         //---------------------------------------------------------------------------------------------------------
         // GAP event for starting scan complete
@@ -146,7 +149,6 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                     ESP_LOGI(TAG_GAP, "Device found %s", DEVICE_NAME_SERVER);
                     if (_is_connected == false) {
                         _is_connected = true;
-                        ESP_LOGI(TAG_GAP, "Connect to the remote device");
                         esp_ble_gap_stop_scanning();
                         memcpy(&creat_conn_params.remote_bda, scan_result->scan_rst.bda, ESP_BD_ADDR_LEN);
                         creat_conn_params.remote_addr_type = scan_result->scan_rst.ble_addr_type;
@@ -154,8 +156,11 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                         creat_conn_params.is_direct = true;
                         creat_conn_params.is_aux = false;
                         creat_conn_params.phy_mask = 0x0;
-                        esp_ble_gattc_enh_open(_gattc_profile_inst.gattc_if,
+                        ret = esp_ble_gattc_enh_open(_gattc_profile_inst.gattc_if,
                             &creat_conn_params);
+                        if (ret) {
+                            ESP_LOGI(TAG_GAP, "Connection successfull");
+                        }
                     }                  
                 }
             }
@@ -226,7 +231,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
 
     esp_bd_addr_t bda;
 
-    ESP_LOGW(TAG_CLIENT, "GATT event: %d", event);
+    ESP_LOGW(TAG_CLIENT, "GATT event: %s", get_gattc_event_name(event));
     switch (event) {
             //----------------------------------------------------------------------------------------------------------
             // GATT client registered successfully
@@ -319,56 +324,70 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                 ESP_LOGI(TAG_GATTS, "Service search complete");
 
                 if (_get_server) {
-                    status = esp_ble_gattc_get_attr_count( gattc_if,
-                                                            p_data->search_cmpl.conn_id,
-                                                            ESP_GATT_DB_CHARACTERISTIC,
-                                                            _gattc_profile_inst.service_start_handle,
-                                                            _gattc_profile_inst.service_end_handle,
-                                                            0,
-                                                            &char_count);
-                
+
+
+                    status = esp_ble_gattc_get_char_by_uuid( gattc_if,
+                                                        p_data->search_cmpl.conn_id,
+                                                        _gattc_profile_inst.service_start_handle,
+                                                        _gattc_profile_inst.service_end_handle,
+                                                        _remote_char_uuid,
+                                                        char_elem_result,
+                                                        &char_count);
                     if (status != ESP_GATT_OK){
-                        ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_attr_count error");
+                        ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_char_by_uuid error");
                         break;
                     }
+                    ESP_LOGI(TAG_GATTS, "char count %d", char_count);
+                    //status = esp_ble_gattc_get_attr_count( gattc_if,
+                    //                                        p_data->search_cmpl.conn_id,
+                    //                                        ESP_GATT_DB_CHARACTERISTIC,
+                    //                                        _gattc_profile_inst.service_start_handle,
+                    //                                        _gattc_profile_inst.service_end_handle,
+                    //                                        _gattc_profile_inst.char_handle,
+                    //                                        &char_count);
+                //
+                    //if (status != ESP_GATT_OK){
+                    //    ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_attr_count error");
+                    //    break;
+                    //}
 
-                    if (char_count > 0) {
-                        char_elem_result = (esp_gattc_char_elem_t *)malloc(sizeof(esp_gattc_char_elem_t) * char_count);
-                        if (!char_elem_result){
-                            ESP_LOGE(TAG_GATTS, "gattc no mem");
-                            break;
-                        }
-                        else {
-                            status = esp_ble_gattc_get_char_by_uuid( gattc_if,
-                                                                    p_data->search_cmpl.conn_id,
-                                                                    _gattc_profile_inst.service_start_handle,
-                                                                    _gattc_profile_inst.service_end_handle,
-                                                                    CHAR_UUID_DEFAULT,
-                                                                    char_elem_result,
-                                                                    &char_count);
-
-                            //check if the char UUID matches the remote char UUID
-                            if (status != ESP_GATT_OK){
-                                ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_char_by_uuid error");
-                                free(char_elem_result);
-                                char_elem_result = nullptr;
-                                break;
-                            }
-
-                            /*  Every service have only one char in our 'ESP_GATTS_DEMO' demo, so we used first 'char_elem_result' */
-                            if (char_count > 0 && (char_elem_result[0].properties & ESP_GATT_CHAR_PROP_BIT_NOTIFY)){
-                                _gattc_profile_inst.char_handle = char_elem_result[0].char_handle;
-                                esp_ble_gattc_register_for_notify (gattc_if, _gattc_profile_inst.remote_bda, char_elem_result[0].char_handle);
-                            }
-                            /* free char_elem_result */
-                            free(char_elem_result);
-                            char_elem_result = nullptr;
-                        }
-                    }
-                    else {
-                        ESP_LOGE(TAG_GATTS, "no char found");
-                    }
-                }
+                    //if (char_count > 0) {
+                    //    char_elem_result = (esp_gattc_char_elem_t *)malloc(sizeof(esp_gattc_char_elem_t) * char_count);
+                    //    if (!char_elem_result){
+                    //        ESP_LOGE(TAG_GATTS, "gattc no mem");
+                    //        break;
+                    //    }
+                    //    else {
+                    //        status = esp_ble_gattc_get_char_by_uuid( gattc_if,
+                    //                                                p_data->search_cmpl.conn_id,
+                    //                                                _gattc_profile_inst.service_start_handle,
+                    //                                                _gattc_profile_inst.service_end_handle,
+                    //                                                CHAR_UUID_DEFAULT,
+                    //                                                char_elem_result,
+                    //                                                &char_count);
+//
+                    //        //check if the char UUID matches the remote char UUID
+                    //        if (status != ESP_GATT_OK){
+                    //            ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_char_by_uuid error");
+                    //            free(char_elem_result);
+                    //            char_elem_result = nullptr;
+                    //            break;
+                    //        }
+//
+                    //        /*  Every service have only one char in our 'ESP_GATTS_DEMO' demo, so we used first 'char_elem_result' */
+                    //        if (char_count > 0 && (char_elem_result[0].properties & ESP_GATT_CHAR_PROP_BIT_NOTIFY)){
+                    //            _gattc_profile_inst.char_handle = char_elem_result[0].char_handle;
+                    //            esp_ble_gattc_register_for_notify (gattc_if, _gattc_profile_inst.remote_bda, char_elem_result[0].char_handle);
+                    //        }
+                    //        /* free char_elem_result */
+                    //        free(char_elem_result);
+                    //        char_elem_result = nullptr;
+                    //    }
+                    //}
+                    //else {
+                    //    ESP_LOGE(TAG_GATTS, "no char found");
+                    //}
+                }//
             break;
             
             //------------------------------------------------------------------------------------------------------------
@@ -529,4 +548,87 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
  std::string BLE_Client::receive() {
      std::cout << "BLE Client Receiving Data" << std::endl;
      return "Received Data from BLE Server";
+ }
+
+ const char* BLE_Client::get_gattc_event_name(esp_gattc_cb_event_t event) {
+    switch (event) {
+        case ESP_GATTC_REG_EVT: return "ESP_GATTC_REG_EVT";
+        case ESP_GATTC_UNREG_EVT: return "ESP_GATTC_UNREG_EVT";
+        case ESP_GATTC_OPEN_EVT: return "ESP_GATTC_OPEN_EVT";
+        case ESP_GATTC_READ_CHAR_EVT: return "ESP_GATTC_READ_CHAR_EVT";
+        case ESP_GATTC_WRITE_CHAR_EVT: return "ESP_GATTC_WRITE_CHAR_EVT";
+        case ESP_GATTC_CLOSE_EVT: return "ESP_GATTC_CLOSE_EVT";
+        case ESP_GATTC_SEARCH_CMPL_EVT: return "ESP_GATTC_SEARCH_CMPL_EVT";
+        case ESP_GATTC_SEARCH_RES_EVT: return "ESP_GATTC_SEARCH_RES_EVT";
+        case ESP_GATTC_READ_DESCR_EVT: return "ESP_GATTC_READ_DESCR_EVT";
+        case ESP_GATTC_WRITE_DESCR_EVT: return "ESP_GATTC_WRITE_DESCR_EVT";
+        case ESP_GATTC_NOTIFY_EVT: return "ESP_GATTC_NOTIFY_EVT";
+        case ESP_GATTC_PREP_WRITE_EVT: return "ESP_GATTC_PREP_WRITE_EVT";
+        case ESP_GATTC_EXEC_EVT: return "ESP_GATTC_EXEC_EVT";
+        case ESP_GATTC_ACL_EVT: return "ESP_GATTC_ACL_EVT";
+        case ESP_GATTC_CANCEL_OPEN_EVT: return "ESP_GATTC_CANCEL_OPEN_EVT";
+        case ESP_GATTC_SRVC_CHG_EVT: return "ESP_GATTC_SRVC_CHG_EVT";
+        case ESP_GATTC_ENC_CMPL_CB_EVT: return "ESP_GATTC_ENC_CMPL_CB_EVT";
+        case ESP_GATTC_CFG_MTU_EVT: return "ESP_GATTC_CFG_MTU_EVT";
+        case ESP_GATTC_MULT_ADV_ENB_EVT: return "ESP_GATTC_MULT_ADV_ENB_EVT";
+        case ESP_GATTC_MULT_ADV_UPD_EVT: return "ESP_GATTC_MULT_ADV_UPD_EVT";
+        case ESP_GATTC_MULT_ADV_DATA_EVT: return "ESP_GATTC_MULT_ADV_DATA_EVT";
+        case ESP_GATTC_MULT_ADV_DIS_EVT: return "ESP_GATTC_MULT_ADV_DIS_EVT";
+        case ESP_GATTC_CONGEST_EVT: return "ESP_GATTC_CONGEST_EVT";
+        case ESP_GATTC_BTH_SCAN_ENB_EVT: return "ESP_GATTC_BTH_SCAN_ENB_EVT";
+        case ESP_GATTC_BTH_SCAN_CFG_EVT: return "ESP_GATTC_BTH_SCAN_CFG_EVT";
+        case ESP_GATTC_BTH_SCAN_RD_EVT: return "ESP_GATTC_BTH_SCAN_RD_EVT";
+        case ESP_GATTC_BTH_SCAN_THR_EVT: return "ESP_GATTC_BTH_SCAN_THR_EVT";
+        case ESP_GATTC_BTH_SCAN_PARAM_EVT: return "ESP_GATTC_BTH_SCAN_PARAM_EVT";
+        case ESP_GATTC_BTH_SCAN_DIS_EVT: return "ESP_GATTC_BTH_SCAN_DIS_EVT";
+        case ESP_GATTC_SCAN_FLT_CFG_EVT: return "ESP_GATTC_SCAN_FLT_CFG_EVT";
+        case ESP_GATTC_SCAN_FLT_PARAM_EVT: return "ESP_GATTC_SCAN_FLT_PARAM_EVT";
+        case ESP_GATTC_SCAN_FLT_STATUS_EVT: return "ESP_GATTC_SCAN_FLT_STATUS_EVT";
+        case ESP_GATTC_ADV_VSC_EVT: return "ESP_GATTC_ADV_VSC_EVT";
+        case ESP_GATTC_REG_FOR_NOTIFY_EVT: return "ESP_GATTC_REG_FOR_NOTIFY_EVT";
+        case ESP_GATTC_UNREG_FOR_NOTIFY_EVT: return "ESP_GATTC_UNREG_FOR_NOTIFY_EVT";
+        case ESP_GATTC_CONNECT_EVT: return "ESP_GATTC_CONNECT_EVT";
+        case ESP_GATTC_DISCONNECT_EVT: return "ESP_GATTC_DISCONNECT_EVT";
+        case ESP_GATTC_READ_MULTIPLE_EVT: return "ESP_GATTC_READ_MULTIPLE_EVT";
+        case ESP_GATTC_QUEUE_FULL_EVT: return "ESP_GATTC_QUEUE_FULL_EVT";
+        case ESP_GATTC_SET_ASSOC_EVT: return "ESP_GATTC_SET_ASSOC_EVT";
+        case ESP_GATTC_GET_ADDR_LIST_EVT: return "ESP_GATTC_GET_ADDR_LIST_EVT";
+        case ESP_GATTC_DIS_SRVC_CMPL_EVT: return "ESP_GATTC_DIS_SRVC_CMPL_EVT";
+        default: return "UNKNOWN_GATTC_EVENT";
+    }
+}
+ 
+ const char* BLE_Client::get_gap_event_name(esp_gap_ble_cb_event_t event) {
+    switch (event) {
+        case ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT: return "ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT";
+        case ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT: return "ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT";
+        case ESP_GAP_BLE_SCAN_PARAM_SET_COMPLETE_EVT: return "ESP_GAP_BLE_SCAN_PARAM_SET_COMPLETE_EVT";
+        case ESP_GAP_BLE_SCAN_RESULT_EVT: return "ESP_GAP_BLE_SCAN_RESULT_EVT";
+        case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT: return "ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT";
+        case ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT: return "ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT";
+        case ESP_GAP_BLE_ADV_START_COMPLETE_EVT: return "ESP_GAP_BLE_ADV_START_COMPLETE_EVT";
+        case ESP_GAP_BLE_SCAN_START_COMPLETE_EVT: return "ESP_GAP_BLE_SCAN_START_COMPLETE_EVT";
+        case ESP_GAP_BLE_AUTH_CMPL_EVT: return "ESP_GAP_BLE_AUTH_CMPL_EVT";
+        case ESP_GAP_BLE_KEY_EVT: return "ESP_GAP_BLE_KEY_EVT";
+        case ESP_GAP_BLE_SEC_REQ_EVT: return "ESP_GAP_BLE_SEC_REQ_EVT";
+        case ESP_GAP_BLE_PASSKEY_NOTIF_EVT: return "ESP_GAP_BLE_PASSKEY_NOTIF_EVT";
+        case ESP_GAP_BLE_PASSKEY_REQ_EVT: return "ESP_GAP_BLE_PASSKEY_REQ_EVT";
+        case ESP_GAP_BLE_OOB_REQ_EVT: return "ESP_GAP_BLE_OOB_REQ_EVT";
+        case ESP_GAP_BLE_LOCAL_IR_EVT: return "ESP_GAP_BLE_LOCAL_IR_EVT";
+        case ESP_GAP_BLE_LOCAL_ER_EVT: return "ESP_GAP_BLE_LOCAL_ER_EVT";
+        case ESP_GAP_BLE_NC_REQ_EVT: return "ESP_GAP_BLE_NC_REQ_EVT";
+        case ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT: return "ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT";
+        case ESP_GAP_BLE_SCAN_STOP_COMPLETE_EVT: return "ESP_GAP_BLE_SCAN_STOP_COMPLETE_EVT";
+        case ESP_GAP_BLE_SET_STATIC_RAND_ADDR_EVT: return "ESP_GAP_BLE_SET_STATIC_RAND_ADDR_EVT";
+        case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT: return "ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT";
+        case ESP_GAP_BLE_SET_PKT_LENGTH_COMPLETE_EVT: return "ESP_GAP_BLE_SET_PKT_LENGTH_COMPLETE_EVT";
+        case ESP_GAP_BLE_SET_LOCAL_PRIVACY_COMPLETE_EVT: return "ESP_GAP_BLE_SET_LOCAL_PRIVACY_COMPLETE_EVT";
+        case ESP_GAP_BLE_REMOVE_BOND_DEV_COMPLETE_EVT: return "ESP_GAP_BLE_REMOVE_BOND_DEV_COMPLETE_EVT";
+        case ESP_GAP_BLE_CLEAR_BOND_DEV_COMPLETE_EVT: return "ESP_GAP_BLE_CLEAR_BOND_DEV_COMPLETE_EVT";
+        case ESP_GAP_BLE_GET_BOND_DEV_COMPLETE_EVT: return "ESP_GAP_BLE_GET_BOND_DEV_COMPLETE_EVT";
+        case ESP_GAP_BLE_READ_RSSI_COMPLETE_EVT: return "ESP_GAP_BLE_READ_RSSI_COMPLETE_EVT";
+        case ESP_GAP_BLE_UPDATE_WHITELIST_COMPLETE_EVT: return "ESP_GAP_BLE_UPDATE_WHITELIST_COMPLETE_EVT";
+        case ESP_GAP_BLE_EVT_MAX: return "ESP_GAP_BLE_EVT_MAX";
+        default: return "UNKNOWN_GAP_EVENT";
+    }
  }

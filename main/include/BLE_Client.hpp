@@ -76,6 +76,9 @@
 
     void handle_event_gattc(esp_gattc_cb_event_t, esp_gatt_if_t, esp_ble_gattc_cb_param_t *);
     void handle_event_gap(esp_gap_ble_cb_event_t, esp_ble_gap_cb_param_t *);
+    
+    const char* get_gattc_event_name(esp_gattc_cb_event_t);
+    const char* get_gap_event_name(esp_gap_ble_cb_event_t);
 
  public:
      BLE_Client(esp_ble_scan_params_t scan_params = BLE_SCAN_PARAMS_DEFAULT,
@@ -85,6 +88,9 @@
      );
      
      ~BLE_Client();
+
+  
+
      
      void connSetup() override;
      void send(const std::string &data) override;

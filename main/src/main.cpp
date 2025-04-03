@@ -12,7 +12,7 @@
 #include "MessageQueue.h"
 #include "Bluetooth.hpp"
 
-#define IS_SERVER true // Set to true for server, false for client
+#define IS_SERVER false // Set to true for server, false for client
 
 #if IS_SERVER
 #include "BLE_Server.hpp"
@@ -78,7 +78,7 @@ void bluetoothClient_task()
     
     while (true)
     {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 }
 
