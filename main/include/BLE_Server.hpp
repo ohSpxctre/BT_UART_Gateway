@@ -91,6 +91,7 @@ struct gatts_profile_inst {
   esp_gatt_srvc_id_t service_id;
   uint16_t char_handle;
   esp_bt_uuid_t char_uuid;
+  esp_attr_control_t char_resp_ctrl;
 
   esp_gatt_perm_t perm;
   esp_gatt_char_prop_t property;
@@ -116,6 +117,11 @@ private:
 
   static BLE_Server* Server_instance; // Static instance pointer
 
+  uint8_t _adv_data_buffer[ESP_BLE_ADV_DATA_LEN_MAX] = "Hello World!";
+  uint8_t _char_data_buffer[ESP_GATT_MAX_ATTR_LEN] = "Hello from BLE Server!";
+  uint8_t _descr_data_buffer[128] = "Characteristic Descriptor Data";
+
+
   gatts_profile_inst _gatts_profile_inst = {
     .gatts_cb = gatts_event_handler,
     .gatts_if = ESP_GATT_IF_NONE,
@@ -125,8 +131,9 @@ private:
     .service_id = SERVICE_ID_DEFAULT,
     .char_handle = 0,
     .char_uuid = CHAR_UUID_DEFAULT,
+    .char_resp_ctrl = ESP_GATT_AUTO_RSP,
     .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-    .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE,
+    .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_NOTIFY,
     .descr_handle = 0,
     .descr_value = 0,
     .descr_uuid = DESCR_UUID_DEFAULT,
@@ -142,12 +149,16 @@ private:
 
   uint8_t _adv_config_done = 0;
 
-  uint8_t _char_value_buffer[ESP_GATT_MAX_ATTR_LEN] = {"Advertising my stipid chip"};
-
   esp_attr_value_t _char_value = {
     .attr_max_len = ESP_GATT_MAX_ATTR_LEN,
-    .attr_len = sizeof(_char_value_buffer),
-    .attr_value = _char_value_buffer
+    .attr_len = sizeof(_char_data_buffer),
+    .attr_value = _char_data_buffer
+  };
+
+  esp_attr_value_t _descr_value = {
+    .attr_max_len = sizeof(_descr_data_buffer),
+    .attr_len = sizeof(_descr_data_buffer),
+    .attr_value = _descr_data_buffer
   };
 
   prepare_type_env_t _prepare_write_env = {
@@ -155,7 +166,7 @@ private:
     .prepare_len = 0,
   };
   
-  const char* get_gatts_event_name(esp_gattc_cb_event_t);
+  const char* get_gatts_event_name(esp_gatts_cb_event_t);
   const char* get_gap_event_name(esp_gap_ble_cb_event_t);
 
   static void gatts_event_handler (esp_gatts_cb_event_t, esp_gatt_if_t, esp_ble_gatts_cb_param_t *);

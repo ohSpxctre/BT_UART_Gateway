@@ -2,7 +2,7 @@
  * @file BLE_Client.cpp
  * @brief Implementation of BLE_Client class.
  */
-
+#if 0
  #include "BLE_Client.hpp"
  #include <iostream>
 
@@ -366,9 +366,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                     if (status != ESP_GATT_OK){
                         ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_char_by_uuid error");
                         break;
-                    }
-                    ESP_LOGI(TAG_GATTS, "char count %d", char_count);
-                    
+                    }                    
                 //
                     //if (status != ESP_GATT_OK){
                     //    ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_attr_count error");
@@ -529,11 +527,16 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
             // GATT write characteristic event
             //------------------------------------------------------------------------------------------------------------
             case ESP_GATTC_WRITE_CHAR_EVT:
-                if (p_data->write.status != ESP_GATT_OK){
-                    ESP_LOGE(TAG_GATTS, "Characteristic write failed, status");
+                if (p_data->write.status != ESP_GATT_OK){h
+                    ESP_LOGE(TAG_GATTS, "Caracteristic write failed, status");
                     break;
                 }
                 ESP_LOGI(TAG_GATTS, "Characteristic write successfully");
+                ESP_LOGI(TAG_GATTS, "Write value: ");
+                // Print out the written data byte by byte
+                for (int i = 0; i < write_param->length; i++) {
+                    ESP_LOGI(TAG, "0x%02X", write_param->value[i]);
+                }
             break;
             
             //------------------------------------------------------------------------------------------------------------
@@ -570,7 +573,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
  }
  
  std::string BLE_Client::receive() {
-     std::cout << "BLE Client Receiving Data" << std::endl;
+     
      return "Received Data from BLE Server";
  }
 
@@ -656,3 +659,5 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
         default: return "UNKNOWN_GAP_EVENT";
     }
  }
+
+ #endif

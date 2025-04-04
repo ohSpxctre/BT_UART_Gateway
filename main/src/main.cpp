@@ -12,13 +12,18 @@
 #include "MessageQueue.h"
 #include "Bluetooth.hpp"
 
-#define IS_SERVER false // Set to true for server, false for client
+#define IS_SERVER true // Set to true for server, false for client
 
 #if IS_SERVER
 #include "BLE_Server.hpp"
 #else
 #include "BLE_Client.hpp"
 #endif
+
+
+
+  
+
 
 
 esp_pthread_cfg_t create_config(const char *name, int stack, int prio)
@@ -65,8 +70,8 @@ void bluetoothServer_task()
     {
         // Log BLE server status
         //ESP_LOGI(pcTaskGetName(nullptr), "BLE Server running...");
-        //bleServer.send("Hello from ESP32 BLE Server");
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        bleServer.send("Hello from ESP32 BLE Server");
+        std::this_thread::sleep_for(std::chrono::seconds(3));
     }
 }
 #else
@@ -78,7 +83,8 @@ void bluetoothClient_task()
     
     while (true)
     {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        
+        std::this_thread::sleep_for(std::chrono::seconds(3));
     }
 }
 
@@ -86,6 +92,13 @@ void bluetoothClient_task()
 #endif
 
 extern "C" void app_main(void) {
+
+    esp_log_level_set("*", ESP_LOG_INFO);  // Default: Show warnings and errors only
+    esp_log_level_set("BLE", ESP_LOG_DEBUG);  // Enable detailed logs for your BLE module
+    esp_log_level_set("GATTS", ESP_LOG_DEBUG);  // Enable logs for GATT Server
+    esp_log_level_set("GAP", ESP_LOG_DEBUG);  // Enable logs for GAP events
+    esp_log_level_set("BT", ESP_LOG_DEBUG);  // Enable logs for Bluetooth Stack
+
     // Create a thread for the UART task
     esp_pthread_cfg_t cfg = create_config("uartTest_task", 4096, 5);
     esp_pthread_set_cfg(&cfg);
@@ -93,7 +106,7 @@ extern "C" void app_main(void) {
 
 #if IS_SERVER
     // Create a thread for the Bluetooth server task
-    esp_pthread_cfg_t cfg2 = create_config("bluetoothServer_task", 4096, 5);
+    esp_pthread_cfg_t cfg2 = create_config("bluetoothServer_task", 8192 , 5);
     esp_pthread_set_cfg(&cfg2);
     std::thread testThread2(bluetoothServer_task);
 #else

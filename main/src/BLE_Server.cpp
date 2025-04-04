@@ -16,7 +16,7 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
     esp_ble_adv_params_t adv_params,
     esp_ble_adv_data_t adv_data,
     esp_ble_adv_data_t scan_rsp_data
- ) : 
+ )  :
     _adv_params(adv_params),
     _adv_data(adv_data),
     _scan_rsp_data(scan_rsp_data)
@@ -32,8 +32,8 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
     _adv_data.p_service_uuid = (uint8_t *)_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
 
     //hie isch öppis komisch gloub
-    _adv_data.service_data_len = sizeof(CHAR_ADV_DATA);
-    _adv_data.p_service_data = (uint8_t *)CHAR_ADV_DATA;
+    _adv_data.service_data_len = sizeof(_adv_data_buffer);
+    _adv_data.p_service_data = _adv_data_buffer;
 
     //configuring scan response data
     //_scan_rsp_data.service_uuid_len = _gatts_profile_inst.service_id.id.uuid.len;
@@ -180,7 +180,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     uint8_t indicate_data[mtu_size-3] = {0};
 
     //Loging event type
-    ESP_LOGW(TAG_SERVER, "GATT event: %d", event);
+    ESP_LOGW(TAG_SERVER, "GATT event: %s", get_gatts_event_name(event));
 
     switch (event)
     {
@@ -201,7 +201,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         //configuring advertising data
         ret = esp_ble_gap_config_adv_data(&_adv_data);
         // Check if the advertising data was set successfully
-        ESP_LOGI(TAG_GATTS, "Advertising data: %p", (void*)_adv_data.p_service_uuid);
+        ESP_LOGI(TAG_GATTS, "Advertising data: %p", (void*)ADV_DATA_DEFAULT.p_service_uuid);
         if (ret) {
             ESP_LOGE(TAG_GATTS, "set adv data failed, error code = %x", ret);
         }
@@ -217,7 +217,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         //_adv_config_done |= scan_rsp_config_flag;
 
         //creating the gatt service
-        ret = esp_ble_gatts_create_service(gatts_if, &_gatts_profile_inst.service_id, PROFILE_NUM);
+        ret = esp_ble_gatts_create_service(gatts_if, &_gatts_profile_inst.service_id, HANDLE_NUM);
         if(ret) {
             ESP_LOGE(TAG_GATTS, "create service failed, error code = %x", ret);
         }
@@ -237,21 +237,11 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         {
             ESP_LOGE(TAG_GATTS, "start service failed, error code = %x", ret);
         }
-        else
-        {   //when started successfully, add char to the service
-            ESP_LOGI(TAG_GATTS, "Service started successfully");
-            ret = esp_ble_gatts_add_char(
-                _gatts_profile_inst.service_handle,
-                &_gatts_profile_inst.char_uuid,
-                _gatts_profile_inst.perm,
-                _gatts_profile_inst.property,
-                &_char_value,
-                NULL
-            );
-            if (ret) {
-                ESP_LOGE(TAG_GATTS, "add char failed, error code = %x", ret);
-            }
-        }
+       //else
+       //{   //when started successfully, add char to the service
+       //    ESP_LOGI(TAG_GATTS, "Service started successfully");
+       //    
+       //}
     break;
 
    //--------------------------------------------------------------------------------------------------------
@@ -281,8 +271,8 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         if (param->read.handle == _gatts_profile_inst.char_handle) {
             offset = param->read.offset;
             // Validate read offset
-            if (param->read.is_long && offset > sizeof(_char_value_buffer)) {
-                ESP_LOGW(TAG_GATTS, "Read offset (%d) out of range (0-%d)", offset, sizeof(_char_value_buffer));
+            if (param->read.is_long && offset > sizeof(_char_data_buffer)) {
+                ESP_LOGW(TAG_GATTS, "Read offset (%d) out of range (0-%d)", offset, sizeof(_char_data_buffer));
                 rsp.attr_value.len = 0;
                 esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_INVALID_OFFSET, &rsp);
                 return;
@@ -291,7 +281,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
             // Determine response length based on MTU
             mtu_send_len = (ESP_GATT_MAX_ATTR_LEN - offset > mtu_size) ? mtu_size : (ESP_GATT_MAX_ATTR_LEN - offset);
             //copy the data to the response buffer               
-            memcpy(rsp.attr_value.value, &_char_value_buffer[offset], mtu_send_len);
+            memcpy(rsp.attr_value.value, &_char_data_buffer[offset], mtu_send_len);
             // Set the length of the response
             rsp.attr_value.len = mtu_send_len;
             // send response and check for errors
@@ -383,7 +373,24 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         if (param->start.status != ESP_GATT_OK) {    
             ESP_LOGI(TAG_GATTS, "Service start failed: %s", esp_err_to_name(param->start.status));
         } else {
-            ESP_LOGI(TAG_GATTS, "Service started successfully");        
+            ESP_LOGI(TAG_GATTS, "Service started successfully");     
+            ESP_LOGI(TAG_GATTS, "Service handle: %d", param->start.service_handle);
+            ESP_LOGI(TAG_GATTS, "Service UUID: %s", _gatts_profile_inst.service_id.id.uuid.uuid.uuid128);
+            ESP_LOGI(TAG_GATTS, "Characteristic UUID: %s", _gatts_profile_inst.char_uuid.uuid.uuid128);
+
+            ret = esp_ble_gatts_add_char(_gatts_profile_inst.service_handle,
+                                            &_gatts_profile_inst.char_uuid,
+                                            (ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE),
+                                            (ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_NOTIFY),
+                                            &_char_value,
+                                            NULL);
+        
+            if (ret == ESP_OK) {
+                ESP_LOGI(TAG_GATTS, "Char add okey, result: %d", ret);
+            }
+            else {
+                ESP_LOGE(TAG_GATTS, "add char failed, error code = %x", ret);
+            }
         }
     break;
 
@@ -391,6 +398,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     // GATT Server add char event
     //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_ADD_CHAR_EVT:
+
         ESP_LOGI(TAG_GATTS, "Characteristic add, status %d, attr_handle %d, service_handle %d",
             param->add_char.status, param->add_char.attr_handle, param->add_char.service_handle);
         //reading the char handle
@@ -406,14 +414,11 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
             ESP_LOGI(TAG_GATTS, "prf_char[%x] =%x",i,prf_char[i]);
         }
 
-
-        ret = esp_ble_gatts_add_char_descr(
-            _gatts_profile_inst.service_handle,
-            &_gatts_profile_inst.descr_uuid,
-            _gatts_profile_inst.perm,
-            NULL,
-            NULL
-        );
+        ret = esp_ble_gatts_add_char_descr(_gatts_profile_inst.service_handle,
+                                            &_gatts_profile_inst.descr_uuid,
+                                            _gatts_profile_inst.perm,
+                                            &_descr_value,
+                                            NULL);
 
         if (ret) {
             ESP_LOGE(TAG_GATTS, "Add descriptor failed, error code = %x", ret);
@@ -484,7 +489,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     // default case
     //--------------------------------------------------------------------------------------------------------
     default:
-        ESP_LOGE(TAG_GATTS, "Unhandled GATTS event: %d", event);
+        ESP_LOGE(TAG_GATTS, "Unhandled GATTS event: %s", get_gatts_event_name(event));
         break;
     }
 }
@@ -568,7 +573,7 @@ void BLE_Server::handle_exec_write_event (prepare_type_env_t *prepare_write_env,
         if (_is_connected) {
             ESP_LOGI(TAG_SERVER, "Sending data: %s", data.c_str());
             _char_value.attr_len = data.length();
-            memcpy(_char_value_buffer, data.c_str(), data.length());
+            memcpy(_char_data_buffer, data.c_str(), data.length());
             
             esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle,
                                         data.length(), (uint8_t *)data.c_str(), false);
@@ -595,7 +600,7 @@ void BLE_Server::print_adv_data(const uint8_t *adv_data, uint8_t adv_data_len) {
 }
 
 
-const char* BLE_Server::get_gatts_event_name(esp_gattc_cb_event_t event) {
+const char* BLE_Server::get_gatts_event_name(esp_gatts_cb_event_t event) {
     switch (event) {
         case ESP_GATTS_REG_EVT: return "ESP_GATTS_REG_EVT";
         case ESP_GATTS_READ_EVT: return "ESP_GATTS_READ_EVT";

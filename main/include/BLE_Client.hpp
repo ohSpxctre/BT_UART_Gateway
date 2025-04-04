@@ -5,12 +5,14 @@
 
  #ifndef BLE_CLIENT_HPP
  #define BLE_CLIENT_HPP
+
+ #if 0
  
  #include "Bluetooth.hpp"
 
  constexpr esp_bt_uuid_t REMOTE_FILTER_SERVICE_UUID = SERVICE_UUID_DEFAULT;
 
- constexpr esp_bt_uuid_t REMOTE_FILTER_CHAR_UUID = CHAR_UUID_DEFAULT;
+ constexpr esp_bt_uuid_t REMOTE_FILTER_CHAR_UUID = CHAR_UUID_DEFAULT16;
 
  constexpr esp_bt_uuid_t REMOTE_DESCR_UUID_DEFAULT = DESCR_UUID_DEFAULT;
 
@@ -96,5 +98,5 @@
      void send(const std::string &data) override;
      std::string receive() override;
  };
- 
+ #endif
  #endif // BLE_CLIENT_HPP
