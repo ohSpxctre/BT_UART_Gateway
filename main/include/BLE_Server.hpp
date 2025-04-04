@@ -155,6 +155,8 @@ private:
     .prepare_len = 0,
   };
   
+  const char* get_gatts_event_name(esp_gattc_cb_event_t);
+  const char* get_gap_event_name(esp_gap_ble_cb_event_t);
 
   static void gatts_event_handler (esp_gatts_cb_event_t, esp_gatt_if_t, esp_ble_gatts_cb_param_t *);
   static void gap_event_handler(esp_gap_ble_cb_event_t, esp_ble_gap_cb_param_t *);

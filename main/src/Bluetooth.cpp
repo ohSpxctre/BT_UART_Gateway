@@ -6,13 +6,9 @@
  #include "Bluetooth.hpp"
  #include <iostream>
  
- Bluetooth::Bluetooth() {
-     std::cout << "Bluetooth Base Class Constructor" << std::endl;
- }
+ Bluetooth::Bluetooth() {}
  
- Bluetooth::~Bluetooth() {
-     std::cout << "Bluetooth Base Class Destructor" << std::endl;
- }
+ Bluetooth::~Bluetooth() {}
  
  /**
   * @file BLE_Server.hpp

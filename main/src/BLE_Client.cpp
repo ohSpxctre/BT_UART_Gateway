@@ -298,8 +298,8 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
 
                 //check if the service UUID matches the remote service UUID
                 if (p_data->search_res.srvc_id.uuid.len == ESP_UUID_LEN_128 &&
-                    memcmp(p_data->search_res.srvc_id.uuid.uuid.uuid128, _remote_service_uuid.uuid.uuid128, ESP_UUID_LEN_128) == 0) {
-                    ESP_LOGI(TAG_GATTS, "Service found");
+                    memcmp(p_data->search_res.srvc_id.uuid.uuid.uuid128, _remote_service_uuid.uuid.uuid128, _remote_service_uuid.len) == 0){
+                    ESP_LOGI(TAG_GATTS, "Service found by uuid");
                     _get_server = true;
                     _gattc_profile_inst.service_start_handle = p_data->search_res.start_handle;
                     _gattc_profile_inst.service_end_handle = p_data->search_res.end_handle;
@@ -322,29 +322,53 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                     ESP_LOGI(TAG_GATTS, "Unknown service source");
                 }
                 ESP_LOGI(TAG_GATTS, "Service search complete");
+                _gattc_profile_inst.conn_id = p_data->search_cmpl.conn_id;
 
                 if (_get_server) {
 
+                    status = esp_ble_gattc_get_attr_count( gattc_if,
+                                                            _gattc_profile_inst.conn_id,
+                                                            ESP_GATT_DB_CHARACTERISTIC,
+                                                            _gattc_profile_inst.service_start_handle,
+                                                            _gattc_profile_inst.service_end_handle,
+                                                            _gattc_profile_inst.char_handle,
+                                                            &char_count);
+                    
+                    if (status != ESP_GATT_OK){
+                        ESP_LOGE(TAG_GATTS, "No attributes found error");
+                        break;
+                    }
+                    else {
+                        ESP_LOGI(TAG_GATTS, "char count %d", char_count);
+                    }
 
-                    status = esp_ble_gattc_get_char_by_uuid( gattc_if,
-                                                        p_data->search_cmpl.conn_id,
-                                                        _gattc_profile_inst.service_start_handle,
-                                                        _gattc_profile_inst.service_end_handle,
-                                                        _remote_char_uuid,
-                                                        char_elem_result,
-                                                        &char_count);
+                    if (char_count > 0) {
+                        char_elem_result = (esp_gattc_char_elem_t *)malloc(sizeof(esp_gattc_char_elem_t) * char_count);
+                        if (!char_elem_result){
+                            ESP_LOGE(TAG_GATTS, "gattc no mem");
+                            break;
+                        }
+                        status = esp_ble_gattc_get_char_by_uuid( gattc_if,
+                                                                p_data->search_cmpl.conn_id,
+                                                                _gattc_profile_inst.service_start_handle,
+                                                                _gattc_profile_inst.service_end_handle,
+                                                                _remote_char_uuid,
+                                                                char_elem_result,
+                                                                &char_count);
+                        
+                    }
+                    else {
+                        ESP_LOGE(TAG_GATTS, "no char found");
+                        break;
+                    }
+                    
+                                                        
                     if (status != ESP_GATT_OK){
                         ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_char_by_uuid error");
                         break;
                     }
                     ESP_LOGI(TAG_GATTS, "char count %d", char_count);
-                    //status = esp_ble_gattc_get_attr_count( gattc_if,
-                    //                                        p_data->search_cmpl.conn_id,
-                    //                                        ESP_GATT_DB_CHARACTERISTIC,
-                    //                                        _gattc_profile_inst.service_start_handle,
-                    //                                        _gattc_profile_inst.service_end_handle,
-                    //                                        _gattc_profile_inst.char_handle,
-                    //                                        &char_count);
+                    
                 //
                     //if (status != ESP_GATT_OK){
                     //    ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_attr_count error");

@@ -12,6 +12,8 @@ constexpr const char* TAG_GATTS = "GATT";
 constexpr char DEVICE_NAME_SERVER[ESP_BLE_ADV_NAME_LEN_MAX] = "ESP_GATT_Server";
 constexpr char DEVICE_NAME_CLIENT[ESP_BLE_ADV_NAME_LEN_MAX] = "ESP_GATT_Client";
 
+constexpr char CHAR_ADV_DATA[ESP_BLE_ADV_NAME_LEN_MAX] = "ADV ESP DATA";
+
 constexpr uint16_t PROFILE_APP_ID = 0x00;
 constexpr uint16_t PROFILE_NUM = 1;
 constexpr uint8_t SERVICE_INST_ID = 0;
