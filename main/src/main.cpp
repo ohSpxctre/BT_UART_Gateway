@@ -12,7 +12,7 @@
 #include "MessageQueue.h"
 #include "Bluetooth.hpp"
 
-#define IS_SERVER false     // Set to true for server, false for client
+#define IS_SERVER true     // Set to true for server, false for client
 
 #if IS_SERVER
 #include "BLE_Server.hpp"

@@ -32,8 +32,8 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
     _adv_data.p_service_uuid = (uint8_t *)_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
 
     //hie isch öppis komisch gloub
-    _adv_data.service_data_len = sizeof(_adv_data_buffer);
-    _adv_data.p_service_data = _adv_data_buffer;
+    //_adv_data.service_data_len = sizeof(_adv_data_buffer);
+    //_adv_data.p_service_data = _adv_data_buffer;
 
     //configuring scan response data
     _scan_rsp_data.service_uuid_len = _gatts_profile_inst.service_id.id.uuid.len;
@@ -98,6 +98,7 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
     // GAP event for setting advertising data
     //--------------------------------------------------------------------------------------------------------
     case ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT:
+    esp_ble_gap_start_advertising(&_adv_params);
         _adv_config_done &= (~adv_config_flag);
         if (_adv_config_done == 0) {
             esp_ble_gap_start_advertising(&_adv_params);
@@ -201,7 +202,6 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         //configuring advertising data
         ret = esp_ble_gap_config_adv_data(&_adv_data);
         // Check if the advertising data was set successfully
-        ESP_LOGI(TAG_GATTS, "Advertising data: %p", (void*)ADV_DATA_DEFAULT.p_service_uuid);
         if (ret) {
             ESP_LOGE(TAG_GATTS, "set adv data failed, error code = %x", ret);
         }
@@ -209,8 +209,6 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         
         //configuring scan response data
         ret = esp_ble_gap_config_adv_data(&_scan_rsp_data);
-        ESP_LOGI(TAG_GATTS, "Scan Response data: %p", (void*)_scan_rsp_data.p_service_uuid);
-
         if (ret) {
             ESP_LOGE(TAG_GATTS, "set scan response data failed, error code = %x", ret);
         }
