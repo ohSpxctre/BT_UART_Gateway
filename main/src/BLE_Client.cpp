@@ -130,6 +130,8 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                                                                             ESP_BLE_AD_TYPE_128SRV_CMPL, // Change for other UUID types if needed
                                                                             &uuid_len);
 
+                
+
                 if (uuid_data && uuid_len > 0) {
                     ESP_LOGI(TAG_GAP, "UUID Found:");
                     ESP_LOG_BUFFER_HEX(TAG_GAP, uuid_data, uuid_len);
@@ -147,16 +149,10 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                     ESP_LOG_BUFFER_HEX(TAG_GAP, &scan_result->scan_rst.ble_adv[scan_result->scan_rst.adv_data_len], scan_result->scan_rst.scan_rsp_len);
                 }
 
-                if (adv_name != NULL) {
-                    ESP_LOGI(TAG_GAP, "Device name: %.*s", adv_name_len, adv_name);
-                } else {
-                    ESP_LOGI(TAG_GAP, "Device name not found in advertisement data");
-                }
 
                 if (strlen(DEVICE_NAME_SERVER) == adv_name_len && strncmp((char *)adv_name, DEVICE_NAME_SERVER, adv_name_len) == 0) {
                     ESP_LOGI(TAG_GAP, "Device found %s", DEVICE_NAME_SERVER);
                     if (_is_connected == false) {
-                        _is_connected = true;
                         esp_ble_gap_stop_scanning();
                         memcpy(&creat_conn_params.remote_bda, scan_result->scan_rst.bda, ESP_BD_ADDR_LEN);
                         creat_conn_params.remote_addr_type = scan_result->scan_rst.ble_addr_type;
@@ -168,9 +164,11 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                         ret = esp_ble_gattc_open(_gattc_profile_inst.gattc_if,scan_result->scan_rst.bda, scan_result->scan_rst.ble_addr_type, true);
                         if (ret != ESP_OK) {
                             ESP_LOGE(TAG_GAP, "Connection failed, error code = %d", ret);
+                            _is_connected = false;
                         }
                         else {
                             ESP_LOGI(TAG_GAP, "Connection successfull");
+                            _is_connected = true;
                         }
                     }                  
                 }
@@ -264,6 +262,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                 ESP_LOGI(TAG_GATTS, "Connected, conn_id %d", p_data->connect.conn_id);
                 _gattc_profile_inst.conn_id = p_data->connect.conn_id;
                 memcpy(_gattc_profile_inst.remote_bda, p_data->connect.remote_bda, sizeof(esp_bd_addr_t));
+               
                 ret = esp_ble_gattc_send_mtu_req (gattc_if, p_data->connect.conn_id);
                 if (ret){
                     ESP_LOGE(TAG_GATTS, "Config MTU error, error code = %d", ret);
@@ -278,7 +277,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                     ESP_LOGE(TAG_GATTS, "Open failed, status %d", p_data->open.status);
                     break;
                 }
-                ESP_LOGI(TAG_GATTS, "Open successfully, MTU %u", p_data->open.mtu);
+                ESP_LOGI(TAG_GATTS, "Open successfully");
             break;
 
             //------------------------------------------------------------------------------------------------------------
@@ -292,11 +291,12 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                 ESP_LOGI(TAG_GATTS, "Service discover complete, conn_id %d", param->dis_srvc_cmpl.conn_id);
                 ret = esp_ble_gattc_search_service(gattc_if, param->dis_srvc_cmpl.conn_id, &_remote_service_uuid);
                 if (ret != ESP_OK){
-                    ESP_LOGE(TAG_GATTS, "Search service error, error code = %d", ret);
+                    ESP_LOGE(TAG_GATTS, "Search service failed, error code = %d", ret);
                 }
                 else {
-                    ESP_LOGI(TAG_GATTS, "Search service successfully");
+                    ESP_LOGI(TAG_GATTS, "Search service started");
                 }
+                
             break;
 
             //------------------------------------------------------------------------------------------------------------
@@ -313,6 +313,8 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                 ESP_LOGI(TAG_GATTS, "Service search result, conn_id = %x, is primary service %d", p_data->search_res.conn_id, p_data->search_res.is_primary);
                 ESP_LOGI(TAG_GATTS, "start handle %d, end handle %d, current handle value %d", p_data->search_res.start_handle, p_data->search_res.end_handle, p_data->search_res.srvc_id.inst_id);
 
+                
+
                 //check if the service UUID matches the remote service UUID
                 if (p_data->search_res.srvc_id.uuid.len == ESP_UUID_LEN_128 &&
                     memcmp(p_data->search_res.srvc_id.uuid.uuid.uuid128, _remote_service_uuid.uuid.uuid128, _remote_service_uuid.len) == 0){
@@ -321,6 +323,9 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                     memcpy(_gattc_profile_inst.remote_bda, param->open.remote_bda, sizeof(esp_bd_addr_t));
                     _gattc_profile_inst.service_start_handle = p_data->search_res.start_handle;
                     _gattc_profile_inst.service_end_handle = p_data->search_res.end_handle;
+                }
+                else {
+                    ESP_LOGI(TAG_GATTS, "Service found but not right uuid");
                 }
             break;
             
@@ -340,40 +345,54 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                     ESP_LOGI(TAG_GATTS, "Unknown service source");
                 }
                 ESP_LOGI(TAG_GATTS, "Service search complete");
-                _gattc_profile_inst.conn_id = p_data->search_cmpl.conn_id;
-                _get_server = true;
 
-                if (_get_server) {
+                char_elem_result = (esp_gattc_char_elem_t *)malloc(sizeof(esp_gattc_char_elem_t));
+                if (!char_elem_result){
+                    ESP_LOGE(TAG_GATTS, "gattc no mem");
+                    break;
+                }
 
-                    status = esp_ble_gattc_get_attr_count( gattc_if,
-                                                            _gattc_profile_inst.conn_id,
-                                                            ESP_GATT_DB_CHARACTERISTIC,
-                                                            _gattc_profile_inst.service_start_handle,
-                                                            _gattc_profile_inst.service_end_handle,
-                                                            _gattc_profile_inst.char_handle,
-                                                            &char_count);
+                status = esp_ble_gattc_get_attr_count( gattc_if,
+                    _gattc_profile_inst.conn_id,
+                    ESP_GATT_DB_CHARACTERISTIC,
+                    _gattc_profile_inst.service_start_handle,
+                    _gattc_profile_inst.service_end_handle,
+                    _gattc_profile_inst.char_handle,
+                    &char_count);
+                
+                if (status != ESP_GATT_OK){
+                    ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_attr_count error, error code = %d", status);
+                    free(char_elem_result);
+                    char_elem_result = nullptr;
+                    break;
+                }
+                ESP_LOGI(TAG_GATTS, "char count %d", char_count);
+
+
+                status = esp_ble_gattc_get_char_by_uuid( _gattc_profile_inst.gattc_if,
+                    _gattc_profile_inst.conn_id,
+                    _gattc_profile_inst.service_start_handle,
+                    _gattc_profile_inst.service_end_handle,
+                    _remote_char_uuid,
+                    char_elem_result,
+                    &char_count);
+                
+                    
                     
                     if (status != ESP_GATT_OK){
-                        ESP_LOGE(TAG_GATTS, "No attributes found error");
+                        ESP_LOGE(TAG_GATTS, "char not found by uuid, error %d", status);
                         break;
                     }
                     else {
-                        ESP_LOGI(TAG_GATTS, "char count %d", char_count);
+                        ESP_LOGI(TAG_GATTS, "char found by uuid");
+                        ESP_LOGI(TAG_GATTS, "char handle %d", char_elem_result[0].char_handle);
+                        _gattc_profile_inst.char_handle = char_elem_result[0].char_handle;
+                        char_count = 1;
                     }
 
                     if (char_count > 0) {
-                        char_elem_result = (esp_gattc_char_elem_t *)malloc(sizeof(esp_gattc_char_elem_t) * char_count);
-                        if (!char_elem_result){
-                            ESP_LOGE(TAG_GATTS, "gattc no mem");
-                            break;
-                        }
-                        status = esp_ble_gattc_get_char_by_uuid( gattc_if,
-                                                                p_data->search_cmpl.conn_id,
-                                                                _gattc_profile_inst.service_start_handle,
-                                                                _gattc_profile_inst.service_end_handle,
-                                                                _remote_char_uuid,
-                                                                char_elem_result,
-                                                                &char_count);
+                        
+                        
 
                         ret = esp_ble_gattc_register_for_notify( gattc_if,
                                                            _gattc_profile_inst.remote_bda,
@@ -396,7 +415,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                         ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_char_by_uuid error");
                         break;
                     }                    
-                }
+                
             break;
             
             //------------------------------------------------------------------------------------------------------------
