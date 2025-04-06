@@ -2,7 +2,7 @@
  * @file BLE_Client.cpp
  * @brief Implementation of BLE_Client class.
  */
-#if 0
+#if 1
  #include "BLE_Client.hpp"
  #include <iostream>
 

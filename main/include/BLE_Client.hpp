@@ -6,13 +6,13 @@
  #ifndef BLE_CLIENT_HPP
  #define BLE_CLIENT_HPP
 
- #if 0
+ #if 1
  
  #include "Bluetooth.hpp"
 
  constexpr esp_bt_uuid_t REMOTE_FILTER_SERVICE_UUID = SERVICE_UUID_DEFAULT;
 
- constexpr esp_bt_uuid_t REMOTE_FILTER_CHAR_UUID = CHAR_UUID_DEFAULT16;
+ constexpr esp_bt_uuid_t REMOTE_FILTER_CHAR_UUID = CHAR_UUID_DEFAULT;
 
  constexpr esp_bt_uuid_t REMOTE_DESCR_UUID_DEFAULT = DESCR_UUID_DEFAULT;
 
