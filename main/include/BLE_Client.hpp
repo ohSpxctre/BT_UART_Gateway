@@ -67,6 +67,7 @@
     esp_bt_uuid_t _remote_descr_uuid;
 
     uint8_t _char_send_buffer[ESP_GATT_MAX_ATTR_LEN] = {"Hello from ESP32 BLE Client"};
+    uint8_t _char_recv_buffer[ESP_GATT_MAX_ATTR_LEN] = {0};
  
     bool _is_connected = false;
 
@@ -91,9 +92,6 @@
      
      ~BLE_Client();
 
-  
-
-     
      void connSetup() override;
      void send(const std::string &data) override;
      std::string receive() override;
