@@ -13,17 +13,36 @@ This project implements a **Bluetooth-to-UART gateway** using two **ESP32-C** ch
 
 ### 🛠️ Supported Runtime Commands
 
-You can issue the following commands over UART to retrieve system info:
+You can issue the following commands over UART to retrieve system information from either:
 
-| Command            | Description                                                                 |
-|--------------------|-----------------------------------------------------------------------------|
-| `CHIP_INFO`        | Displays ESP32 chip details: model, features, revision, and core count.     |
-| `IDF_VERSION`      | Shows the ESP-IDF version used in the current build.                         |
-| `FREE_HEAP`        | Returns the current free heap memory (in bytes).                            |
-| `FREE_INTERNAL_HEAP` | Reports free internal RAM (excluding external PSRAM).                     |
-| `FREE_MIN_HEAP`    | Shows the minimum heap available since startup.                             |
-| `CLOCK_SPEED`      | Displays the CPU clock speed (in MHz).                                      |
-| `RESET`            | Performs a software reset of the ESP32 chip.                                |
+- The **local** ESP32
+- The **remote** ESP32 (by prefixing the command with `OTHER`)
+
+#### 📥 Command Syntax
+
+- **Local command**:  
+  ```
+  cmd chip_info
+  ```
+- **Remote command** (sent via Bluetooth to the other ESP32):  
+  ```
+  cmd other chip_info
+  ```
+
+#### 📄 Available Commands
+
+| Command               | Description                                                                 |
+|------------------------|-----------------------------------------------------------------------------|
+| `CHIP_INFO`            | Displays ESP32 chip details: model, features, revision, and core count.     |
+| `IDF_VERSION`          | Shows the ESP-IDF version used in the current build.                         |
+| `FREE_HEAP`            | Returns the current free heap memory (in bytes).                            |
+| `FREE_INTERNAL_HEAP`   | Reports free internal RAM (excluding external PSRAM).                       |
+| `FREE_MIN_HEAP`        | Shows the minimum heap available since startup.                             |
+| `CLOCK_SPEED`          | Displays the CPU clock speed (in MHz).                                      |
+| `RESET`                | Performs a software reset of the ESP32 chip.                                |
+
+> 🔁 **To query the other device**, simply prepend `cmd other` to any of the commands above.  
+> Example: `cmd other free_heap`
 
 ---
 
@@ -121,7 +140,9 @@ The project includes a preconfigured `Doxyfile` for generating full HTML documen
 ---
 
 ### 🐳 Option 1: Generate Docs Inside Docker
+When using Docker, the doxygen is automatically created on each startup and build.
 
+Here are instructions if you want to create it manually:
 1. The dev container includes **Doxygen** and **Graphviz**.
 2. Once your container is running in VS Code, run:
 
@@ -136,6 +157,7 @@ The project includes a preconfigured `Doxyfile` for generating full HTML documen
    ```
 
 > ✅ No extra installation required – fully integrated into the container!
+> To open you have to start it from the local explorer
 
 ---
 
