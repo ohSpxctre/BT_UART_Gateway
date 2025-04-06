@@ -36,8 +36,8 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
     _adv_data.p_service_data = _adv_data_buffer;
 
     //configuring scan response data
-    //_scan_rsp_data.service_uuid_len = _gatts_profile_inst.service_id.id.uuid.len;
-    //_scan_rsp_data.p_service_uuid = (uint8_t *)_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
+    _scan_rsp_data.service_uuid_len = _gatts_profile_inst.service_id.id.uuid.len;
+    _scan_rsp_data.p_service_uuid = (uint8_t *)_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
 
    //print_adv_data(_adv_data.p_service_uuid, _adv_data.service_data_len);
    //print_adv_data(_scan_rsp_data.p_service_uuid, _scan_rsp_data.service_uuid_len);
