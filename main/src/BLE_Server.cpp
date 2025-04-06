@@ -313,11 +313,8 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                     case 0x0001:
                         if (_gatts_profile_inst.property & ESP_GATT_CHAR_PROP_BIT_NOTIFY) {
                             ESP_LOGI(TAG_GATTS, "Notification enabled should not happen!");
-                            for (int i = 0; i < sizeof(notify_data); ++i) {
-                                notify_data[i] = i%0xff;
-                            }
-                            //the size of notify_data[] need less than MTU size
-                            esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, _gatts_profile_inst.char_handle, sizeof(notify_data), notify_data, false);
+                            //the size of notify_data[] need less than MTU indicate_data
+                            esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, _gatts_profile_inst.char_handle, sizeof(indicate_data), indicate_data, false);
                         }
                         break;
                     case 0x0002:
@@ -405,11 +402,6 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
             ESP_LOGE(TAG_GATTS, "ILLEGAL HANDLE");
         }
 
-        ESP_LOGI(TAG_GATTS, "the gatts demo char length = %x", length);
-        for(int i = 0; i < length; i++){
-            ESP_LOGI(TAG_GATTS, "prf_char[%x] =%x",i,prf_char[i]);
-        }
-
         ret = esp_ble_gatts_add_char_descr(_gatts_profile_inst.service_handle,
                                             &_gatts_profile_inst.descr_uuid,
                                             _gatts_profile_inst.perm,
@@ -418,6 +410,9 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
 
         if (ret) {
             ESP_LOGE(TAG_GATTS, "Add descriptor failed, error code = %x", ret);
+        }
+        else {
+            ESP_LOGI(TAG_GATTS, "Descriptor added successfully, handle: %d", param->add_char.attr_handle);
         }
     break;
 
@@ -566,13 +561,20 @@ void BLE_Server::handle_exec_write_event (prepare_type_env_t *prepare_write_env,
 }
 
  void BLE_Server::send(const std::string &data) {
+        
+
         if (_is_connected) {
             ESP_LOGI(TAG_SERVER, "Sending data: %s", data.c_str());
-            _char_value.attr_len = data.length();
-            memcpy(_char_data_buffer, data.c_str(), data.length());
             
+            memcpy(_char_value.attr_value, data.c_str(), data.length());
+            _char_value.attr_value[data.length()] = '\0'; // Null-terminate the data
+
+            esp_ble_gatts_set_attr_value(_gatts_profile_inst.char_handle, sizeof(_char_value.attr_value), _char_value.attr_value);
+
+            // Use temp_data for sending
             esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle,
-                                        data.length(), (uint8_t *)data.c_str(), false);
+                                        _char_value.attr_len, _char_value.attr_value, false);
+          
         } else {
            // ESP_LOGI(TAG, "Cannot send data, not connected to a client");
         }
@@ -594,7 +596,6 @@ void BLE_Server::print_adv_data(const uint8_t *adv_data, uint8_t adv_data_len) {
     
     ESP_LOGI("BLE", "Advertisement Data: %s", adv_str);
 }
-
 
 const char* BLE_Server::get_gatts_event_name(esp_gatts_cb_event_t event) {
     switch (event) {
