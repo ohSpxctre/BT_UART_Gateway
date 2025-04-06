@@ -177,7 +177,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     uint16_t mtu_size =_gatts_profile_inst.local_mtu - 1;
     uint16_t mtu_send_len = 0;
     uint8_t notify_data[mtu_size-3] = {0};
-    uint8_t indicate_data[mtu_size-3] = {0};
+    uint8_t indicate_data[mtu_size-3] = {"Hello Client"};
 
     //Loging event type
     ESP_LOGW(TAG_SERVER, "GATT event: %s", get_gatts_event_name(event));
@@ -312,7 +312,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                 switch (_gatts_profile_inst.descr_value) {
                     case 0x0001:
                         if (_gatts_profile_inst.property & ESP_GATT_CHAR_PROP_BIT_NOTIFY) {
-                            ESP_LOGI(TAG_GATTS, "Notification enabled");
+                            ESP_LOGI(TAG_GATTS, "Notification enabled should not happen!");
                             for (int i = 0; i < sizeof(notify_data); ++i) {
                                 notify_data[i] = i%0xff;
                             }
@@ -323,9 +323,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                     case 0x0002:
                         if (_gatts_profile_inst.property & ESP_GATT_CHAR_PROP_BIT_INDICATE) {
                             ESP_LOGI(TAG_GATTS, "Indication enabled");
-                            for (int i = 0; i < sizeof(indicate_data); ++i) {
-                                indicate_data[i] = i%0xff;
-                            }
+                            
                              //the size of indicate_data[] need less than MTU size
                             esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, _gatts_profile_inst.char_handle, sizeof(indicate_data), indicate_data, true);
                         }
@@ -378,8 +376,8 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
 
             ret = esp_ble_gatts_add_char(_gatts_profile_inst.service_handle,
                                             &_gatts_profile_inst.char_uuid,
-                                            (ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE),
-                                            (ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_NOTIFY),
+                                            _gatts_profile_inst.perm,
+                                            _gatts_profile_inst.property,
                                             &_char_value,
                                             NULL);
         

@@ -227,7 +227,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
     esp_err_t ret = ESP_OK;
 
     uint16_t char_count =0;
-    uint16_t notify_en =1;
+    uint8_t cccd_value[2] = {0x02,0x00};
     esp_gattc_char_elem_t *char_elem_result   = NULL;
     esp_gattc_descr_elem_t *descr_elem_result = NULL;
 
@@ -421,8 +421,8 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                                 ret = esp_ble_gattc_write_char_descr( gattc_if,
                                                                     _gattc_profile_inst.conn_id,
                                                                     descr_elem_result[0].handle,
-                                                                    sizeof(notify_en),
-                                                                    (uint8_t *)&notify_en,
+                                                                    sizeof(cccd_value),
+                                                                    cccd_value,
                                                                     ESP_GATT_WRITE_TYPE_RSP,
                                                                     ESP_GATT_AUTH_REQ_NONE);
                                 if (ret != ESP_GATT_OK){

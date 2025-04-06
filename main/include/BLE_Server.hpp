@@ -133,7 +133,7 @@ private:
     .char_uuid = CHAR_UUID_DEFAULT,
     .char_resp_ctrl = ESP_GATT_AUTO_RSP,
     .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-    .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_NOTIFY,
+    .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_INDICATE,
     .descr_handle = 0,
     .descr_value = 0,
     .descr_uuid = DESCR_UUID_DEFAULT,
