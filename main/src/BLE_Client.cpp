@@ -66,6 +66,14 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
     }
  }
 
+ void BLE_Client:: connSetup() {
+    esp_ble_gap_register_callback(gap_event_handler);
+    esp_ble_gattc_register_callback(gattc_event_handler);
+    esp_ble_gattc_app_register(PROFILE_APP_ID);
+    esp_ble_gatt_set_local_mtu(_gattc_profile_inst.local_mtu);
+    ESP_LOGI(TAG_CLIENT, "BLE Client initialized and callbacks registered");
+ }
+
  void BLE_Client::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
 
     esp_err_t ret = ESP_OK;
@@ -534,13 +542,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
 
 
  
- void BLE_Client:: connSetup() {
-    esp_ble_gap_register_callback(gap_event_handler);
-    esp_ble_gattc_register_callback(gattc_event_handler);
-    esp_ble_gattc_app_register(PROFILE_APP_ID);
-    esp_ble_gatt_set_local_mtu(_gattc_profile_inst.local_mtu);
-    ESP_LOGI(TAG_CLIENT, "BLE Client initialized and callbacks registered");
- }
+
  
  void BLE_Client::send(const std::string &data) {
      std::cout << "BLE Client Sending: " << data << std::endl;

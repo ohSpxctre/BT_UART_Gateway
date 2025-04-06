@@ -208,19 +208,13 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         _adv_config_done |= adv_config_flag;
         
         //configuring scan response data
-        //ret = esp_ble_gap_config_adv_data(&_scan_rsp_data);
-        //ESP_LOGI(TAG_GATTS, "Scan Response data: %p", (void*)_scan_rsp_data.p_service_uuid);
-//
-        //if (ret) {
-        //    ESP_LOGE(TAG_GATTS, "set scan response data failed, error code = %x", ret);
-        //}
-        //_adv_config_done |= scan_rsp_config_flag;
+        ret = esp_ble_gap_config_adv_data(&_scan_rsp_data);
+        ESP_LOGI(TAG_GATTS, "Scan Response data: %p", (void*)_scan_rsp_data.p_service_uuid);
 
-        //creating the gatt service
-        ret = esp_ble_gatts_create_service(gatts_if, &_gatts_profile_inst.service_id, HANDLE_NUM);
-        if(ret) {
-            ESP_LOGE(TAG_GATTS, "create service failed, error code = %x", ret);
+        if (ret) {
+            ESP_LOGE(TAG_GATTS, "set scan response data failed, error code = %x", ret);
         }
+        _adv_config_done |= scan_rsp_config_flag;
     break;
 
     //--------------------------------------------------------------------------------------------------------
@@ -438,11 +432,12 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         
         /* For the IOS system, please reference the apple official documents about the ble connection parameters restrictions. */
         conn_params.latency = 0;
-        conn_params.max_int = 0x190;    // max_int = 0x20*1.25ms = 40ms
-        conn_params.min_int = 0x320;    // min_int = 0x10*1.25ms = 20ms
+        conn_params.min_int = 0x190;    // min_int = 0x10*1.25ms = 20ms
+        conn_params.max_int = 0x320;    // max_int = 0x20*1.25ms = 40ms
         conn_params.timeout = 400;    // timeout = 400*10ms = 4000ms
 
         //start sent the update connection parameters to the peer device.
+
         ret = esp_ble_gap_update_conn_params(&conn_params);
         if (ret) {
             ESP_LOGE(TAG_GATTS, "Update connection params failed, error code = %x", ret);
@@ -561,19 +556,28 @@ void BLE_Server::handle_exec_write_event (prepare_type_env_t *prepare_write_env,
 }
 
  void BLE_Server::send(const std::string &data) {
-        
+
+        _char_value.attr_value = (uint8_t*)(data.c_str());
+   
+        //uint8_t chunk_size = _gatts_profile_inst.local_mtu - 3;  // Maximum payload per packet (due to MTU size)
+        //uint8_t string_len = data.length();  // Length of the string
+        //uint8_t num_chunks = (string_len + chunk_size - 1) / chunk_size;  // Number of chunks required
 
         if (_is_connected) {
-            ESP_LOGI(TAG_SERVER, "Sending data: %s", data.c_str());
             
-            memcpy(_char_value.attr_value, data.c_str(), data.length());
-            _char_value.attr_value[data.length()] = '\0'; // Null-terminate the data
-
-            esp_ble_gatts_set_attr_value(_gatts_profile_inst.char_handle, sizeof(_char_value.attr_value), _char_value.attr_value);
-
-            // Use temp_data for sending
-            esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle,
-                                        _char_value.attr_len, _char_value.attr_value, false);
+            esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, true);
+            // Send the string in chunks
+            //for (uint8_t i = 0; i < num_chunks; i++) {
+            //    uint8_t offset = i * chunk_size;
+            //    uint8_t len = (i == num_chunks - 1) ? (string_len - offset) : chunk_size;
+        //
+            //    uint8_t chunk_data[chunk_size];
+            //    memcpy(chunk_data, &data[offset], len);
+        //
+            //    // Send an indication with the chunk data
+            //    esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle, len, chunk_data, false);
+            //    ESP_LOGI(TAG_GATTS, "Sending chunk %d of %d: %.*s", i + 1, num_chunks, (int)len, chunk_data);
+            //}
           
         } else {
            // ESP_LOGI(TAG, "Cannot send data, not connected to a client");
