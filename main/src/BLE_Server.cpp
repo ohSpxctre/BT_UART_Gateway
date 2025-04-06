@@ -91,7 +91,7 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
 
 
  void BLE_Server::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
-    ESP_LOGW(TAG_SERVER, "GAP event: %d", event);
+    ESP_LOGW(TAG_SERVER, "GAP event: %s", get_gap_event_name(event));
     switch (event)
     {
     //--------------------------------------------------------------------------------------------------------
@@ -156,7 +156,7 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
     // GAP default case
     //--------------------------------------------------------------------------------------------------------
     default:
-        ESP_LOGE(TAG_GAP, "Unhandled GAP event: %d", event);
+        ESP_LOGE(TAG_GAP, "Unhandled GAP event: %s", get_gap_event_name(event));
         break;
     }
 }
@@ -466,9 +466,9 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_CONF_EVT:
         ESP_LOGI(TAG_GATTS, "Confirm receive, status %d, attr_handle %d", param->conf.status, param->conf.handle);
-        if (param->conf.status != ESP_GATT_OK){
-            ESP_LOG_BUFFER_HEX(TAG_GATTS, param->conf.value, param->conf.len);
-        }
+        //if (param->conf.status != ESP_GATT_OK){
+        //    ESP_LOG_BUFFER_HEX(TAG_GATTS, param->conf.value, param->conf.len);
+        //}
     break;
 
     //--------------------------------------------------------------------------------------------------------
