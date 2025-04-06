@@ -292,11 +292,9 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
             return;
         }
 
-        rsp.attr_value.len = sizeof(response);
-        memcpy(rsp.attr_value.value, response, rsp.attr_value.len);
-        esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
-
-
+        //rsp.attr_value.len = sizeof(response);
+        //memcpy(rsp.attr_value.value, response, rsp.attr_value.len);
+        //esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
     break;
 
 
@@ -351,7 +349,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     // GATT Execute Write event
     //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_EXEC_WRITE_EVT:
-        ESP_LOGE(TAG_GATTS, "Execute write event (not implemented), conn_id: %d", param->exec_write.conn_id);
+        ESP_LOGE(TAG_GATTS, "Execute write event, conn_id: %d", param->exec_write.conn_id);
         esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
         // Call the user function to handle the execute write event
         handle_exec_write_event(&_prepare_write_env, param);
@@ -447,8 +445,8 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         
         /* For the IOS system, please reference the apple official documents about the ble connection parameters restrictions. */
         conn_params.latency = 0;
-        conn_params.max_int = 0x20;    // max_int = 0x20*1.25ms = 40ms
-        conn_params.min_int = 0x10;    // min_int = 0x10*1.25ms = 20ms
+        conn_params.max_int = 0x190;    // max_int = 0x20*1.25ms = 40ms
+        conn_params.min_int = 0x320;    // min_int = 0x10*1.25ms = 20ms
         conn_params.timeout = 400;    // timeout = 400*10ms = 4000ms
 
         //start sent the update connection parameters to the peer device.
