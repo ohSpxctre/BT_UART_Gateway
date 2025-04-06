@@ -17,7 +17,7 @@ constexpr uint16_t HANDLE_NUM = 10;
 constexpr uint8_t SERVICE_INST_ID = 0;
 constexpr uint16_t CHAR_INST_ID = 0;
 
-constexpr uint16_t MTU_DEFAULT = 259; // Default MTU size
+constexpr uint16_t MTU_DEFAULT = 23; // Default MTU size
 
 
 
