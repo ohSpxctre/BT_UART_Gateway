@@ -164,12 +164,13 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                         creat_conn_params.is_direct = true;
                         creat_conn_params.is_aux = false;
                         creat_conn_params.phy_mask = 0x0;
-                        ret = esp_ble_gattc_enh_open(_gattc_profile_inst.gattc_if, &creat_conn_params);
-                        if (ret) {
-                            ESP_LOGI(TAG_GAP, "Connection successfull");
+                        //ret = esp_ble_gattc_enh_open(_gattc_profile_inst.gattc_if, &creat_conn_params);
+                        ret = esp_ble_gattc_open(_gattc_profile_inst.gattc_if,scan_result->scan_rst.bda, scan_result->scan_rst.ble_addr_type, true);
+                        if (ret != ESP_OK) {
+                            ESP_LOGE(TAG_GAP, "Connection failed, error code = %d", ret);
                         }
                         else {
-                            ESP_LOGE(TAG_GAP, "Connection failed, error code = %d", ret);
+                            ESP_LOGI(TAG_GAP, "Connection successfull");
                         }
                     }                  
                 }
@@ -289,7 +290,13 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                     break;
                 }
                 ESP_LOGI(TAG_GATTS, "Service discover complete, conn_id %d", param->dis_srvc_cmpl.conn_id);
-                esp_ble_gattc_search_service(gattc_if, param->dis_srvc_cmpl.conn_id, &_remote_service_uuid);
+                ret = esp_ble_gattc_search_service(gattc_if, param->dis_srvc_cmpl.conn_id, &_remote_service_uuid);
+                if (ret != ESP_OK){
+                    ESP_LOGE(TAG_GATTS, "Search service error, error code = %d", ret);
+                }
+                else {
+                    ESP_LOGI(TAG_GATTS, "Search service successfully");
+                }
             break;
 
             //------------------------------------------------------------------------------------------------------------
@@ -310,7 +317,8 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                 if (p_data->search_res.srvc_id.uuid.len == ESP_UUID_LEN_128 &&
                     memcmp(p_data->search_res.srvc_id.uuid.uuid.uuid128, _remote_service_uuid.uuid.uuid128, _remote_service_uuid.len) == 0){
                     ESP_LOGI(TAG_GATTS, "Service found by uuid");
-                    _get_server = true;
+                    
+                    memcpy(_gattc_profile_inst.remote_bda, param->open.remote_bda, sizeof(esp_bd_addr_t));
                     _gattc_profile_inst.service_start_handle = p_data->search_res.start_handle;
                     _gattc_profile_inst.service_end_handle = p_data->search_res.end_handle;
                 }
@@ -333,6 +341,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                 }
                 ESP_LOGI(TAG_GATTS, "Service search complete");
                 _gattc_profile_inst.conn_id = p_data->search_cmpl.conn_id;
+                _get_server = true;
 
                 if (_get_server) {
 
@@ -365,6 +374,16 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                                                                 _remote_char_uuid,
                                                                 char_elem_result,
                                                                 &char_count);
+
+                        ret = esp_ble_gattc_register_for_notify( gattc_if,
+                                                           _gattc_profile_inst.remote_bda,
+                                                           _gattc_profile_inst.char_handle);
+                        if (ret != ESP_OK){
+                            ESP_LOGE(TAG_GATTS, "Register for notify error, error code = %d", ret);
+                        }
+                        else {
+                            ESP_LOGI(TAG_GATTS, "Register for notify successfully");
+                        }
                         
                     }
                     else {
@@ -448,7 +467,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                     }
                 }  
             break;
-            
+
             //------------------------------------------------------------------------------------------------------------
             // GATT notify event
             //------------------------------------------------------------------------------------------------------------
@@ -535,7 +554,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
             // default case for unhandled events
             //------------------------------------------------------------------------------------------------------------
             default:
-                ESP_LOGE(TAG_GATTS, "Unhandled GATTC event: %d", event);
+                ESP_LOGE(TAG_GATTS, "Unhandled GATTC event: %s", get_gattc_event_name(event));
                 break;
         }
     }

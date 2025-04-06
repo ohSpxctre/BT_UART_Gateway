@@ -79,7 +79,13 @@
         "text_encoding": "cpp",
         "cinttypes": "cpp",
         "typeinfo": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "bitset": "cpp",
+        "complex": "cpp",
+        "set": "cpp",
+        "netfwd": "cpp",
+        "regex": "cpp",
+        "fstream": "cpp"
     },
     "idf.flashType": "JTAG"
 }
