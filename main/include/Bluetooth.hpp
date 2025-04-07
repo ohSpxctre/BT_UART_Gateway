@@ -34,8 +34,8 @@ public:
     virtual ~Bluetooth();
 
     virtual void connSetup() = 0;
-    virtual void send(const std::string &data) = 0;
-    virtual std::string receive() = 0;
+    virtual void send(const char *data) = 0;
+    virtual void sendTask(MessageHandler* msgHandler) = 0;
 };
 
 #endif // BLUETOOTH_HPP

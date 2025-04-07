@@ -14,9 +14,11 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
 
  BLE_Server::BLE_Server(
     esp_ble_adv_params_t adv_params,
-    esp_ble_adv_data_t adv_data)
+    esp_ble_adv_data_t adv_data,
+    MessageHandler* msgHandler)
     :_adv_params(adv_params),
-    _adv_data(adv_data)
+    _adv_data(adv_data),
+    _msgHandler(msgHandler)
  {
     // Initialize the static instance pointer
     if (Server_instance != nullptr) {
@@ -56,6 +58,7 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
     esp_bt_controller_deinit();
     nvs_flash_deinit();
     ESP_LOGI(TAG_SERVER, "BLE Server Deinitialized");
+    _msgHandler = nullptr;
  }
 
  void BLE_Server::connSetup() {
@@ -221,7 +224,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     break;
 
    //--------------------------------------------------------------------------------------------------------
-    // GATT Read event
+    // GATT Read event (not used in this example)
     //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_READ_EVT:
         ESP_LOGI(TAG_GATTS, "Characteristic read, conn_id %d, trans_id %" PRIu32 ", handle %d", param->read.conn_id, param->read.trans_id, param->read.handle);
@@ -254,7 +257,6 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                 return;
             }
             
-
             // Determine response length based on MTU
             mtu_send_len = (ESP_GATT_MAX_ATTR_LEN - offset > mtu_size) ? mtu_size : (ESP_GATT_MAX_ATTR_LEN - offset);
             //copy the data to the response buffer               
@@ -269,11 +271,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
             return;
         }
 
-        //rsp.attr_value.len = sizeof(response);
-        //memcpy(rsp.attr_value.value, response, rsp.attr_value.len);
-        //esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
     break;
-
 
     //--------------------------------------------------------------------------------------------------------
     // GATT Write event
@@ -290,17 +288,12 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                     case 0x0001:
                         if (_gatts_profile_inst.property & ESP_GATT_CHAR_PROP_BIT_NOTIFY) {
                             ESP_LOGI(TAG_GATTS, "Notification enabled should not happen!");
-                            //the size of notify_data[] need less than MTU indicate_data
-                            //esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, _gatts_profile_inst.char_handle,_char_value.attr_len, _char_value.attr_value, false);
-                        }
+                            }
                         break;
                     case 0x0002:
                         if (_gatts_profile_inst.property & ESP_GATT_CHAR_PROP_BIT_INDICATE) {
                             ESP_LOGI(TAG_GATTS, "Indication enabled");
-                            
-                             //the size of indicate_data[] need less than MTU size
-                            //esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, true);
-                        }
+                            }
                         break;
                     case 0x0000:
                         ESP_LOGI(TAG_GATTS, "Notification/Indication disabled");
@@ -312,28 +305,29 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                 }
             }
             else if (_gatts_profile_inst.char_handle == param->write.handle) {
-                ESP_LOGI(TAG_GATTS, "Characteristic value: %d", param->write.len);
+                
                 memcpy(_char_rcv_buffer, param->write.value, param->write.len);
                 _char_data_buffer[param->write.len] = '\0';
+
+                MessageHandler::Message msg;
+                std::fill(msg.begin(), msg.end(), '\0');
+                std::copy(_char_rcv_buffer, _char_rcv_buffer + param->write.len, msg.begin());
+
+                _msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
                 ESP_LOGI(TAG_GATTS, "Received value: %.*s", param->write.len, _char_data_buffer);
             }
             else {
                 ESP_LOGI(TAG_GATTS, "Unknown handle: %d", param->write.handle);
             }
-            //call the user function to handle the write event
-            //handle_write_event(gatts_if, &_prepare_write_env, param);
         }
     break;
 
-
     //--------------------------------------------------------------------------------------------------------
-    // GATT Execute Write event
+    // GATT Execute Write event (not used in this example)
     //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_EXEC_WRITE_EVT:
         ESP_LOGE(TAG_GATTS, "Execute write event, conn_id: %d", param->exec_write.conn_id);
         esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
-        // Call the user function to handle the execute write event
-        //handle_exec_write_event(&_prepare_write_env, param);
     break;
 
     //--------------------------------------------------------------------------------------------------------
@@ -382,8 +376,6 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
             param->add_char.status, param->add_char.attr_handle, param->add_char.service_handle);
         //reading the char handle
         _gatts_profile_inst.char_handle = param->add_char.attr_handle;
-        
-
 
         ret = esp_ble_gatts_get_attr_value(param->add_char.attr_handle,  &length, &prf_char);
         if (ret == ESP_FAIL){
@@ -480,106 +472,42 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     }
 }
 
-void BLE_Server::handle_write_event (esp_gatt_if_t gatts_if, prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param) {
+ void BLE_Server::send(const char * data) {
 
-    esp_gatt_status_t status = ESP_GATT_OK;
-    esp_gatt_rsp_t *gatt_rsp = (esp_gatt_rsp_t *)malloc(sizeof(esp_gatt_rsp_t));
-    esp_err_t ret = ESP_OK;
+    _char_value.attr_value = (uint8_t *)data;
 
-
-    if (param->write.need_rsp) {
-        if (param->write.is_prep) {
-            // Check if the offset is valid
-            if(param->write.offset > PREPARE_BUFF_MAX_LEN) {
-                status = ESP_GATT_INVALID_OFFSET;
-            }
-            // Check if the length is valid
-            else  if ((param->write.offset + param->write.len) > PREPARE_BUFF_MAX_LEN) {
-                status = ESP_GATT_INVALID_ATTR_LEN;
-            }
-            // Check if the buffer is not NULL and then allocate memory for it
-            if (status == ESP_GATT_OK && prepare_write_env->prepare_buf == NULL){
-                prepare_write_env->prepare_buf = (uint8_t *)malloc(PREPARE_BUFF_MAX_LEN*sizeof(uint8_t));
-                prepare_write_env->prepare_len = 0;
-                if (prepare_write_env->prepare_buf == NULL) {
-                    ESP_LOGE(TAG_GATTS, "Gatt_server prep no mem");
-                    status = ESP_GATT_NO_RESOURCES;
-                }
-            }
-
-            if (gatt_rsp) {
-                gatt_rsp->attr_value.len = param->write.len;
-                gatt_rsp->attr_value.handle = param->write.handle;
-                gatt_rsp->attr_value.offset = param->write.offset;
-                gatt_rsp->attr_value.auth_req = ESP_GATT_AUTH_REQ_NONE;
-                memcpy(gatt_rsp->attr_value.value, param->write.value, param->write.len);
-
-                ret = esp_ble_gatts_send_response (gatts_if, param->write.conn_id, param->write.trans_id, status, gatt_rsp);
-                if (ret != ESP_OK){
-                    ESP_LOGE(TAG_GATTS, "Send response error\n");
-                }
-                free(gatt_rsp);
-                gatt_rsp = NULL;
-            }
-            else {
-                ESP_LOGE(TAG_GATTS, "malloc failed, no resource to send response error\n");
-                status = ESP_GATT_NO_RESOURCES;
-            }
-
-            if (status != ESP_GATT_OK){
-                return;
-            }
-            
-            // Prepare write request, store the data in the buffer
-            memcpy(prepare_write_env->prepare_buf + param->write.offset,
-                param->write.value,
-                param->write.len);
-            prepare_write_env->prepare_len += param->write.len;
+    if (_is_connected) {
+        
+        if (_gatts_profile_inst.descr_value == 0x0002){
+            // Send indication to the client
+            esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, true);
         }
-        else {
-            esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, status, NULL);
+        else if (_gatts_profile_inst.descr_value == 0x0001){
+            //send notification to the client
+            esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, false);
         }
-    }
-}
-
-void BLE_Server::handle_exec_write_event (prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param) {
-    if (param->exec_write.exec_write_flag == ESP_GATT_PREP_WRITE_EXEC){
-        ESP_LOG_BUFFER_HEX(TAG_GATTS, prepare_write_env->prepare_buf, prepare_write_env->prepare_len);
-    }else{
-        ESP_LOGI(TAG_GATTS,"Prepare write cancel");
-    }
-    if (prepare_write_env->prepare_buf) {
-        free(prepare_write_env->prepare_buf);
-        prepare_write_env->prepare_buf = NULL;
-    }
-    prepare_write_env->prepare_len = 0;
-}
-
- void BLE_Server::send(const std::string &data) {
-
-        _char_value.attr_value = (uint8_t*)(data.c_str());
-
-        if (_is_connected) {
-            
-            if (_gatts_profile_inst.descr_value == 0x0002){
-                ESP_LOGI(TAG_SERVER, "Sending indication to client: %s", data.c_str());
-                esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, true);
-            }
-            else if (_gatts_profile_inst.descr_value == 0x0001){
-                esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, false);
-            }
-            else{
-                ESP_LOGI(TAG_SERVER, "Notification/Indication disabled, not sending data");
-            }
-          
-        } else {
-           ESP_LOGI(TAG_SERVER, "Cannot send data, not connected to a client");
+        else{
+            ESP_LOGI(TAG_SERVER, "Notification/Indication disabled, not sending data");
         }
+        
+    } else {
+        ESP_LOGI(TAG_SERVER, "Cannot send data, not connected to a client");
+    }
  }
- 
- std::string BLE_Server::receive() {
-     std::cout << "BLE Server Receiving Data" << std::endl;
-     return "Received Data from BLE Client";
+
+ void BLE_Server::sendTask(MessageHandler* msgHandler) {
+    
+    MessageHandler::Message message;
+
+    if (msgHandler->receive(MessageHandler::QueueType::BLE_QUEUE, message)) {
+        // Process the received message
+        const char* data(message.data());
+
+        ESP_LOGI(TAG_SERVER, "Sending data: %s", data);
+        this->send(data);
+    } else {
+        ESP_LOGI(TAG_SERVER, "No message to send");
+    }
  }
 
 const char* BLE_Server::get_gatts_event_name(esp_gatts_cb_event_t event) {

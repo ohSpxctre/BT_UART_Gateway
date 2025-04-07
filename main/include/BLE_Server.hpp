@@ -13,6 +13,8 @@
 #define BLE_SERVER_HPP
 
 #include "Bluetooth.hpp"
+#include "MessageHandler.hpp"
+
 #include <cstdint> // Include for fixed-width integer types
 
 #define adv_config_flag      (1 << 0)
@@ -99,8 +101,11 @@ private:
 
   static BLE_Server* Server_instance; // Static instance pointer
 
+  MessageHandler* _msgHandler;
+  MessageHandler::Message _message;
+
   uint8_t _adv_data_buffer[ESP_BLE_ADV_DATA_LEN_MAX] = "Hello World!";
-  uint8_t _char_data_buffer[20] = "Hello Server!";
+  uint8_t _char_data_buffer[MTU_DEFAULT-3] = "Hello Server!";
   uint8_t _descr_data_buffer[128] = "Characteristic Descriptor Data";
   uint8_t _char_rcv_buffer[MTU_DEFAULT-3] = {0};
 
@@ -143,11 +148,7 @@ private:
     .attr_value = _descr_data_buffer
   };
 
-  prepare_type_env_t _prepare_write_env = {
-    .prepare_buf = NULL,
-    .prepare_len = 0,
-  };
-  
+
   const char* get_gatts_event_name(esp_gatts_cb_event_t);
   const char* get_gap_event_name(esp_gap_ble_cb_event_t);
 
@@ -157,20 +158,18 @@ private:
   void handle_event_gatts(esp_gatts_cb_event_t, esp_gatt_if_t, esp_ble_gatts_cb_param_t *);
   void handle_event_gap(esp_gap_ble_cb_event_t, esp_ble_gap_cb_param_t *);
 
-  void handle_write_event (esp_gatt_if_t gatts_if, prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param);
-  void handle_exec_write_event (prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param);
-
-  void print_adv_data(const uint8_t *adv_data, uint8_t adv_data_len);
-
 public:
     BLE_Server( esp_ble_adv_params_t adv_params = ADV_PARAMS_DEFAULT,
-                esp_ble_adv_data_t adv_data = ADV_DATA_DEFAULT);
+                esp_ble_adv_data_t adv_data = ADV_DATA_DEFAULT,
+                MessageHandler* msgHandler);
 
     ~BLE_Server();
 
     void connSetup(void) override;
-    void send(const std::string &data) override;
-    std::string receive() override;
+
+    void send(const char *data) override;
+
+    void sendTask(MessageHandler* msgHandler) override;  
 };
 
 
