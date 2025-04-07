@@ -82,7 +82,6 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
     uint8_t adv_name_len = 0;
 
     esp_ble_gap_cb_param_t *scan_result = (esp_ble_gap_cb_param_t *)param;
-    esp_ble_gatt_creat_conn_params_t creat_conn_params = {0};
 
     uint8_t uuid_len = 0;
     const uint8_t *uuid_data = NULL;
@@ -154,14 +153,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                     ESP_LOGI(TAG_GAP, "Device found %s", DEVICE_NAME_SERVER);
                     if (_is_connected == false) {
                         esp_ble_gap_stop_scanning();
-                        memcpy(&creat_conn_params.remote_bda, scan_result->scan_rst.bda, ESP_BD_ADDR_LEN);
-                        creat_conn_params.remote_addr_type = scan_result->scan_rst.ble_addr_type;
-                        creat_conn_params.own_addr_type = BLE_ADDR_TYPE_PUBLIC;
-                        creat_conn_params.is_direct = true;
-                        creat_conn_params.is_aux = false;
-                        creat_conn_params.phy_mask = 0x0;
-                        //ret = esp_ble_gattc_enh_open(_gattc_profile_inst.gattc_if, &creat_conn_params);
-                        ret = esp_ble_gattc_open(_gattc_profile_inst.gattc_if,scan_result->scan_rst.bda, scan_result->scan_rst.ble_addr_type, true);
+                        ret = esp_ble_gattc_open(_gattc_profile_inst.gattc_if, scan_result->scan_rst.bda, scan_result->scan_rst.ble_addr_type, true);
                         if (ret != ESP_OK) {
                             ESP_LOGE(TAG_GAP, "Connection failed, error code = %d", ret);
                             _is_connected = false;
@@ -233,7 +225,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
     esp_gatt_status_t status = ESP_GATT_OK;
     esp_err_t ret = ESP_OK;
 
-    uint16_t char_count =0;
+    uint16_t char_count = 0;
     uint8_t cccd_value[2] = {0x02,0x00};
     esp_gattc_char_elem_t *char_elem_result   = NULL;
     esp_gattc_descr_elem_t *descr_elem_result = NULL;
@@ -312,14 +304,11 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                 ESP_LOGI(TAG_GATTS, "Service search result, conn_id = %x, is primary service %d", p_data->search_res.conn_id, p_data->search_res.is_primary);
                 ESP_LOGI(TAG_GATTS, "start handle %d, end handle %d, current handle value %d", p_data->search_res.start_handle, p_data->search_res.end_handle, p_data->search_res.srvc_id.inst_id);
 
-                
-
                 //check if the service UUID matches the remote service UUID
                 if (p_data->search_res.srvc_id.uuid.len == ESP_UUID_LEN_128 &&
                     memcmp(p_data->search_res.srvc_id.uuid.uuid.uuid128, _remote_service_uuid.uuid.uuid128, _remote_service_uuid.len) == 0){
                     ESP_LOGI(TAG_GATTS, "Service found by uuid");
                     _get_server = true;
-                    memcpy(_gattc_profile_inst.remote_bda, param->open.remote_bda, sizeof(esp_bd_addr_t));
                     _gattc_profile_inst.service_start_handle = p_data->search_res.start_handle;
                     _gattc_profile_inst.service_end_handle = p_data->search_res.end_handle;
                 }
@@ -351,6 +340,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                     break;
                 }
                 if (_get_server) {
+                    char_count = 0;
                     status = esp_ble_gattc_get_attr_count( gattc_if,
                                                             _gattc_profile_inst.conn_id,
                                                             ESP_GATT_DB_CHARACTERISTIC,
@@ -386,8 +376,8 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                     /*  The service has only one characteristic in our application , so we used first 'char_elem_result' */
                     if (char_count > 0 && (char_elem_result[0].properties & ESP_GATT_CHAR_PROP_BIT_INDICATE)){
                         ESP_LOGI(TAG_GATTS, "char found by uuid");
-                        ESP_LOGI(TAG_GATTS, "char handle %d", char_elem_result[0].char_handle);
                         _gattc_profile_inst.char_handle = char_elem_result[0].char_handle;
+                        ESP_LOGI(TAG_GATTS, "char handle %d", _gattc_profile_inst.char_handle);
                         ret = esp_ble_gattc_register_for_notify( gattc_if,
                                                                 _gattc_profile_inst.remote_bda,
                                                                 _gattc_profile_inst.char_handle);
@@ -418,27 +408,28 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
             // GATT register for notification event
             //------------------------------------------------------------------------------------------------------------
             case ESP_GATTC_REG_FOR_NOTIFY_EVT:
-
                 if (p_data->reg_for_notify.status != ESP_GATT_OK){
                     ESP_LOGE(TAG_GATTS, "Notification register failed");
                 }
                 else {
                     ESP_LOGI(TAG_GATTS, "Notification register successfully");
+                    uint16_t count = 0;
+                    uint16_t indication_en = 2;
                     ret = esp_ble_gattc_get_attr_count( gattc_if,
                                                         _gattc_profile_inst.conn_id,
                                                         ESP_GATT_DB_DESCRIPTOR,
                                                         _gattc_profile_inst.service_start_handle,
                                                         _gattc_profile_inst.service_end_handle, 
                                                         _gattc_profile_inst.char_handle,
-                                                        &char_count);
+                                                        &count);
                     if (ret != ESP_GATT_OK){
                         ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_attr_count error");
                         break;
                     }
 
-                    if (char_count > 0) {
-                        ESP_LOGI(TAG_GATTS, "Descriptor count %d", char_count);
-                        descr_elem_result = (esp_gattc_descr_elem_t *) malloc(sizeof(esp_gattc_descr_elem_t) * char_count);
+                    if (count > 0) {
+                        ESP_LOGI(TAG_GATTS, "Descriptor count %d", count);
+                        descr_elem_result = (esp_gattc_descr_elem_t *) malloc(sizeof(esp_gattc_descr_elem_t) * count);
                         if (!descr_elem_result){
                             ESP_LOGE(TAG_GATTS, "malloc error, gattc no mem");
                             break;
@@ -449,7 +440,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                                                                         p_data->reg_for_notify.handle,
                                                                         _remote_descr_uuid,
                                                                         descr_elem_result,
-                                                                        &char_count);
+                                                                        &count);
 
                             if (ret != ESP_GATT_OK){
                                 ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_descr_by_char_handle error");
@@ -459,9 +450,8 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                             }
 
                             /* Every char has only one descriptor in our 'ESP_GATTS_DEMO' demo, so we used first 'descr_elem_result' */
-                            if (char_count > 0 && descr_elem_result[0].uuid.len == ESP_UUID_LEN_128 &&
+                            if (count > 0 && descr_elem_result[0].uuid.len == ESP_UUID_LEN_128 &&
                                 memcmp(descr_elem_result[0].uuid.uuid.uuid128, _remote_descr_uuid.uuid.uuid128, sizeof(_remote_descr_uuid.uuid.uuid128)) == 0){
-                                    uint16_t indication_en = 2;
                                     ret = esp_ble_gattc_write_char_descr( gattc_if,
                                                                     _gattc_profile_inst.conn_id,
                                                                     descr_elem_result[0].handle,
