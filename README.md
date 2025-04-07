@@ -6,7 +6,7 @@ This project implements a **Bluetooth-to-UART gateway** using two **ESP32-C** ch
 
 ## 🔧 How It Works
 
-1. A message is entered on **Laptop A** via a serial terminal.
+1. A message is entered on **Laptop A** via a serial terminal (Baudrate: 115200).
 2. The message is sent via **UART** to the first **ESP32-C**.
 3. The ESP32 transmits the message over **Bluetooth** to a second ESP32.
 4. The second ESP32 sends the message over **UART** to **Laptop B**, where it’s displayed.
