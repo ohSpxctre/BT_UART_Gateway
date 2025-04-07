@@ -180,7 +180,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     uint16_t mtu_size =_gatts_profile_inst.local_mtu - 1;
     uint16_t mtu_send_len = 0;
     uint8_t notify_data[mtu_size-3] = {0};
-    uint8_t indicate_data[mtu_size-3] = {"Hello Client"};
+    
 
     //Loging event type
     ESP_LOGW(TAG_SERVER, "GATT event: %s", get_gatts_event_name(event));
@@ -277,6 +277,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                 esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_INVALID_OFFSET, &rsp);
                 return;
             }
+            
 
             // Determine response length based on MTU
             mtu_send_len = (ESP_GATT_MAX_ATTR_LEN - offset > mtu_size) ? mtu_size : (ESP_GATT_MAX_ATTR_LEN - offset);
@@ -314,7 +315,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                         if (_gatts_profile_inst.property & ESP_GATT_CHAR_PROP_BIT_NOTIFY) {
                             ESP_LOGI(TAG_GATTS, "Notification enabled should not happen!");
                             //the size of notify_data[] need less than MTU indicate_data
-                            esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, _gatts_profile_inst.char_handle, sizeof(indicate_data), indicate_data, false);
+                            esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, _gatts_profile_inst.char_handle,_char_value.attr_len, _char_value.attr_value, false);
                         }
                         break;
                     case 0x0002:
@@ -322,7 +323,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                             ESP_LOGI(TAG_GATTS, "Indication enabled");
                             
                              //the size of indicate_data[] need less than MTU size
-                            esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, _gatts_profile_inst.char_handle, sizeof(indicate_data), indicate_data, true);
+                            esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, true);
                         }
                         break;
                     case 0x0000:
@@ -334,8 +335,18 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                         break;
                 }
             }
+            else if (_gatts_profile_inst.char_handle == param->write.handle) {
+                ESP_LOGI(TAG_GATTS, "Characteristic value: %d", param->write.len);
+                ESP_LOG_BUFFER_HEX(TAG_GATTS, param->write.value, param->write.len);
+                memcpy(_char_rcv_buffer, param->write.value, param->write.len);
+                _char_data_buffer[param->write.len] = '\0';
+                ESP_LOGI(TAG_GATTS, "Received value: %.*s", param->write.len, _char_data_buffer);
+            }
+            else {
+                ESP_LOGI(TAG_GATTS, "Unknown handle: %d", param->write.handle);
+            }
             //call the user function to handle the write event
-            handle_write_event(gatts_if, &_prepare_write_env, param);
+            //handle_write_event(gatts_if, &_prepare_write_env, param);
         }
     break;
 
@@ -440,22 +451,23 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     case ESP_GATTS_CONNECT_EVT:
         _is_connected = true;
         _gatts_profile_inst.conn_id = param->connect.conn_id;
+        esp_ble_gattc_send_mtu_req(gatts_if, _gatts_profile_inst.local_mtu);
         //ESP_LOGI(TAG_GATTS, "Connected, conn_id %u, remote "ESP_BD_ADDR_STR"", param->connect.conn_id, ESP_BD_ADDR_HEX(param->connect.remote_bda));
 
         memcpy(conn_params.bda, param->connect.remote_bda, sizeof(esp_bd_addr_t));
         
         /* For the IOS system, please reference the apple official documents about the ble connection parameters restrictions. */
         conn_params.latency = 0;
-        conn_params.min_int = 0x190;    // min_int = 0x10*1.25ms = 20ms
-        conn_params.max_int = 0x320;    // max_int = 0x20*1.25ms = 40ms
-        conn_params.timeout = 400;    // timeout = 400*10ms = 4000ms
+        conn_params.min_int = 0x10;    // min_int = 0x10*1.25ms = 20ms
+        conn_params.max_int = 0x20;    // max_int = 0x20*1.25ms = 40ms
+        conn_params.timeout = 3200;    // timeout = 400*10ms = 4000ms
 
         //start sent the update connection parameters to the peer device.
 
-        //ret = esp_ble_gap_update_conn_params(&conn_params);
-        //if (ret) {
-        //    ESP_LOGE(TAG_GATTS, "Update connection params failed, error code = %x", ret);
-        //}
+        ret = esp_ble_gap_update_conn_params(&conn_params);
+        if (ret) {
+            ESP_LOGE(TAG_GATTS, "Update connection params failed, error code = %x", ret);
+        }
         ret = esp_ble_gap_stop_advertising();
         if (ret) {
             ESP_LOGE(TAG_GATTS, "Stop advertising failed, error code = %x", ret);
@@ -580,7 +592,18 @@ void BLE_Server::handle_exec_write_event (prepare_type_env_t *prepare_write_env,
 
         if (_is_connected) {
             
-            esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, true);
+            if (_gatts_profile_inst.descr_value == 0x0002){
+                ESP_LOGI(TAG_SERVER, "Sending indication to client: %s", data.c_str());
+                esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, true);
+            }
+            else if (_gatts_profile_inst.descr_value == 0x0001){
+                esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, false);
+            }
+            else{
+                ESP_LOGI(TAG_SERVER, "Notification/Indication disabled, not sending data");
+            }
+
+            //esp_ble_gatts_set_attr_value(_gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value);
             // Send the string in chunks
             //for (uint8_t i = 0; i < num_chunks; i++) {
             //    uint8_t offset = i * chunk_size;
@@ -595,7 +618,7 @@ void BLE_Server::handle_exec_write_event (prepare_type_env_t *prepare_write_env,
             //}
           
         } else {
-           // ESP_LOGI(TAG, "Cannot send data, not connected to a client");
+           ESP_LOGI(TAG_SERVER, "Cannot send data, not connected to a client");
         }
  }
  
