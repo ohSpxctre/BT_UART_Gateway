@@ -14,12 +14,9 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
 
  BLE_Server::BLE_Server(
     esp_ble_adv_params_t adv_params,
-    esp_ble_adv_data_t adv_data,
-    esp_ble_adv_data_t scan_rsp_data
- )  :
-    _adv_params(adv_params),
-    _adv_data(adv_data),
-    _scan_rsp_data(scan_rsp_data)
+    esp_ble_adv_data_t adv_data)
+    :_adv_params(adv_params),
+    _adv_data(adv_data)
  {
     // Initialize the static instance pointer
     if (Server_instance != nullptr) {
@@ -34,13 +31,6 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
     //hie isch öppis komisch gloub
     _adv_data.service_data_len = sizeof(_adv_data_buffer);
     _adv_data.p_service_data = _adv_data_buffer;
-
-    //configuring scan response data
-    //_scan_rsp_data.service_uuid_len = _gatts_profile_inst.service_id.id.uuid.len;
-    //_scan_rsp_data.p_service_uuid = (uint8_t *)_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
-
-   //print_adv_data(_adv_data.p_service_uuid, _adv_data.service_data_len);
-   //print_adv_data(_scan_rsp_data.p_service_uuid, _scan_rsp_data.service_uuid_len);
 
     // Initialize NVS (needed for BLE storage)
     esp_err_t ret = nvs_flash_init();
@@ -474,11 +464,11 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     // GATT confirmation event
     //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_CONF_EVT:
-        ESP_LOGI(TAG_GATTS, "Confirm receive, status %d, attr_handle %d", param->conf.status, param->conf.handle);
-        ESP_LOG_BUFFER_HEX(TAG_GATTS, param->conf.value, param->conf.len);
-        //if (param->conf.status != ESP_GATT_OK){
-        //    ESP_LOG_BUFFER_HEX(TAG_GATTS, param->conf.value, param->conf.len);
-        //}
+        if (param->conf.status != ESP_GATT_OK) {
+            ESP_LOGE(TAG_GATTS, "Confirm failed, status %d", param->conf.status);
+        } else {
+            ESP_LOGI(TAG_GATTS, "Confirm success, handle %d", param->conf.handle);
+        }
     break;
 
     //--------------------------------------------------------------------------------------------------------
@@ -568,10 +558,6 @@ void BLE_Server::handle_exec_write_event (prepare_type_env_t *prepare_write_env,
  void BLE_Server::send(const std::string &data) {
 
         _char_value.attr_value = (uint8_t*)(data.c_str());
-   
-        //uint8_t chunk_size = _gatts_profile_inst.local_mtu - 3;  // Maximum payload per packet (due to MTU size)
-        //uint8_t string_len = data.length();  // Length of the string
-        //uint8_t num_chunks = (string_len + chunk_size - 1) / chunk_size;  // Number of chunks required
 
         if (_is_connected) {
             
@@ -595,18 +581,6 @@ void BLE_Server::handle_exec_write_event (prepare_type_env_t *prepare_write_env,
      std::cout << "BLE Server Receiving Data" << std::endl;
      return "Received Data from BLE Client";
  }
-
-
-void BLE_Server::print_adv_data(const uint8_t *adv_data, uint8_t adv_data_len) {
-    char adv_str[3 * adv_data_len + 1]; // Each byte needs 2 chars + space, +1 for null terminator
-    char *ptr = adv_str;
-    
-    for (int i = 0; i < adv_data_len; i++) {
-        ptr += sprintf(ptr, "%02X ", adv_data[i]);
-    }
-    
-    ESP_LOGI("BLE", "Advertisement Data: %s", adv_str);
-}
 
 const char* BLE_Server::get_gatts_event_name(esp_gatts_cb_event_t event) {
     switch (event) {

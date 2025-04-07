@@ -63,24 +63,6 @@ constexpr esp_ble_adv_data_t ADV_DATA_DEFAULT = {
   .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
 };
 
-// optional!! is sent upon scan request
-// scan response data
-constexpr esp_ble_adv_data_t SCAN_RSP_DATA_DEFAULT = {
-  .set_scan_rsp = true,
-  .include_name = true,
-  .include_txpower = false,
-  .min_interval = 0x190, //slave connection min interval, Time = min_interval * 1.25 msec
-  .max_interval = 0x320, //slave connection max interval, Time = max_interval * 1.25 msec
-  .appearance = 0x00,
-  .manufacturer_len = 0, //TEST_MANUFACTURER_DATA_LEN,
-  .p_manufacturer_data =  NULL, //&test_manufacturer[0],
-  .service_data_len = 0,
-  .p_service_data = NULL,
-  .service_uuid_len = 0,
-  .p_service_uuid =  NULL,
-  .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
-};
-
 struct gatts_profile_inst {
   esp_gatts_cb_t gatts_cb;
   uint16_t gatts_if;
@@ -143,7 +125,6 @@ private:
 
   esp_ble_adv_params_t _adv_params;
   esp_ble_adv_data_t _adv_data;
-  esp_ble_adv_data_t _scan_rsp_data;
 
   bool _is_advertising = false;
   bool _is_connected = false;
@@ -183,9 +164,7 @@ private:
 
 public:
     BLE_Server( esp_ble_adv_params_t adv_params = ADV_PARAMS_DEFAULT,
-                esp_ble_adv_data_t adv_data = ADV_DATA_DEFAULT,
-                esp_ble_adv_data_t scan_rsp_data = SCAN_RSP_DATA_DEFAULT
-              );
+                esp_ble_adv_data_t adv_data = ADV_DATA_DEFAULT);
 
     ~BLE_Server();
 
