@@ -58,6 +58,11 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
         ESP_LOGI(TAG_CLIENT, "BLE Client Deinitialized");
  }
 
+void BLE_Client::setMessageHandler(MessageHandler* handler) {
+    _msgHandler = handler;
+}
+
+
  void BLE_Client::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
     if (Client_instance) {
         Client_instance->handle_event_gap(event, param);
@@ -228,11 +233,8 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
     esp_err_t ret = ESP_OK;
 
     uint16_t char_count = 0;
-    uint8_t cccd_value[2] = {0x02,0x00};
     esp_gattc_char_elem_t *char_elem_result   = NULL;
     esp_gattc_descr_elem_t *descr_elem_result = NULL;
-
-    esp_bd_addr_t bda;
 
     ESP_LOGW(TAG_CLIENT, "GATT event: %s", get_gattc_event_name(event));
     switch (event) {
@@ -493,10 +495,10 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
 
             // Clear message buffer
             MessageHandler::Message msg;
-            std::fill(message.begin(), message.end(), '\0');
+            std::fill(msg.begin(), msg.end(), '\0');
 
             // Copy the received data into the message buffer
-            std::copy(p_data->notify.value, p_data->notify.value + p_data->notify.value_len, message.begin());
+            std::copy(p_data->notify.value, p_data->notify.value + p_data->notify.value_len, msg.begin());
             
             _msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
         break;
@@ -594,10 +596,6 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
     }
  }
  
- std::string BLE_Client::receive() {
-     
-     return "Received Data from BLE Server";
- }
 
  const char* BLE_Client::get_gattc_event_name(esp_gattc_cb_event_t event) {
     switch (event) {

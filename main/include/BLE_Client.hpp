@@ -96,6 +96,7 @@
      
      ~BLE_Client();
 
+     void setMessageHandler(MessageHandler* handler);
      void connSetup() override;
      void send(const char *data) override;
      void sendTask(MessageHandler* msgHandler) override;

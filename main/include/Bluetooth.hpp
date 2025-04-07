@@ -20,6 +20,8 @@
 #include "BLE_Config.hpp"
 #include "esp_mac.h"
 
+#include "MessageHandler.hpp"
+
 
 /**
 * @class Bluetooth

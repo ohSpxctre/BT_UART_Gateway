@@ -101,9 +101,6 @@ private:
 
   static BLE_Server* Server_instance; // Static instance pointer
 
-  MessageHandler* _msgHandler;
-  MessageHandler::Message _message;
-
   uint8_t _adv_data_buffer[ESP_BLE_ADV_DATA_LEN_MAX] = "Hello World!";
   uint8_t _char_data_buffer[MTU_DEFAULT-3] = "Hello Server!";
   uint8_t _descr_data_buffer[128] = "Characteristic Descriptor Data";
@@ -148,6 +145,7 @@ private:
     .attr_value = _descr_data_buffer
   };
 
+  MessageHandler* _msgHandler;
 
   const char* get_gatts_event_name(esp_gatts_cb_event_t);
   const char* get_gap_event_name(esp_gap_ble_cb_event_t);
@@ -161,7 +159,7 @@ private:
 public:
     BLE_Server( esp_ble_adv_params_t adv_params = ADV_PARAMS_DEFAULT,
                 esp_ble_adv_data_t adv_data = ADV_DATA_DEFAULT,
-                MessageHandler* msgHandler);
+                MessageHandler* msgHandler = nullptr);
 
     ~BLE_Server();
 

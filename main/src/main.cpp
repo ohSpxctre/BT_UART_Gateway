@@ -49,14 +49,6 @@ void dataParserTask(DataParser &dataParser, MessageHandler &msgHandler)
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
-/*
-void bleReceiveTask(Bluetooth &bluetooth, MessageHandler &msgHandler) 
-{
-    // Receive data from the Bluetooth interface and send it to the command handler
-    while (true) {
-        bluetooth.receiveTask(&msgHandler);
-    }
-}
 
 void bleSendTask(Bluetooth &bluetooth, MessageHandler &msgHandler) 
 {
@@ -65,24 +57,27 @@ void bleSendTask(Bluetooth &bluetooth, MessageHandler &msgHandler)
         bluetooth.sendTask(&msgHandler);
     }
 }
-*/
+
 
 
 extern "C" void app_main(void) {
+    /* Set log level*/
+    esp_log_level_set("*", ESP_LOG_INFO);
+
     /* Create instances */
     MessageHandler msgHandler;
     CommandHandler cmdHandler;
     DataParser dataParser(cmdHandler);
-/*
-#if BLE_SERVER
-    BLE_Server bleInterface(cmdHandler, msgHandler);
-#else
-    BLE_Client bleInterface(cmdHandler, msgHandler);
-#endif
-*/
-
-    /* Create a UART instance */
     Uart uart0;
+
+#if BLE_SERVER
+    BLE_Server bleInterface;
+#else
+    BLE_Client bleInterface;
+#endif
+    /* Initialize the Bluetooth interface */
+    bleInterface.setMessageHandler(&msgHandler);
+    bleInterface.connSetup();
 
     /* Initialize the UART interface for UART port 0 (default) */
     uart0.init(msgHandler.getUartEventQueue());
@@ -102,17 +97,8 @@ extern "C" void app_main(void) {
     esp_pthread_set_cfg(&cfg);
     std::thread dataParserThread(dataParserTask, std::ref(dataParser), std::ref(msgHandler));
 
-    /* Create a thread for BLE receive task */
-    /*
-    cfg = create_config("bleReceiveTask", 4096, 4);
-    esp_pthread_set_cfg(&cfg);
-    std::thread bleReceiveThread(bleReceiveTask, std::ref(bleInterface), std::ref(msgHandler));
-    */  
-
     /* Create a thread for BLE send task */ 
-    /*   
     cfg = create_config("bleSendTask", 4096, 5);
     esp_pthread_set_cfg(&cfg);
     std::thread bleSendThread(bleSendTask, std::ref(bleInterface), std::ref(msgHandler));
-    */
 }
