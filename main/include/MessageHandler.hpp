@@ -101,13 +101,6 @@ public:
         return &_uartEventQueue;
     }
 
-    /**
-     * @brief Gets the BLE event queue.
-     * @return Pointer to the BLE event queue.
-     */
-    QueueHandle_t* getBleEventQueue() {
-        return &_bleEventQueue;
-    }
 
 private:
     /**
@@ -126,7 +119,6 @@ private:
 
     /* Pointer to the externally created UART and BLE event queue. */
     QueueHandle_t _uartEventQueue = nullptr;  // Not owned
-    QueueHandle_t _bleEventQueue = nullptr;  // Not owned
 
     /**
      * @brief Internal helper to retrieve the appropriate message queue.

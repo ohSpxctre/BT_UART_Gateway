@@ -9,6 +9,7 @@
  #if 1
  
  #include "Bluetooth.hpp"
+ #include "MessageHandler.hpp"
 
  constexpr esp_bt_uuid_t REMOTE_FILTER_SERVICE_UUID = SERVICE_UUID_DEFAULT;
 
@@ -83,18 +84,21 @@
     const char* get_gattc_event_name(esp_gattc_cb_event_t);
     const char* get_gap_event_name(esp_gap_ble_cb_event_t);
 
+    MessageHandler* _msgHandler = nullptr;
+
  public:
      BLE_Client(esp_ble_scan_params_t scan_params = BLE_SCAN_PARAMS_DEFAULT,
                 esp_bt_uuid_t remote_service_uuid = REMOTE_FILTER_SERVICE_UUID,
                 esp_bt_uuid_t remote_char_uuid = REMOTE_FILTER_CHAR_UUID,
-                esp_bt_uuid_t remote_descr_uuid = REMOTE_DESCR_UUID_DEFAULT
+                esp_bt_uuid_t remote_descr_uuid = REMOTE_DESCR_UUID_DEFAULT,
+                MessageHandler* msgHandler = nullptr
      );
      
      ~BLE_Client();
 
      void connSetup() override;
-     void send(const std::string &data) override;
-     std::string receive() override;
+     void send(const char *data) override;
+     void sendTask(MessageHandler* msgHandler) override;
  };
  #endif
  #endif // BLE_CLIENT_HPP
