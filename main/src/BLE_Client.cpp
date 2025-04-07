@@ -457,7 +457,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                                                                     descr_elem_result[0].handle,
                                                                     sizeof(indication_en),
                                                                     (uint8_t *)&indication_en,
-                                                                    ESP_GATT_WRITE_TYPE_RSP,
+                                                                    ESP_GATT_WRITE_TYPE_NO_RSP,
                                                                     ESP_GATT_AUTH_REQ_NONE);
                                 if (ret != ESP_GATT_OK){
                                     ESP_LOGE(TAG_GATTS, "esp_ble_gattc_write_char_descr error");
@@ -503,17 +503,6 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                 }
                 ESP_LOGI(TAG_GATTS, "Descriptor write successfully");
             
-                ret = esp_ble_gattc_write_char( gattc_if,
-                                                _gattc_profile_inst.conn_id,
-                                                _gattc_profile_inst.char_handle,
-                                                sizeof(_char_send_buffer),
-                                                _char_send_buffer,
-                                                ESP_GATT_WRITE_TYPE_RSP,
-                                                ESP_GATT_AUTH_REQ_NONE);
-                if (ret != ESP_GATT_OK){
-                    ESP_LOGE(TAG_GATTS, "esp_ble_gattc_write_char error, error code = %d", ret);
-                    break;
-                }
             break;
             
             //------------------------------------------------------------------------------------------------------------
