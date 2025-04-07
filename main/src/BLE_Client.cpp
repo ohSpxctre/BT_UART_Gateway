@@ -202,11 +202,11 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
         break;
 
         case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
-            //ESP_LOGI(TAG_GAP, "Connection params update, status %d, conn_int %d, latency %d, timeout %d",
-            //    param->update_conn_params.status,
-            //    param->update_conn_params.conn_int,
-            //    param->update_conn_params.latency,
-            //    param->update_conn_params.timeout);
+            ESP_LOGI(TAG_GAP, "Connection params update, status %d, conn_int %d, latency %d, timeout %d",
+                param->update_conn_params.status,
+                param->update_conn_params.conn_int,
+                param->update_conn_params.latency,
+                param->update_conn_params.timeout);
             ESP_LOGI(TAG_GAP, "Connection params update");
         break;
 
@@ -382,7 +382,9 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                         char_elem_result = nullptr;
                         break;
                     }
-                    else {
+                    
+                    /*  The service has only one characteristic in our application , so we used first 'char_elem_result' */
+                    if (char_count > 0 && (char_elem_result[0].properties & ESP_GATT_CHAR_PROP_BIT_INDICATE)){
                         ESP_LOGI(TAG_GATTS, "char found by uuid");
                         ESP_LOGI(TAG_GATTS, "char handle %d", char_elem_result[0].char_handle);
                         _gattc_profile_inst.char_handle = char_elem_result[0].char_handle;
@@ -396,6 +398,12 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                         else {
                             ESP_LOGI(TAG_GATTS, "Register for notify successfully");
                         }
+                    }
+                    else {
+                        ESP_LOGE(TAG_GATTS, "char not found by uuid or no property indicate");
+                        free(char_elem_result);
+                        char_elem_result = nullptr;
+                        break;
                     }
                 }
                 else {
@@ -429,6 +437,7 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                     }
 
                     if (char_count > 0) {
+                        ESP_LOGI(TAG_GATTS, "Descriptor count %d", char_count);
                         descr_elem_result = (esp_gattc_descr_elem_t *) malloc(sizeof(esp_gattc_descr_elem_t) * char_count);
                         if (!descr_elem_result){
                             ESP_LOGE(TAG_GATTS, "malloc error, gattc no mem");
@@ -436,11 +445,11 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                         }
                         else {
                             ret = esp_ble_gattc_get_descr_by_char_handle( gattc_if,
-                                _gattc_profile_inst.conn_id,
-                                p_data->reg_for_notify.handle,
-                                _remote_descr_uuid,
-                                descr_elem_result,
-                                &char_count);
+                                                                        _gattc_profile_inst.conn_id,
+                                                                        p_data->reg_for_notify.handle,
+                                                                        _remote_descr_uuid,
+                                                                        descr_elem_result,
+                                                                        &char_count);
 
                             if (ret != ESP_GATT_OK){
                                 ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_descr_by_char_handle error");
@@ -452,15 +461,19 @@ BLE_Client* BLE_Client::Client_instance = nullptr;
                             /* Every char has only one descriptor in our 'ESP_GATTS_DEMO' demo, so we used first 'descr_elem_result' */
                             if (char_count > 0 && descr_elem_result[0].uuid.len == ESP_UUID_LEN_128 &&
                                 memcmp(descr_elem_result[0].uuid.uuid.uuid128, _remote_descr_uuid.uuid.uuid128, sizeof(_remote_descr_uuid.uuid.uuid128)) == 0){
-                                ret = esp_ble_gattc_write_char_descr( gattc_if,
+                                    uint16_t indication_en = 2;
+                                    ret = esp_ble_gattc_write_char_descr( gattc_if,
                                                                     _gattc_profile_inst.conn_id,
                                                                     descr_elem_result[0].handle,
-                                                                    sizeof(cccd_value),
-                                                                    cccd_value,
+                                                                    sizeof(indication_en),
+                                                                    (uint8_t *)&indication_en,
                                                                     ESP_GATT_WRITE_TYPE_RSP,
                                                                     ESP_GATT_AUTH_REQ_NONE);
                                 if (ret != ESP_GATT_OK){
                                     ESP_LOGE(TAG_GATTS, "esp_ble_gattc_write_char_descr error");
+                                }
+                                else {
+                                    ESP_LOGI(TAG_GATTS, "Write descriptor successfully");
                                 }
                             }
 
