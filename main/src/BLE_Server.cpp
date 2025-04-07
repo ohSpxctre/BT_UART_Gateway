@@ -452,10 +452,10 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
 
         //start sent the update connection parameters to the peer device.
 
-        ret = esp_ble_gap_update_conn_params(&conn_params);
-        if (ret) {
-            ESP_LOGE(TAG_GATTS, "Update connection params failed, error code = %x", ret);
-        }
+        //ret = esp_ble_gap_update_conn_params(&conn_params);
+        //if (ret) {
+        //    ESP_LOGE(TAG_GATTS, "Update connection params failed, error code = %x", ret);
+        //}
         ret = esp_ble_gap_stop_advertising();
         if (ret) {
             ESP_LOGE(TAG_GATTS, "Stop advertising failed, error code = %x", ret);
