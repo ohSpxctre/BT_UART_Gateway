@@ -101,4 +101,11 @@ extern "C" void app_main(void) {
     cfg = create_config("bleSendTask", 4096, 5);
     esp_pthread_set_cfg(&cfg);
     std::thread bleSendThread(bleSendTask, std::ref(bleInterface), std::ref(msgHandler));
+
+    while (true)
+    {
+        // Main loop to keep the internal tasks running
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+    
 }
