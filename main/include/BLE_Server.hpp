@@ -118,7 +118,7 @@ private:
   static BLE_Server* Server_instance; // Static instance pointer
 
   uint8_t _adv_data_buffer[ESP_BLE_ADV_DATA_LEN_MAX] = "Hello World!";
-  uint8_t _char_data_buffer[MTU_DEFAULT-3] = "Hello from BLE Server!";
+  uint8_t _char_data_buffer[20] = "Hello Server!";
   uint8_t _descr_data_buffer[128] = "Characteristic Descriptor Data";
   uint8_t _char_rcv_buffer[MTU_DEFAULT-3] = {0};
 

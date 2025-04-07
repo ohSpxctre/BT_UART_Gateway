@@ -178,9 +178,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     uint16_t offset = 0;
 
     uint16_t mtu_size =_gatts_profile_inst.local_mtu - 1;
-    uint16_t mtu_send_len = 0;
-    uint8_t notify_data[mtu_size-3] = {0};
-    
+    uint16_t mtu_send_len = 0;    
 
     //Loging event type
     ESP_LOGW(TAG_SERVER, "GATT event: %s", get_gatts_event_name(event));
@@ -208,13 +206,6 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
             ESP_LOGE(TAG_GATTS, "set adv data failed, error code = %x", ret);
         }
         _adv_config_done |= adv_config_flag;
-        
-        //configuring scan response data
-       //ret = esp_ble_gap_config_adv_data(&_scan_rsp_data);
-       //if (ret) {
-       //    ESP_LOGE(TAG_GATTS, "set scan response data failed, error code = %x", ret);
-       //}
-       //_adv_config_done |= scan_rsp_config_flag;
 
         //creating the gatt service
         ret = esp_ble_gatts_create_service(gatts_if, &_gatts_profile_inst.service_id, HANDLE_NUM);
@@ -237,11 +228,6 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         {
             ESP_LOGE(TAG_GATTS, "start service failed, error code = %x", ret);
         }
-       //else
-       //{   //when started successfully, add char to the service
-       //    ESP_LOGI(TAG_GATTS, "Service started successfully");
-       //    
-       //}
     break;
 
    //--------------------------------------------------------------------------------------------------------
@@ -315,7 +301,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                         if (_gatts_profile_inst.property & ESP_GATT_CHAR_PROP_BIT_NOTIFY) {
                             ESP_LOGI(TAG_GATTS, "Notification enabled should not happen!");
                             //the size of notify_data[] need less than MTU indicate_data
-                            esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, _gatts_profile_inst.char_handle,_char_value.attr_len, _char_value.attr_value, false);
+                            //esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, _gatts_profile_inst.char_handle,_char_value.attr_len, _char_value.attr_value, false);
                         }
                         break;
                     case 0x0002:
@@ -323,7 +309,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                             ESP_LOGI(TAG_GATTS, "Indication enabled");
                             
                              //the size of indicate_data[] need less than MTU size
-                            esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, true);
+                            //esp_ble_gatts_send_indicate(gatts_if, param->write.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, true);
                         }
                         break;
                     case 0x0000:
@@ -337,7 +323,6 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
             }
             else if (_gatts_profile_inst.char_handle == param->write.handle) {
                 ESP_LOGI(TAG_GATTS, "Characteristic value: %d", param->write.len);
-                ESP_LOG_BUFFER_HEX(TAG_GATTS, param->write.value, param->write.len);
                 memcpy(_char_rcv_buffer, param->write.value, param->write.len);
                 _char_data_buffer[param->write.len] = '\0';
                 ESP_LOGI(TAG_GATTS, "Received value: %.*s", param->write.len, _char_data_buffer);
@@ -358,7 +343,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         ESP_LOGE(TAG_GATTS, "Execute write event, conn_id: %d", param->exec_write.conn_id);
         esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
         // Call the user function to handle the execute write event
-        handle_exec_write_event(&_prepare_write_env, param);
+        //handle_exec_write_event(&_prepare_write_env, param);
     break;
 
     //--------------------------------------------------------------------------------------------------------
@@ -417,8 +402,6 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         else{
             ESP_LOGI(TAG_GATTS, "Char handle: %d", param->add_char.attr_handle);
             ESP_LOGI(TAG_GATTS, "Char value length: %d", length);
-            ESP_LOGI(TAG_GATTS, "Char value: ");
-            ESP_LOG_BUFFER_HEX(TAG_GATTS, prf_char, length);
         }
 
         ret = esp_ble_gatts_add_char_descr(_gatts_profile_inst.service_handle,
@@ -602,20 +585,6 @@ void BLE_Server::handle_exec_write_event (prepare_type_env_t *prepare_write_env,
             else{
                 ESP_LOGI(TAG_SERVER, "Notification/Indication disabled, not sending data");
             }
-
-            //esp_ble_gatts_set_attr_value(_gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value);
-            // Send the string in chunks
-            //for (uint8_t i = 0; i < num_chunks; i++) {
-            //    uint8_t offset = i * chunk_size;
-            //    uint8_t len = (i == num_chunks - 1) ? (string_len - offset) : chunk_size;
-        //
-            //    uint8_t chunk_data[chunk_size];
-            //    memcpy(chunk_data, &data[offset], len);
-        //
-            //    // Send an indication with the chunk data
-            //    esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle, len, chunk_data, false);
-            //    ESP_LOGI(TAG_GATTS, "Sending chunk %d of %d: %.*s", i + 1, num_chunks, (int)len, chunk_data);
-            //}
           
         } else {
            ESP_LOGI(TAG_SERVER, "Cannot send data, not connected to a client");
