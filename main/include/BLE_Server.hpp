@@ -118,7 +118,7 @@ private:
   static BLE_Server* Server_instance; // Static instance pointer
 
   uint8_t _adv_data_buffer[ESP_BLE_ADV_DATA_LEN_MAX] = "Hello World!";
-  uint8_t _char_data_buffer[ESP_GATT_MAX_ATTR_LEN] = "Hello from BLE Server!";
+  uint8_t _char_data_buffer[MTU_DEFAULT-3] = "Hello from BLE Server!";
   uint8_t _descr_data_buffer[128] = "Characteristic Descriptor Data";
 
 
@@ -133,7 +133,7 @@ private:
     .char_uuid = CHAR_UUID_DEFAULT,
     .char_resp_ctrl = ESP_GATT_AUTO_RSP,
     .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-    .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_INDICATE,
+    .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_INDICATE, 
     .descr_handle = 0,
     .descr_value = 0,
     .descr_uuid = DESCR_UUID_DEFAULT,

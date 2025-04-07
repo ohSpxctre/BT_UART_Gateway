@@ -32,12 +32,12 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
     _adv_data.p_service_uuid = (uint8_t *)_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
 
     //hie isch öppis komisch gloub
-    //_adv_data.service_data_len = sizeof(_adv_data_buffer);
-    //_adv_data.p_service_data = _adv_data_buffer;
+    _adv_data.service_data_len = sizeof(_adv_data_buffer);
+    _adv_data.p_service_data = _adv_data_buffer;
 
     //configuring scan response data
-    _scan_rsp_data.service_uuid_len = _gatts_profile_inst.service_id.id.uuid.len;
-    _scan_rsp_data.p_service_uuid = (uint8_t *)_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
+    //_scan_rsp_data.service_uuid_len = _gatts_profile_inst.service_id.id.uuid.len;
+    //_scan_rsp_data.p_service_uuid = (uint8_t *)_gatts_profile_inst.service_id.id.uuid.uuid.uuid128;
 
    //print_adv_data(_adv_data.p_service_uuid, _adv_data.service_data_len);
    //print_adv_data(_scan_rsp_data.p_service_uuid, _scan_rsp_data.service_uuid_len);
@@ -98,21 +98,23 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
     // GAP event for setting advertising data
     //--------------------------------------------------------------------------------------------------------
     case ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT:
-    esp_ble_gap_start_advertising(&_adv_params);
-        _adv_config_done &= (~adv_config_flag);
-        if (_adv_config_done == 0) {
-            esp_ble_gap_start_advertising(&_adv_params);
-            }
+        esp_ble_gap_start_advertising(&_adv_params);
+        //_adv_config_done &= (~adv_config_flag);
+        //if (_adv_config_done == 0) {
+        //    esp_ble_gap_start_advertising(&_adv_params);
+        //    }
     break;    
 
     //--------------------------------------------------------------------------------------------------------
     // GAP event for setting scan response data
     //--------------------------------------------------------------------------------------------------------
     case ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT:
-        _adv_config_done &= (~scan_rsp_config_flag);
-        if (_adv_config_done == 0) {
-            esp_ble_gap_start_advertising(&_adv_params);
-        }
+        esp_ble_gap_start_advertising(&_adv_params);
+
+        //_adv_config_done &= (~scan_rsp_config_flag);
+        //if (_adv_config_done == 0) {
+        //    esp_ble_gap_start_advertising(&_adv_params);
+        //}
     break;
 
     //--------------------------------------------------------------------------------------------------------
@@ -208,11 +210,17 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         _adv_config_done |= adv_config_flag;
         
         //configuring scan response data
-        ret = esp_ble_gap_config_adv_data(&_scan_rsp_data);
-        if (ret) {
-            ESP_LOGE(TAG_GATTS, "set scan response data failed, error code = %x", ret);
+       //ret = esp_ble_gap_config_adv_data(&_scan_rsp_data);
+       //if (ret) {
+       //    ESP_LOGE(TAG_GATTS, "set scan response data failed, error code = %x", ret);
+       //}
+       //_adv_config_done |= scan_rsp_config_flag;
+
+        //creating the gatt service
+        ret = esp_ble_gatts_create_service(gatts_if, &_gatts_profile_inst.service_id, HANDLE_NUM);
+        if(ret) {
+            ESP_LOGE(TAG_GATTS, "create service failed, error code = %x", ret);
         }
-        _adv_config_done |= scan_rsp_config_flag;
     break;
 
     //--------------------------------------------------------------------------------------------------------
@@ -389,9 +397,17 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         //reading the char handle
         _gatts_profile_inst.char_handle = param->add_char.attr_handle;
         
+
+
         ret = esp_ble_gatts_get_attr_value(param->add_char.attr_handle,  &length, &prf_char);
         if (ret == ESP_FAIL){
             ESP_LOGE(TAG_GATTS, "ILLEGAL HANDLE");
+        }
+        else{
+            ESP_LOGI(TAG_GATTS, "Char handle: %d", param->add_char.attr_handle);
+            ESP_LOGI(TAG_GATTS, "Char value length: %d", length);
+            ESP_LOGI(TAG_GATTS, "Char value: ");
+            ESP_LOG_BUFFER_HEX(TAG_GATTS, prf_char, length);
         }
 
         ret = esp_ble_gatts_add_char_descr(_gatts_profile_inst.service_handle,
@@ -464,6 +480,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_CONF_EVT:
         ESP_LOGI(TAG_GATTS, "Confirm receive, status %d, attr_handle %d", param->conf.status, param->conf.handle);
+        ESP_LOG_BUFFER_HEX(TAG_GATTS, param->conf.value, param->conf.len);
         //if (param->conf.status != ESP_GATT_OK){
         //    ESP_LOG_BUFFER_HEX(TAG_GATTS, param->conf.value, param->conf.len);
         //}
