@@ -163,6 +163,8 @@ public:
 
     ~BLE_Server();
 
+    void setMessageHandler(MessageHandler* handler);
+
     void connSetup(void) override;
 
     void send(const char *data) override;

@@ -70,6 +70,10 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
     ESP_LOGI(TAG_SERVER, "BLE Server initialized and callbacks registered");
     }
 
+void BLE_Server::setMessageHandler(MessageHandler* handler) {
+    _msgHandler = handler;
+}
+
  void BLE_Server::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
     if (Server_instance) {
         Server_instance->handle_event_gap(event, param);
