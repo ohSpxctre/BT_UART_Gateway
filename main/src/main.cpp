@@ -13,7 +13,7 @@
 #include "BLE_Client.hpp"
 #include "BLE_Server.hpp"
 
-#define BLE_SERVER 0
+#define BLE_SERVER 1
 
 esp_pthread_cfg_t create_config(const char *name, int stack, int prio)
 {
