@@ -18,7 +18,14 @@ constexpr uint8_t SERVICE_INST_ID = 0;
 constexpr uint16_t CHAR_INST_ID = 0;
 
 constexpr uint16_t MTU_DEFAULT = 259; // Default MTU size
+constexpr uint16_t TIMEOUT_DEFAULT = 200; // Default timeout in milliseconds * 10
 
+constexpr uint16_t NOTIFICATION = 0x0001; // Notification enable
+constexpr uint16_t INDICATION = 0x0002; // Indication enable
+
+constexpr std::string_view BT_status_NC = "Bluetooth not connected";
+constexpr std::string_view BT_status_C = "Bluetooth connected";
+constexpr std::string_view BT_status_DC = "Bluetooth disconnected";
 
 
 constexpr esp_bt_uuid_t CHAR_UUID_DEFAULT = {

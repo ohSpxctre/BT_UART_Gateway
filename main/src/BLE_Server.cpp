@@ -6,6 +6,10 @@
 #include "BLE_Server.hpp"
 #include <iostream>
 
+#include <esp_pthread.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+
 // Define the static instance pointer
 BLE_Server* BLE_Server::Server_instance = nullptr;
 
@@ -61,6 +65,16 @@ BLE_Server::~BLE_Server() {
 
 
 void BLE_Server::connSetup() {
+    // Temporary Message to send bluetooth status to UART interface
+    MessageHandler::Message msg;
+    // fill message with 0
+    std::fill(msg.begin(), msg.end(), '\0');
+    // copy not connected message
+    std::copy(BT_status_NC.begin(), BT_status_NC.end(), msg.begin());
+    msg[BT_status_NC.length()] = '\n';
+    // Send not connected message to UART interface
+    _msgHandler->send(MessageHandler::QueueType::UART_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
+    
     // Register callback functions
     esp_ble_gap_register_callback(gap_event_handler);
     esp_ble_gatts_register_callback(gatts_event_handler);
@@ -179,6 +193,9 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     const uint8_t *prf_char;
     uint16_t length = 0;
 
+    // Temporary Message to send bluetooth status to UART interface
+    MessageHandler::Message msg;
+    
     //Loging event type
     ESP_LOGW(TAG_SERVER, "GATT event: %s", get_gatts_event_name(event));
 
@@ -270,17 +287,21 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                 // if handle is charakteristic handle, read value
                 memcpy(_char_rcv_buffer, param->write.value, param->write.len);
                 // add 0 terminator to string
-                _char_data_buffer[param->write.len] = '\0';
-
-                // create message
-                MessageHandler::Message msg;
-                // fill message with 0
-                std::fill(msg.begin(), msg.end(), '\0');
-                // copy received message
-                std::copy(_char_rcv_buffer, _char_rcv_buffer + param->write.len, msg.begin());
-                //Send received message to message  queue for data parser 
-                _msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
-                ESP_LOGI(TAG_GATTS, "Received value: %.*s", param->write.len, _char_data_buffer);
+                if (std::all_of(_char_rcv_buffer, _char_rcv_buffer + param->write.len, [](uint8_t x) { return x == 0; })) {
+                    //receiving empty message to check timeout
+                    ESP_LOGI(TAG_GATTS, "Received empty message, ignoring");
+                    break;
+                }
+                else {
+                    _char_data_buffer[param->write.len] = '\0';
+                    // fill message with 0
+                    std::fill(msg.begin(), msg.end(), '\0');
+                    // copy received message
+                    std::copy(_char_rcv_buffer, _char_rcv_buffer + param->write.len, msg.begin());
+                    //Send received message to message  queue for data parser 
+                    _msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
+                    ESP_LOGI(TAG_GATTS, "Received value: %.*s", param->write.len, _char_data_buffer);
+                }
             }
             else {
                 ESP_LOGI(TAG_GATTS, "Unknown handle: %d", param->write.handle);
@@ -333,8 +354,6 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     // GATT Server add char event
     //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_ADD_CHAR_EVT:
-        
-
         // check if the characteristic was added successfully
         ESP_LOGI(TAG_GATTS, "Characteristic add, status %d, attr_handle %d, service_handle %d",
             param->add_char.status, param->add_char.attr_handle, param->add_char.service_handle);
@@ -391,7 +410,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         conn_params.latency = 0;
         conn_params.min_int = 0x10;    // min_int = 0x10*1.25ms = 20ms
         conn_params.max_int = 0x20;    // max_int = 0x20*1.25ms = 40ms
-        conn_params.timeout = 3200;    // timeout = 400*10ms = 4000ms
+        conn_params.timeout = TIMEOUT_DEFAULT;    // timeout = 400*10ms = 4000ms
         // update the connection parameters
         ret = esp_ble_gap_update_conn_params(&conn_params);
         // check if the connection parameters were updated successfully
@@ -403,6 +422,14 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         if (ret) {
             ESP_LOGE(TAG_GATTS, "Stop advertising failed, error code = %x", ret);
         }
+
+        // fill message with 0
+        std::fill(msg.begin(), msg.end(), '\0');
+        // copy connected message
+        std::copy(BT_status_C.begin(), BT_status_C.end(), msg.begin());
+        msg[BT_status_C.length()] = '\n';
+        // send message to the UART interface
+        _msgHandler->send(MessageHandler::QueueType::UART_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
     break;
 
     //--------------------------------------------------------------------------------------------------------
@@ -419,6 +446,13 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         }
         // set advertising flag to true
         _is_advertising = true;
+        // send disconnect message to the UART interface
+        std::fill(msg.begin(), msg.end(), '\0');
+        // copy disconnected message
+        std::copy(BT_status_DC.begin(), BT_status_DC.end(), msg.begin());
+        msg[BT_status_DC.length()] = '\n';
+        // send message to the UART interface
+        _msgHandler->send(MessageHandler::QueueType::UART_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
     break;
 
     //--------------------------------------------------------------------------------------------------------
@@ -444,16 +478,17 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
 
 void BLE_Server::send(const char * data) {
     // save data to the buffer
+    std::fill(_char_value.attr_value, _char_value.attr_value + _char_value.attr_len, 0);
     _char_value.attr_value = (uint8_t *)data;
 
     if (_is_connected) {
         // if indications are enabled
-        if (_gatts_profile_inst.descr_value == 0x0002){
+        if (_gatts_profile_inst.descr_value == INDICATION){
             // Send indication to the client
             esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, true);
         }
         // if notifications are enabled
-        else if (_gatts_profile_inst.descr_value == 0x0001){
+        else if (_gatts_profile_inst.descr_value == NOTIFICATION){
             //send notification to the client
             esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, false);
         }
@@ -479,6 +514,9 @@ void BLE_Server::sendTask(MessageHandler* msgHandler) {
         this->send(data);
     } else {
         ESP_LOGI(TAG_SERVER, "No message to send");
+        // send empty message to the client
+        const char data[20] = {0};
+        this->send(data);
     }
 }
 

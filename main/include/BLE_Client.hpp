@@ -26,19 +26,19 @@ constexpr esp_ble_scan_params_t BLE_SCAN_PARAMS_DEFAULT = {
     .scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL,
     .scan_interval          = 0x50,
     .scan_window            = 0x30,
-    .scan_duplicate         = BLE_SCAN_DUPLICATE_ENABLE
+    .scan_duplicate         = BLE_SCAN_DUPLICATE_DISABLE
 };
 
 struct gattc_profile_inst {
-esp_gattc_cb_t gattc_cb;
-uint16_t gattc_if;
-uint16_t app_id;
-uint16_t conn_id;
-uint16_t service_start_handle;
-uint16_t service_end_handle;
-uint16_t char_handle;
-esp_bd_addr_t remote_bda;
-uint16_t local_mtu;
+    esp_gattc_cb_t gattc_cb;
+    uint16_t gattc_if;
+    uint16_t app_id;
+    uint16_t conn_id;
+    uint16_t service_start_handle;
+    uint16_t service_end_handle;
+    uint16_t char_handle;
+    esp_bd_addr_t remote_bda;
+    uint16_t local_mtu;
 };
 
  /**

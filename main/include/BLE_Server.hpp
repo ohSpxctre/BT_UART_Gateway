@@ -81,11 +81,6 @@ struct gatts_profile_inst {
   uint16_t local_mtu;
 };
 
-typedef struct {
-  uint8_t *prepare_buf;
-  uint16_t prepare_len;
-} prepare_type_env_t;
-
 /**
 * @class BLE_Server
 * @brief BLE Server implementation.
@@ -134,7 +129,7 @@ private:
   };
 
   esp_attr_value_t _descr_value = {
-    .attr_max_len = sizeof(_descr_data_buffer),
+    .attr_max_len = ESP_GATT_MAX_ATTR_LEN,
     .attr_len = sizeof(_descr_data_buffer),
     .attr_value = _descr_data_buffer
   };

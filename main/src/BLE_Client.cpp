@@ -69,6 +69,12 @@ void BLE_Client::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t g
 }
 
 void BLE_Client:: connSetup() {
+    // Send not connected message to UART interface
+    MessageHandler::Message msg;
+    std::fill(msg.begin(), msg.end(), '\0');
+    std::copy(BT_status_NC.begin(), BT_status_NC.end(), msg.begin());
+    msg[BT_status_NC.length()] = '\n';
+    _msgHandler->send(MessageHandler::QueueType::UART_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
     // Register callback functions
     esp_ble_gap_register_callback(gap_event_handler);
     esp_ble_gattc_register_callback(gattc_event_handler);
@@ -81,12 +87,11 @@ void BLE_Client:: connSetup() {
 
 void BLE_Client::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
 
+    esp_ble_gap_cb_param_t *scan_result = (esp_ble_gap_cb_param_t *)param;
     esp_err_t ret = ESP_OK;
 
     uint8_t *adv_name = NULL;
     uint8_t adv_name_len = 0;
-
-    esp_ble_gap_cb_param_t *scan_result = (esp_ble_gap_cb_param_t *)param;
 
     uint8_t uuid_len = 0;
     const uint8_t *uuid_data = NULL;
@@ -184,6 +189,13 @@ void BLE_Client::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
                 break;
             }
             ESP_LOGI(TAG_GAP, "Scanning stop successfully");
+            if (!_is_connected) {
+                // if not connected, start scanning again
+                ret = esp_ble_gap_start_scanning(SCAN_DURATION);
+                if (ret){
+                    ESP_LOGE(TAG_GAP, "Restart scanning failed, error code = %d", ret);
+                }
+            }
         break;
         
         //--------------------------------------------------------------------------------------------------------
@@ -223,6 +235,9 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
     esp_ble_gattc_cb_param_t *p_data = (esp_ble_gattc_cb_param_t *)param;
     esp_gatt_status_t status = ESP_GATT_OK;
     esp_err_t ret = ESP_OK;
+
+    // Message object to send bluetooth status to UART interface
+    MessageHandler::Message msg;
 
     // temporary variable to count the number of attributes
     uint16_t count = 0;
@@ -272,6 +287,11 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
                 break;
             }
             ESP_LOGI(TAG_GATTS, "Open successfully");
+            // send conncetion message to the UART interface
+            std::fill(msg.begin(), msg.end(), '\0');
+            std::copy(BT_status_C.begin(), BT_status_C.end(), msg.begin());
+            msg[BT_status_C.length()] = '\n';
+            _msgHandler->send(MessageHandler::QueueType::UART_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
         break;
 
         //------------------------------------------------------------------------------------------------------------
@@ -433,8 +453,6 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
                 ESP_LOGI(TAG_GATTS, "Notification register successfully");
                 // temporary variable to count the number of attributes
                 uint16_t count = 0;
-                // set the descriptor value for indication
-                uint16_t indication_en = 2;
                 // get number of attributes in service
                 ret = esp_ble_gattc_get_attr_count( gattc_if,
                                                     _gattc_profile_inst.conn_id,
@@ -480,8 +498,8 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
                             ret = esp_ble_gattc_write_char_descr( gattc_if,
                                                             _gattc_profile_inst.conn_id,
                                                             descr_elem_result[0].handle,
-                                                            sizeof(indication_en),
-                                                            (uint8_t *)&indication_en,
+                                                            sizeof(INDICATION),
+                                                            (uint8_t *)&INDICATION,
                                                             ESP_GATT_WRITE_TYPE_NO_RSP,
                                                             ESP_GATT_AUTH_REQ_NONE);
                             // check if the write was successful
@@ -520,10 +538,17 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
             MessageHandler::Message msg;
             std::fill(msg.begin(), msg.end(), '\0');
 
-            // Copy the received data into the message buffer
-            std::copy(p_data->notify.value, p_data->notify.value + p_data->notify.value_len, msg.begin());
-            // send received message to message queue for data parser
-            _msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
+            if (std::all_of(p_data->notify.value, p_data->notify.value + p_data->notify.value_len, [](uint8_t x) { return x == 0; })) {
+                //receiving empty message to check timeout
+                ESP_LOGI(TAG_GATTS, "Received empty message, ignoring");
+                break;
+            }
+            else {
+                 // Copy the received data into the message buffer
+                std::copy(p_data->notify.value, p_data->notify.value + p_data->notify.value_len, msg.begin());
+                // send received message to message queue for data parser
+                _msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
+            }
         break;
         
         //------------------------------------------------------------------------------------------------------------
@@ -536,7 +561,6 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
                 break;
             }
             ESP_LOGI(TAG_GATTS, "Descriptor write successfully");
-        
         break;
         
         //------------------------------------------------------------------------------------------------------------
@@ -581,6 +605,11 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
             else {
                 ESP_LOGI(TAG_GATTS, "start scan successfully");
             }
+            // send disconnection message to UART interface
+            std::fill(msg.begin(), msg.end(), '\0');
+            std::copy(BT_status_DC.begin(), BT_status_DC.end(), msg.begin());
+            msg[BT_status_DC.length()] = '\n';
+            _msgHandler->send(MessageHandler::QueueType::UART_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
         break;
         
         //------------------------------------------------------------------------------------------------------------
@@ -623,6 +652,9 @@ void BLE_Client::sendTask(MessageHandler* msgHandler) {
     }
     else {
         ESP_LOGW(TAG_CLIENT, "Failed to receive message from queue");
+       // send empty message to the client
+       const char data[20] = {0};
+       this->send(data);
     }
 }
  
