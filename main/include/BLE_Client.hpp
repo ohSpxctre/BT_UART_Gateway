@@ -3,24 +3,24 @@
  * @brief BLE Client class inheriting from Bluetooth.
  */
 
- #ifndef BLE_CLIENT_HPP
- #define BLE_CLIENT_HPP
+#ifndef BLE_CLIENT_HPP
+#define BLE_CLIENT_HPP
 
- #if 1
- 
- #include "Bluetooth.hpp"
- #include "MessageHandler.hpp"
+#if 1
 
- constexpr esp_bt_uuid_t REMOTE_FILTER_SERVICE_UUID = SERVICE_UUID_DEFAULT;
+#include "Bluetooth.hpp"
+#include "MessageHandler.hpp"
 
- constexpr esp_bt_uuid_t REMOTE_FILTER_CHAR_UUID = CHAR_UUID_DEFAULT;
+constexpr esp_bt_uuid_t REMOTE_FILTER_SERVICE_UUID = SERVICE_UUID_DEFAULT;
 
- constexpr esp_bt_uuid_t REMOTE_DESCR_UUID_DEFAULT = DESCR_UUID_DEFAULT;
+constexpr esp_bt_uuid_t REMOTE_FILTER_CHAR_UUID = CHAR_UUID_DEFAULT;
 
- constexpr uint32_t SCAN_DURATION = 30; // seconds
+constexpr esp_bt_uuid_t REMOTE_DESCR_UUID_DEFAULT = DESCR_UUID_DEFAULT;
+
+constexpr uint32_t SCAN_DURATION = 30; // seconds
 
 
- constexpr esp_ble_scan_params_t BLE_SCAN_PARAMS_DEFAULT = {
+constexpr esp_ble_scan_params_t BLE_SCAN_PARAMS_DEFAULT = {
     .scan_type              = BLE_SCAN_TYPE_ACTIVE,
     .own_addr_type          = BLE_ADDR_TYPE_PUBLIC,
     .scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL,
@@ -29,24 +29,24 @@
     .scan_duplicate         = BLE_SCAN_DUPLICATE_ENABLE
 };
 
- struct gattc_profile_inst {
-    esp_gattc_cb_t gattc_cb;
-    uint16_t gattc_if;
-    uint16_t app_id;
-    uint16_t conn_id;
-    uint16_t service_start_handle;
-    uint16_t service_end_handle;
-    uint16_t char_handle;
-    esp_bd_addr_t remote_bda;
-    uint16_t local_mtu;
+struct gattc_profile_inst {
+esp_gattc_cb_t gattc_cb;
+uint16_t gattc_if;
+uint16_t app_id;
+uint16_t conn_id;
+uint16_t service_start_handle;
+uint16_t service_end_handle;
+uint16_t char_handle;
+esp_bd_addr_t remote_bda;
+uint16_t local_mtu;
 };
 
  /**
   * @class BLE_Client
   * @brief BLE Client implementation.
   */
- class BLE_Client : public Bluetooth {
- private:
+class BLE_Client : public Bluetooth {
+private:
 
     static BLE_Client* Client_instance; // Static instance pointer
 
@@ -86,20 +86,21 @@
 
     MessageHandler* _msgHandler = nullptr;
 
- public:
-     BLE_Client(esp_ble_scan_params_t scan_params = BLE_SCAN_PARAMS_DEFAULT,
+public:
+    BLE_Client(esp_ble_scan_params_t scan_params = BLE_SCAN_PARAMS_DEFAULT,
                 esp_bt_uuid_t remote_service_uuid = REMOTE_FILTER_SERVICE_UUID,
                 esp_bt_uuid_t remote_char_uuid = REMOTE_FILTER_CHAR_UUID,
                 esp_bt_uuid_t remote_descr_uuid = REMOTE_DESCR_UUID_DEFAULT,
                 MessageHandler* msgHandler = nullptr
-     );
+    );
      
-     ~BLE_Client();
+    ~BLE_Client();
 
-     void setMessageHandler(MessageHandler* handler);
-     void connSetup() override;
-     void send(const char *data) override;
-     void sendTask(MessageHandler* msgHandler) override;
- };
+    void setMessageHandler(MessageHandler* handler);
+    void connSetup() override;
+    void send(const char *data) override;
+    void sendTask(MessageHandler* msgHandler) override;
+};
+
  #endif
  #endif // BLE_CLIENT_HPP

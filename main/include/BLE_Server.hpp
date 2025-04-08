@@ -158,10 +158,6 @@ public:
     ~BLE_Server();
 
     void setMessageHandler(MessageHandler* handler);
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
     void connSetup(void) override;
     void send(const char *data) override;
     void sendTask(MessageHandler* msgHandler) override;  

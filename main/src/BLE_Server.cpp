@@ -58,10 +58,6 @@ BLE_Server::~BLE_Server() {
 }
 
 
-void BLE_Client::setMessageHandler(MessageHandler* handler) {
-    _msgHandler = handler;
-}
-
 void BLE_Server::connSetup() {
     // Register callback functions
     esp_ble_gap_register_callback(gap_event_handler);
@@ -73,15 +69,11 @@ void BLE_Server::connSetup() {
     ESP_LOGI(TAG_SERVER, "BLE Server initialized and callbacks registered");
 }
 
-<<<<<<< Updated upstream
 void BLE_Server::setMessageHandler(MessageHandler* handler) {
     _msgHandler = handler;
 }
 
  void BLE_Server::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
-=======
-void BLE_Server::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
->>>>>>> Stashed changes
     if (Server_instance) {
         // Call the static event handle method for GAP events
         Server_instance->handle_event_gap(event, param);
@@ -147,12 +139,24 @@ void BLE_Server::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
     // GAP event for connection parameters update
     //--------------------------------------------------------------------------------------------------------
     case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
+        // log the connection parameters after update
         //ESP_LOGI(TAG_GAP, "Connection parameters updated: addr= %d, min_int= %d, max_int= %d, latency= %d, timeout= %d",
         //    param->update_conn_params.bda,
         //    param->update_conn_params.min_int,
         //    param->update_conn_params.max_int,
         //    param->update_conn_params.latency,
         //    param->update_conn_params.timeout);
+    break;
+
+    //--------------------------------------------------------------------------------------------------------
+    // GAP event for packet length update
+    //--------------------------------------------------------------------------------------------------------
+    case ESP_GAP_BLE_SET_PKT_LENGTH_COMPLETE_EVT:
+        // log the packet length update status and parameters
+        //ESP_LOGI(TAG_GAP, "Packet length update, status %d, rx %d, tx %d",
+        //    param->pkt_data_length_cmpl.status,
+        //    param->pkt_data_length_cmpl.params.rx_len,
+        //    param->pkt_data_length_cmpl.params.tx_len);
     break;
     
     //--------------------------------------------------------------------------------------------------------
@@ -172,14 +176,10 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
 
     // temporary variable for storing return values of function calls
     esp_err_t ret = ESP_OK;
-    
-    // variables
-    uint16_t length = 0;
-    const uint8_t *prf_char;
 
-    //not used variables (used in events that should not happen)
-    uint16_t mtu_size =_gatts_profile_inst.local_mtu - 1;
-    uint16_t mtu_send_len = 0;    
+    // temporary variables
+    const uint8_t *prf_char;
+    uint16_t length = 0;
 
     //Loging event type
     ESP_LOGW(TAG_SERVER, "GATT event: %s", get_gatts_event_name(event));
@@ -335,6 +335,8 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     // GATT Server add char event
     //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_ADD_CHAR_EVT:
+        
+
         // check if the characteristic was added successfully
         ESP_LOGI(TAG_GATTS, "Characteristic add, status %d, attr_handle %d, service_handle %d",
             param->add_char.status, param->add_char.attr_handle, param->add_char.service_handle);
@@ -442,7 +444,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     }
 }
 
- void BLE_Server::send(const char * data) {
+void BLE_Server::send(const char * data) {
     // save data to the buffer
     _char_value.attr_value = (uint8_t *)data;
 
@@ -466,9 +468,9 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         // if not connected to a client, do not send data
         ESP_LOGI(TAG_SERVER, "Cannot send data, not connected to a client");
     }
- }
+}
 
- void BLE_Server::sendTask(MessageHandler* msgHandler) {
+void BLE_Server::sendTask(MessageHandler* msgHandler) {
     // create message
     MessageHandler::Message message;
 
@@ -480,7 +482,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     } else {
         ESP_LOGI(TAG_SERVER, "No message to send");
     }
- }
+}
 
 const char* BLE_Server::get_gatts_event_name(esp_gatts_cb_event_t event) {
     switch (event) {

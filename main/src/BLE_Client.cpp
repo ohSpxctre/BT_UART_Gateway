@@ -101,6 +101,7 @@ void BLE_Client::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
         // GAP event for starting scan complete
         //---------------------------------------------------------------------------------------------------------
         case ESP_GAP_BLE_SCAN_PARAM_SET_COMPLETE_EVT:
+            //set scan parameters successfully, start scanning
             esp_ble_gap_start_scanning(SCAN_DURATION);
             ESP_LOGI(TAG_GAP, "Scan parameters set successfully, starting scan...");
         break;
@@ -121,24 +122,23 @@ void BLE_Client::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
         // GAP event for scan result
         //---------------------------------------------------------------------------------------------------------
         case ESP_GAP_BLE_SCAN_RESULT_EVT:
-            
+            // scan result event, found a device
             if (scan_result->scan_rst.search_evt == ESP_GAP_SEARCH_INQ_RES_EVT) {
+                // reading device name from advertisement data
                 adv_name = esp_ble_resolve_adv_data_by_type(scan_result->scan_rst.ble_adv,
                                                             scan_result->scan_rst.adv_data_len + scan_result->scan_rst.scan_rsp_len,
                                                             ESP_BLE_AD_TYPE_NAME_CMPL,
                                                             &adv_name_len);
-
+                
+                // log the device name and address
                 ESP_LOGI(TAG_GAP, "Scan result, device "ESP_BD_ADDR_STR", name len %d", ESP_BD_ADDR_HEX(scan_result->scan_rst.bda), adv_name_len);
                 ESP_LOG_BUFFER_CHAR(TAG_GAP, adv_name, adv_name_len);
-
-               
+                // read uuid from advertisement data
                 uuid_data = esp_ble_resolve_adv_data_by_type(scan_result->scan_rst.ble_adv,
                                                                             scan_result->scan_rst.adv_data_len + scan_result->scan_rst.scan_rsp_len,
                                                                             ESP_BLE_AD_TYPE_128SRV_CMPL, // Change for other UUID types if needed
                                                                             &uuid_len);
-
-                
-
+                // log the uuid data if found
                 if (uuid_data && uuid_len > 0) {
                     ESP_LOGI(TAG_GAP, "UUID Found:");
                     ESP_LOG_BUFFER_HEX(TAG_GAP, uuid_data, uuid_len);
@@ -156,11 +156,13 @@ void BLE_Client::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
                     ESP_LOG_BUFFER_HEX(TAG_GAP, &scan_result->scan_rst.ble_adv[scan_result->scan_rst.adv_data_len], scan_result->scan_rst.scan_rsp_len);
                 }
 
-
+                // Check if the device name matches the expected server name
                 if (strlen(DEVICE_NAME_SERVER) == adv_name_len && strncmp((char *)adv_name, DEVICE_NAME_SERVER, adv_name_len) == 0) {
                     ESP_LOGI(TAG_GAP, "Device found %s", DEVICE_NAME_SERVER);
                     if (_is_connected == false) {
+                        // stop scanning
                         esp_ble_gap_stop_scanning();
+                        // connect to the device
                         ret = esp_ble_gattc_open(_gattc_profile_inst.gattc_if, scan_result->scan_rst.bda, scan_result->scan_rst.ble_addr_type, true);
                         if (ret != ESP_OK) {
                             ESP_LOGE(TAG_GAP, "Connection failed, error code = %d", ret);
@@ -173,47 +175,41 @@ void BLE_Client::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
                     }                  
                 }
             }
-            //ke plan wieso das gmacht wird
-           //else if (scan_result->scan_rst.search_evt == ESP_GAP_SEARCH_INQ_CMPL_EVT) {}
-           //else {
         break;
 
         //---------------------------------------------------------------------------------------------------------
         // GAP event for stopping scan complete
         //---------------------------------------------------------------------------------------------------------
         case ESP_GAP_BLE_SCAN_STOP_COMPLETE_EVT:
-                
+            // check if scan stopped successfully
             if (param->scan_stop_cmpl.status != ESP_BT_STATUS_SUCCESS){
                 ESP_LOGE(TAG_GAP, "Scanning stop failed, status %x", param->scan_stop_cmpl.status);
                 break;
             }
             ESP_LOGI(TAG_GAP, "Scanning stop successfully");
-
-            break;
-
-        //---------------------------------------------------------------------------------------------------------
-        // GAP advertising stop complete event
-        case ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT:
-            if (param->adv_stop_cmpl.status != ESP_BT_STATUS_SUCCESS){
-                ESP_LOGE(TAG_GAP, "Advertising stop failed, status %x", param->adv_stop_cmpl.status);
-                break;
-            }
-            ESP_LOGI(TAG_GAP, "Advertising stop successfully");
         break;
-
+        
+        //--------------------------------------------------------------------------------------------------------
+        // GAP event for connection parameters update
+        //--------------------------------------------------------------------------------------------------------
         case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
-            ESP_LOGI(TAG_GAP, "Connection params update, status %d, conn_int %d, latency %d, timeout %d",
-                param->update_conn_params.status,
-                param->update_conn_params.conn_int,
-                param->update_conn_params.latency,
-                param->update_conn_params.timeout);
+            // log the connection parameters after update
+            //ESP_LOGI(TAG_GAP, "Connection params update, status %d, conn_int %d, latency %d, timeout %d",
+            //    param->update_conn_params.status,
+            //    param->update_conn_params.conn_int,
+            //    param->update_conn_params.latency,
+            //    param->update_conn_params.timeout);
         break;
-
+        
+        //--------------------------------------------------------------------------------------------------------
+        // GAP event for packet length update
+        //--------------------------------------------------------------------------------------------------------
         case ESP_GAP_BLE_SET_PKT_LENGTH_COMPLETE_EVT:
-            ESP_LOGI(TAG_GAP, "Packet length update, status %d, rx %d, tx %d",
-                param->pkt_data_length_cmpl.status,
-                param->pkt_data_length_cmpl.params.rx_len,
-                param->pkt_data_length_cmpl.params.tx_len);
+            // log the packet length update status and parameters
+            //ESP_LOGI(TAG_GAP, "Packet length update, status %d, rx %d, tx %d",
+            //    param->pkt_data_length_cmpl.status,
+            //    param->pkt_data_length_cmpl.params.rx_len,
+            //    param->pkt_data_length_cmpl.params.tx_len);
         break;
 
         //---------------------------------------------------------------------------------------------------------
@@ -231,7 +227,9 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
     esp_gatt_status_t status = ESP_GATT_OK;
     esp_err_t ret = ESP_OK;
 
-    uint16_t char_count = 0;
+    // temporary variable to count the number of attributes
+    uint16_t count = 0;
+    
     esp_gattc_char_elem_t *char_elem_result   = NULL;
     esp_gattc_descr_elem_t *descr_elem_result = NULL;
 
@@ -241,8 +239,10 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
         // GATT client registered successfully
         //----------------------------------------------------------------------------------------------------------
         case ESP_GATTC_REG_EVT:
+            // save the bluetooth interface after app registration
             ESP_LOGI(TAG_GATTS, "GATT client register, status %d, app_id %d, gattc_if %d", param->reg.status, param->reg.app_id, gattc_if);
             _gattc_profile_inst.gattc_if = gattc_if;
+            // set the scan parameters
             ret = esp_ble_gap_set_scan_params(&_scan_params);
             if (ret){
                 ESP_LOGE(TAG_GATTS, "set scan params error, error code = %d", ret);
@@ -253,10 +253,12 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
         // GATT Connect event
         //----------------------------------------------------------------------------------------------------------
         case ESP_GATTC_CONNECT_EVT:
-            //ESP_LOGI(TAG_GATTS, "Connected, conn_id %d, remote "ESP_BD_ADDR_STR"", p_data->connect.conn_id, ESP_BD_ADDR_HEX(p_data->connect.remote_bda));
+            // check if the connection was successful
             ESP_LOGI(TAG_GATTS, "Connected, conn_id %d", p_data->connect.conn_id);
+            // save the connection ID and remote address
             _gattc_profile_inst.conn_id = p_data->connect.conn_id;
             memcpy(_gattc_profile_inst.remote_bda, p_data->connect.remote_bda, sizeof(esp_bd_addr_t));
+            // request mtu size
             ret = esp_ble_gattc_send_mtu_req (gattc_if, p_data->connect.conn_id);
             if (ret){
                 ESP_LOGE(TAG_GATTS, "Config MTU error, error code = %d", ret);
@@ -267,6 +269,7 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
         // GATT Open event
         //----------------------------------------------------------------------------------------------------------
         case ESP_GATTC_OPEN_EVT:
+            // check if the opening connection was successful
             if (param->open.status != ESP_GATT_OK){
                 ESP_LOGE(TAG_GATTS, "Open failed, status %d", p_data->open.status);
                 break;
@@ -278,25 +281,27 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
         // GATT discover service event
         //------------------------------------------------------------------------------------------------------------
         case ESP_GATTC_DIS_SRVC_CMPL_EVT:
+            // check if the service discovery was successful
             if (param->dis_srvc_cmpl.status != ESP_GATT_OK){
                 ESP_LOGE(TAG_GATTS, "Service discover failed, status %d", param->dis_srvc_cmpl.status);
                 break;
             }
             ESP_LOGI(TAG_GATTS, "Service discover complete, conn_id %d", param->dis_srvc_cmpl.conn_id);
+            // start searching for the service
             ret = esp_ble_gattc_search_service(gattc_if, param->dis_srvc_cmpl.conn_id, &_remote_service_uuid);
             if (ret != ESP_OK){
                 ESP_LOGE(TAG_GATTS, "Search service failed, error code = %d", ret);
             }
             else {
                 ESP_LOGI(TAG_GATTS, "Search service started");
-            }
-            
+            }    
         break;
 
         //------------------------------------------------------------------------------------------------------------
         // GATT config MTU event
         //------------------------------------------------------------------------------------------------------------
         case ESP_GATTC_CFG_MTU_EVT:
+            // log mtu size after configuration
             ESP_LOGI(TAG_GATTS, "MTU exchange, status %d, MTU %d", param->cfg_mtu.status, param->cfg_mtu.mtu);
         break;
         
@@ -304,6 +309,7 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
         // GATT service serch result event
         //------------------------------------------------------------------------------------------------------------
         case ESP_GATTC_SEARCH_RES_EVT:
+            // log the service search result
             ESP_LOGI(TAG_GATTS, "Service search result, conn_id = %x, is primary service %d", p_data->search_res.conn_id, p_data->search_res.is_primary);
             ESP_LOGI(TAG_GATTS, "start handle %d, end handle %d, current handle value %d", p_data->search_res.start_handle, p_data->search_res.end_handle, p_data->search_res.srvc_id.inst_id);
 
@@ -311,6 +317,7 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
             if (p_data->search_res.srvc_id.uuid.len == ESP_UUID_LEN_128 &&
                 memcmp(p_data->search_res.srvc_id.uuid.uuid.uuid128, _remote_service_uuid.uuid.uuid128, _remote_service_uuid.len) == 0){
                 ESP_LOGI(TAG_GATTS, "Service found by uuid");
+                // set server flag to ture and save service handles
                 _get_server = true;
                 _gattc_profile_inst.service_start_handle = p_data->search_res.start_handle;
                 _gattc_profile_inst.service_end_handle = p_data->search_res.end_handle;
@@ -324,10 +331,13 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
         // GATT service search complete event
         //------------------------------------------------------------------------------------------------------------
         case ESP_GATTC_SEARCH_CMPL_EVT:
+            
+            // check if the service search was successful
             if (p_data->search_cmpl.status != ESP_GATT_OK){
                 ESP_LOGE(TAG_GATTS, "Service search failed, status %x", p_data->search_cmpl.status);
                 break;
             }
+            // log the service source
             if(p_data->search_cmpl.searched_service_source == ESP_GATT_SERVICE_FROM_REMOTE_DEVICE) {
                 ESP_LOGI(TAG_GATTS, "Get service information from remote device");
             } else if (p_data->search_cmpl.searched_service_source == ESP_GATT_SERVICE_FROM_NVS_FLASH) {
@@ -336,21 +346,23 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
                 ESP_LOGI(TAG_GATTS, "Unknown service source");
             }
             ESP_LOGI(TAG_GATTS, "Service search complete");
-            
+            // allocate memory for characteristic element result
             char_elem_result = (esp_gattc_char_elem_t *)malloc(sizeof(esp_gattc_char_elem_t));
             if (!char_elem_result){
                 ESP_LOGE(TAG_GATTS, "gattc no mem");
                 break;
             }
+            // check if the server was found
             if (_get_server) {
-                char_count = 0;
+                count =0;
+                // get count for attributes
                 status = esp_ble_gattc_get_attr_count( gattc_if,
                                                         _gattc_profile_inst.conn_id,
                                                         ESP_GATT_DB_CHARACTERISTIC,
                                                         _gattc_profile_inst.service_start_handle,
                                                         _gattc_profile_inst.service_end_handle,
                                                         0,
-                                                        &char_count);
+                                                        &count);
                 if (status != ESP_GATT_OK){
                     ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_attr_count error, error code = %d", status);
                     free(char_elem_result);
@@ -358,33 +370,34 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
                     break;
                 }
             }
-
-            ESP_LOGI(TAG_GATTS, "char count %d", char_count);
-            if (char_count > 0) {
+            ESP_LOGI(TAG_GATTS, "char count %d", count);
+            if (count > 0) {
+                // get the characteristic by UUID
                 status = esp_ble_gattc_get_char_by_uuid( gattc_if,
                                                         p_data->search_cmpl.conn_id,
                                                         _gattc_profile_inst.service_start_handle,
                                                         _gattc_profile_inst.service_end_handle,
                                                         _remote_char_uuid,
                                                         char_elem_result,
-                                                        &char_count);
-
+                                                        &count);
+                // check if the characteristic was found
                 if (status != ESP_GATT_OK){
                     ESP_LOGE(TAG_GATTS, "char not found by uuid, error %d", status);
                     free(char_elem_result);
                     char_elem_result = nullptr;
                     break;
                 }
-                
-                /*  The service has only one characteristic in our application , so we used first 'char_elem_result' */
-                if (char_count > 0 && (char_elem_result[0].properties & ESP_GATT_CHAR_PROP_BIT_INDICATE)){
+                // server has only one characteristic, so we used first 'char_elem_result'
+                if (count > 0 && (char_elem_result[0].properties & ESP_GATT_CHAR_PROP_BIT_INDICATE)){
                     ESP_LOGI(TAG_GATTS, "char found by uuid");
+                    // save the characteristic handle
                     _gattc_profile_inst.char_handle = char_elem_result[0].char_handle;
                     ESP_LOGI(TAG_GATTS, "char handle %d", _gattc_profile_inst.char_handle);
+                    // register for notification
                     ret = esp_ble_gattc_register_for_notify( gattc_if,
                                                             _gattc_profile_inst.remote_bda,
                                                             _gattc_profile_inst.char_handle);
-
+                    // check if the registration was successful
                     if (ret != ESP_OK){
                         ESP_LOGE(TAG_GATTS, "Register for notify error, error code = %d", ret);
                     }
@@ -393,14 +406,18 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
                     }
                 }
                 else {
+                    // if no characteristic was found
                     ESP_LOGE(TAG_GATTS, "char not found by uuid or no property indicate");
+                    // free the allocated memory for char_elem_result
                     free(char_elem_result);
                     char_elem_result = nullptr;
                     break;
                 }
             }
             else {
+                // if no attributes are found, log the error
                 ESP_LOGE(TAG_GATTS, "no char found");
+                // free the allocated memory for char_elem_result
                 free(char_elem_result);
                 char_elem_result = nullptr;
                 break;
@@ -411,13 +428,17 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
         // GATT register for notification event
         //------------------------------------------------------------------------------------------------------------
         case ESP_GATTC_REG_FOR_NOTIFY_EVT:
+            //check if the registration was successful or not
             if (p_data->reg_for_notify.status != ESP_GATT_OK){
                 ESP_LOGE(TAG_GATTS, "Notification register failed");
             }
             else {
                 ESP_LOGI(TAG_GATTS, "Notification register successfully");
+                // temporary variable to count the number of attributes
                 uint16_t count = 0;
+                // set the descriptor value for indication
                 uint16_t indication_en = 2;
+                // get number of attributes in service
                 ret = esp_ble_gattc_get_attr_count( gattc_if,
                                                     _gattc_profile_inst.conn_id,
                                                     ESP_GATT_DB_DESCRIPTOR,
@@ -425,43 +446,48 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
                                                     _gattc_profile_inst.service_end_handle, 
                                                     _gattc_profile_inst.char_handle,
                                                     &count);
+                // check if the attribute count was successful
                 if (ret != ESP_GATT_OK){
                     ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_attr_count error");
                     break;
                 }
-
                 if (count > 0) {
                     ESP_LOGI(TAG_GATTS, "Descriptor count %d", count);
+                    // allocate memory for descriptor element result
                     descr_elem_result = (esp_gattc_descr_elem_t *) malloc(sizeof(esp_gattc_descr_elem_t) * count);
                     if (!descr_elem_result){
                         ESP_LOGE(TAG_GATTS, "malloc error, gattc no mem");
                         break;
                     }
                     else {
+                        // get the descriptor by characteristic handle
                         ret = esp_ble_gattc_get_descr_by_char_handle( gattc_if,
                                                                     _gattc_profile_inst.conn_id,
                                                                     p_data->reg_for_notify.handle,
                                                                     _remote_descr_uuid,
                                                                     descr_elem_result,
                                                                     &count);
-
+                        // check if the descriptor was found
                         if (ret != ESP_GATT_OK){
+                            // if not found, log error and free the allocated memory
                             ESP_LOGE(TAG_GATTS, "esp_ble_gattc_get_descr_by_char_handle error");
                             free(descr_elem_result);
                             descr_elem_result = nullptr;
                             break;
                         }
 
-                        /* Every char has only one descriptor in our 'ESP_GATTS_DEMO' demo, so we used first 'descr_elem_result' */
+                        // check if the descriptor was found by uuid
                         if (count > 0 && descr_elem_result[0].uuid.len == ESP_UUID_LEN_128 &&
                             memcmp(descr_elem_result[0].uuid.uuid.uuid128, _remote_descr_uuid.uuid.uuid128, sizeof(_remote_descr_uuid.uuid.uuid128)) == 0){
-                                ret = esp_ble_gattc_write_char_descr( gattc_if,
-                                                                _gattc_profile_inst.conn_id,
-                                                                descr_elem_result[0].handle,
-                                                                sizeof(indication_en),
-                                                                (uint8_t *)&indication_en,
-                                                                ESP_GATT_WRITE_TYPE_NO_RSP,
-                                                                ESP_GATT_AUTH_REQ_NONE);
+                            // write the descriptor value to enable indication
+                            ret = esp_ble_gattc_write_char_descr( gattc_if,
+                                                            _gattc_profile_inst.conn_id,
+                                                            descr_elem_result[0].handle,
+                                                            sizeof(indication_en),
+                                                            (uint8_t *)&indication_en,
+                                                            ESP_GATT_WRITE_TYPE_NO_RSP,
+                                                            ESP_GATT_AUTH_REQ_NONE);
+                            // check if the write was successful
                             if (ret != ESP_GATT_OK){
                                 ESP_LOGE(TAG_GATTS, "esp_ble_gattc_write_char_descr error");
                             }
@@ -470,7 +496,7 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
                             }
                         }
 
-                        /* free descr_elem_result */
+                        // free the temporary allocated memory
                         free(descr_elem_result);
                         descr_elem_result = nullptr;
                     }
@@ -485,6 +511,7 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
         // GATT notify event
         //------------------------------------------------------------------------------------------------------------
         case ESP_GATTC_NOTIFY_EVT:
+            // check if the notification was successful
             if (p_data->notify.is_notify){
                 ESP_LOGI(TAG_GATTS, "Notification received");
             }else{
@@ -498,7 +525,7 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
 
             // Copy the received data into the message buffer
             std::copy(p_data->notify.value, p_data->notify.value + p_data->notify.value_len, msg.begin());
-            
+            // send received message to message queue for data parser
             _msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
         break;
         
@@ -506,6 +533,7 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
         // GATT write descriptor event
         //------------------------------------------------------------------------------------------------------------
         case ESP_GATTC_WRITE_DESCR_EVT:
+            // check if the write descriptor was successful
             if (p_data->write.status != ESP_GATT_OK){
                 ESP_LOGE(TAG_GATTS, "Descriptor write failed, status %x", p_data->write.status);
                 break;
@@ -525,30 +553,30 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
         // GATT write characteristic event
         //------------------------------------------------------------------------------------------------------------
         case ESP_GATTC_WRITE_CHAR_EVT:
+            // check if the write characteristic was successful
             if (p_data->write.status != ESP_GATT_OK){
                 ESP_LOGE(TAG_GATTS, "Caracteristic write failed, status");
                 break;
             }
             ESP_LOGI(TAG_GATTS, "Characteristic write successfully");
-            //ESP_LOGI(TAG_GATTS, "Write value: ");
-            //// Print out the written data byte by byte
-            //for (int i = 0; i < write_param->length; i++) {
-            //    ESP_LOGI(TAG, "0x%02X", write_param->value[i]);
-            //}
         break;
         
         //------------------------------------------------------------------------------------------------------------
         // GATT Disconnect event
         //------------------------------------------------------------------------------------------------------------
         case ESP_GATTC_DISCONNECT_EVT:
+            // log reason for disconnection
             ESP_LOGI(TAG_GATTS, "Disconnected, conn_id %d, reason %d", p_data->disconnect.conn_id, p_data->disconnect.reason);
+            // set connected & server flags to false
             _is_connected = false;
             _get_server = false;
+            // delete the connection ID service handle and characteristic handle
             _gattc_profile_inst.conn_id = 0;
             _gattc_profile_inst.service_start_handle = 0;
             _gattc_profile_inst.char_handle = 0;
             _gattc_profile_inst.service_end_handle = 0;
 
+            // start scanning again after disconnection
             ret = esp_ble_gap_start_scanning(SCAN_DURATION);
             if(ret != ESP_OK){
                 ESP_LOGE(TAG_GATTS, "start scan failed, error code = %x", ret);
@@ -563,27 +591,33 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
         //------------------------------------------------------------------------------------------------------------
         default:
             ESP_LOGE(TAG_GATTS, "Unhandled GATTC event: %s", get_gattc_event_name(event));
-            break;
-        }
+        break;
     }
+}
 
 void BLE_Client::send(const char *data) {
-    // Send data to the BLE server
-    esp_err_t ret = esp_ble_gattc_write_char(_gattc_profile_inst.gattc_if,
-                                             _gattc_profile_inst.conn_id,
-                                             _gattc_profile_inst.char_handle,
-                                             strlen(data),
-                                             (uint8_t *)data,
-                                             ESP_GATT_WRITE_TYPE_NO_RSP,
-                                             ESP_GATT_AUTH_REQ_NONE);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG_CLIENT, "Failed to send data, error code = %d", ret);
-    } else {
-        ESP_LOGI(TAG_CLIENT, "Data sent successfully: %s", data);
-    }    
- }
+    // Check if the client is connected to the server
+    if (_is_connected) {
+        // Send data to the BLE server
+        esp_err_t ret = esp_ble_gattc_write_char(_gattc_profile_inst.gattc_if,
+                                                _gattc_profile_inst.conn_id,
+                                                _gattc_profile_inst.char_handle,
+                                                strlen(data),
+                                                (uint8_t *)data,
+                                                ESP_GATT_WRITE_TYPE_NO_RSP,
+                                                ESP_GATT_AUTH_REQ_NONE);
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG_CLIENT, "Failed to send data, error code = %d", ret);
+        } else {
+            ESP_LOGI(TAG_CLIENT, "Data sent successfully: %s", data);
+        } 
+    }
+    else {
+        ESP_LOGE(TAG_CLIENT, "Client is not connected to the server, cannot send data");
+    }
+}
 
- void BLE_Client::sendTask(MessageHandler* msgHandler) {
+void BLE_Client::sendTask(MessageHandler* msgHandler) {
     // Get message from the queue and send it to the BLE server
     MessageHandler::Message msg;
 
@@ -593,10 +627,10 @@ void BLE_Client::send(const char *data) {
     else {
         ESP_LOGW(TAG_CLIENT, "Failed to receive message from queue");
     }
- }
+}
  
 
- const char* BLE_Client::get_gattc_event_name(esp_gattc_cb_event_t event) {
+const char* BLE_Client::get_gattc_event_name(esp_gattc_cb_event_t event) {
     switch (event) {
         case ESP_GATTC_REG_EVT: return "ESP_GATTC_REG_EVT";
         case ESP_GATTC_UNREG_EVT: return "ESP_GATTC_UNREG_EVT";
@@ -641,10 +675,10 @@ void BLE_Client::send(const char *data) {
         case ESP_GATTC_GET_ADDR_LIST_EVT: return "ESP_GATTC_GET_ADDR_LIST_EVT";
         case ESP_GATTC_DIS_SRVC_CMPL_EVT: return "ESP_GATTC_DIS_SRVC_CMPL_EVT";
         default: return "UNKNOWN_GATTC_EVENT";
-    }
+}
 }
  
- const char* BLE_Client::get_gap_event_name(esp_gap_ble_cb_event_t event) {
+const char* BLE_Client::get_gap_event_name(esp_gap_ble_cb_event_t event) {
     switch (event) {
         case ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT: return "ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT";
         case ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT: return "ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT";
@@ -677,6 +711,6 @@ void BLE_Client::send(const char *data) {
         case ESP_GAP_BLE_EVT_MAX: return "ESP_GAP_BLE_EVT_MAX";
         default: return "UNKNOWN_GAP_EVENT";
     }
- }
+}
 
  #endif
