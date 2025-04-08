@@ -13,9 +13,11 @@ BLE_Client::BLE_Client(esp_ble_scan_params_t scan_params, esp_bt_uuid_t remote_s
     _scan_params(scan_params),
     _remote_service_uuid(remote_service_uuid),
     _remote_char_uuid(remote_char_uuid),
-    _remote_descr_uuid(remote_descr_uuid),
-    _msgHandler(msgHandler)
+    _remote_descr_uuid(remote_descr_uuid)
 {
+    // Set the message handler
+    _msgHandler = msgHandler;
+    
     // Initialize the static instance pointer
     if (Client_instance != nullptr) {
         ESP_LOGE(TAG_CLIENT, "BLE_Client instance already exists!");
@@ -51,11 +53,6 @@ BLE_Client::~BLE_Client() {
     _msgHandler = nullptr;
     ESP_LOGI(TAG_CLIENT, "BLE Client Deinitialized");
 }
-
-void BLE_Client::setMessageHandler(MessageHandler* handler) {
-    _msgHandler = handler;
-}
-
 
 void BLE_Client::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
     if (Client_instance) {

@@ -139,8 +139,6 @@ private:
     .attr_value = _descr_data_buffer
   };
 
-  MessageHandler* _msgHandler;
-
   const char* get_gatts_event_name(esp_gatts_cb_event_t);
   const char* get_gap_event_name(esp_gap_ble_cb_event_t);
 
@@ -157,7 +155,6 @@ public:
 
     ~BLE_Server();
 
-    void setMessageHandler(MessageHandler* handler);
     void connSetup(void) override;
     void send(const char *data) override;
     void sendTask(MessageHandler* msgHandler) override;  

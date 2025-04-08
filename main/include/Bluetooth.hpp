@@ -30,6 +30,8 @@
 
 
 class Bluetooth {
+protected:
+    MessageHandler* _msgHandler; // Pointer to the message handler for communication
    
 public:
     Bluetooth();
@@ -38,6 +40,10 @@ public:
     virtual void connSetup() = 0;
     virtual void send(const char *data) = 0;
     virtual void sendTask(MessageHandler* msgHandler) = 0;
+    void setMessageHandler(MessageHandler* handler)
+    {
+        _msgHandler = handler;
+    }
 };
 
 #endif // BLUETOOTH_HPP

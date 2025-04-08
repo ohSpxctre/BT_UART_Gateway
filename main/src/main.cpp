@@ -14,8 +14,7 @@
 #include "BLE_Client.hpp"
 #include "BLE_Server.hpp"
 
-// Define the BLE mode (server or client)
-#define BLE_SERVER 1
+bool BLE_SERVER = false; // Default to client mode
 
 esp_pthread_cfg_t create_config(const char *name, int stack, int prio)
 {
@@ -33,7 +32,6 @@ void uartReceiveTask(Uart &uartX, MessageHandler &msgHandler)
         uartX.receiveTask(&msgHandler);
     }
 }
-
 
 void uartSendTask(Uart &uartX, MessageHandler &msgHandler)
 {
@@ -69,6 +67,25 @@ void bleSendTask(Bluetooth &bluetooth, MessageHandler &msgHandler)
     }
 }
 
+bool getBleInterface(Uart &uartX, MessageHandler &msgHandler) {
+    // Prompt the user to choose between Server and Client mode
+    const char* prompt = "Choose BLE interface (Server or Client): \n";
+    uartX.send(prompt, strlen(prompt));
+    // Wait for the user to respond
+    uartX.receiveTask(&msgHandler);
+    MessageHandler::Message data;
+    msgHandler.receive(MessageHandler::QueueType::DATA_PARSER_QUEUE, data);
+    if (strncasecmp(data.data(), "Server", 6) == 0) {
+        BLE_SERVER = true; // Set to server mode
+        return true; // Server mode
+    } 
+    else if (strncasecmp(data.data(), "Client", 6) == 0) {
+        BLE_SERVER = false; // Set to client mode
+        return false; // Client mode
+    }
+    // If neither, return false (default to Client mode)
+    return false;
+}
 
 
 extern "C" void app_main(void) {
@@ -81,18 +98,21 @@ extern "C" void app_main(void) {
     DataParser dataParser(cmdHandler);
     Uart uart0;
 
-#if BLE_SERVER
-    BLE_Server bleInterface;
-#else
-    BLE_Client bleInterface;
-#endif
-    /* Initialize the Bluetooth interface */
-    bleInterface.setMessageHandler(&msgHandler);
-    bleInterface.connSetup();
-
     /* Initialize the UART interface for UART port 0 (default) */
     uart0.init(msgHandler.getUartEventQueue());
-    
+
+    /* Choose the BLE interface mode (Server or Client) */
+    std::unique_ptr<Bluetooth> bleInterface;
+    if (getBleInterface(uart0, msgHandler)) {
+        bleInterface = std::make_unique<BLE_Server>();
+    } else {
+        bleInterface = std::make_unique<BLE_Client>();
+    }
+
+    /* Initialize the Bluetooth interface */
+    bleInterface->setMessageHandler(&msgHandler);
+    bleInterface->connSetup();
+
     /* Create threads for the UART receive task */
     esp_pthread_cfg_t cfg = create_config("uartReceiveTask", 4096, 4);
     esp_pthread_set_cfg(&cfg);
@@ -111,7 +131,7 @@ extern "C" void app_main(void) {
     /* Create a thread for BLE send task */ 
     cfg = create_config("bleSendTask", 4096, 5);
     esp_pthread_set_cfg(&cfg);
-    std::thread bleSendThread(bleSendTask, std::ref(bleInterface), std::ref(msgHandler));
+    std::thread bleSendThread(bleSendTask, std::ref(*bleInterface), std::ref(msgHandler));
 
     while (true)
     {

@@ -11,9 +11,11 @@ BLE_Server* BLE_Server::Server_instance = nullptr;
 
 BLE_Server::BLE_Server(esp_ble_adv_params_t adv_params, esp_ble_adv_data_t adv_data, MessageHandler* msgHandler) :
     _adv_params(adv_params),
-    _adv_data(adv_data),
-    _msgHandler(msgHandler)
+    _adv_data(adv_data)
 {
+    // Set the message handler
+    _msgHandler = msgHandler;
+    
     // Initialize the static instance pointer
     if (Server_instance != nullptr) {
         ESP_LOGE(TAG_SERVER, "BLE_Server instance already exists!");
@@ -67,10 +69,6 @@ void BLE_Server::connSetup() {
     // Set the local MTU size
     esp_ble_gatt_set_local_mtu(_gatts_profile_inst.local_mtu);
     ESP_LOGI(TAG_SERVER, "BLE Server initialized and callbacks registered");
-}
-
-void BLE_Server::setMessageHandler(MessageHandler* handler) {
-    _msgHandler = handler;
 }
 
  void BLE_Server::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {

@@ -84,8 +84,6 @@ private:
     const char* get_gattc_event_name(esp_gattc_cb_event_t);
     const char* get_gap_event_name(esp_gap_ble_cb_event_t);
 
-    MessageHandler* _msgHandler = nullptr;
-
 public:
     BLE_Client(esp_ble_scan_params_t scan_params = BLE_SCAN_PARAMS_DEFAULT,
                 esp_bt_uuid_t remote_service_uuid = REMOTE_FILTER_SERVICE_UUID,
@@ -96,7 +94,6 @@ public:
      
     ~BLE_Client();
 
-    void setMessageHandler(MessageHandler* handler);
     void connSetup() override;
     void send(const char *data) override;
     void sendTask(MessageHandler* msgHandler) override;
