@@ -17,10 +17,6 @@
 
 #include <cstdint> // Include for fixed-width integer types
 
-#define adv_config_flag      (1 << 0)
-#define scan_rsp_config_flag (1 << 1)
-
-
 constexpr char CHAR_VALUE_DEFAULT [ESP_BLE_ADV_NAME_LEN_MAX] = "ESP_GATT_Server_Default";
 
 constexpr esp_gatt_srvc_id_t SERVICE_ID_DEFAULT = {
@@ -131,8 +127,6 @@ private:
   bool _is_advertising = false;
   bool _is_connected = false;
 
-  uint8_t _adv_config_done = 0;
-
   esp_attr_value_t _char_value = {
     .attr_max_len = ESP_GATT_MAX_ATTR_LEN,
     .attr_len = sizeof(_char_data_buffer),
@@ -164,11 +158,12 @@ public:
     ~BLE_Server();
 
     void setMessageHandler(MessageHandler* handler);
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
     void connSetup(void) override;
-
     void send(const char *data) override;
-
     void sendTask(MessageHandler* msgHandler) override;  
 };
 
