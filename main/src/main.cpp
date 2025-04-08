@@ -4,6 +4,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <esp_log.h>
+#include <cstring>
 
 #include "uart.hpp"
 #include "MessageHandler.hpp"
@@ -13,6 +14,7 @@
 #include "BLE_Client.hpp"
 #include "BLE_Server.hpp"
 
+// Define the BLE mode (server or client)
 #define BLE_SERVER 1
 
 esp_pthread_cfg_t create_config(const char *name, int stack, int prio)
@@ -35,6 +37,15 @@ void uartReceiveTask(Uart &uartX, MessageHandler &msgHandler)
 
 void uartSendTask(Uart &uartX, MessageHandler &msgHandler)
 {
+    // Print out information about the Bluetooth interface
+    const char* bleInterface;
+    if (BLE_SERVER) {
+        bleInterface = "BLE Server mode\n";
+    } else {
+        bleInterface = "BLE Client mode\n";
+    }
+    uartX.send(bleInterface, strlen(bleInterface));
+
     // Get message from the UART queue and send it to the UART interface
     while (true) {
         uartX.sendTask(&msgHandler);

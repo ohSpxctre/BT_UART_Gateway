@@ -182,40 +182,40 @@ size_t Uart::uart_event_handler(char* data)
         switch(event.type) {
             // Event of UART receiving data
             case UART_DATA:
-                ESP_LOGI(TAG, "Port: %d, data length: %d", _port, event.size);
+                ESP_LOGD(TAG, "Port: %d, data length: %d", _port, event.size);
                 uart_read_bytes(_port, data, event.size, portMAX_DELAY);
                 break;
             // Event of HW FIFO overflow detected
             case UART_FIFO_OVF:
-                ESP_LOGI(TAG, "Port: %d, FIFO overflow", _port);
+                ESP_LOGD(TAG, "Port: %d, FIFO overflow", _port);
                 uart_flush_input(_port);
                 xQueueReset(*_uart_queue);
                 break;
             // Event of UART ring buffer full
             case UART_BUFFER_FULL:
-                ESP_LOGI(TAG, "Port: %d, Ring buffer full", _port);
+                ESP_LOGD(TAG, "Port: %d, Ring buffer full", _port);
                 uart_flush_input(_port);
                 xQueueReset(*_uart_queue);
                 break;
             // Event of UART RX break detected
             case UART_BREAK:
-                ESP_LOGI(TAG, "Port: %d, rx break", _port);
+                ESP_LOGD(TAG, "Port: %d, rx break", _port);
                 break;
             // Event of UART parity check error
             case UART_PARITY_ERR:
-                ESP_LOGI(TAG, "Port: %d, parity error", _port);
+                ESP_LOGD(TAG, "Port: %d, parity error", _port);
                 break;
             // Event of UART frame error
             case UART_FRAME_ERR:
-                ESP_LOGI(TAG, "Port: %d, frame error", _port);
+                ESP_LOGD(TAG, "Port: %d, frame error", _port);
                 break;
             // UART_PATTERN_DET
             case UART_PATTERN_DET:
-                ESP_LOGI(TAG, "Port: %d, pattern detected", _port);
+                ESP_LOGD(TAG, "Port: %d, pattern detected", _port);
                 break;
             // Others
             default:
-                ESP_LOGI(TAG, "Port: %d, event type: %d", _port, event.type);
+                ESP_LOGD(TAG, "Port: %d, event type: %d", _port, event.type);
                 break;
         }
     }
