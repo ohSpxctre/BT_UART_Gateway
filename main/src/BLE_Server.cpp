@@ -285,15 +285,16 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
             }
             // check if write handle is charakteristic handle
             else if (_gatts_profile_inst.char_handle == param->write.handle) {
-                std::copy(param->write.value, param->write.value + param->write.len, _char_value.attr_value);
-                if (std::all_of(_char_value.attr_value,_char_value.attr_value + _char_value.attr_len, [](uint8_t x) { return x == 0; })) {
+                std::fill(_char_data_buffer, _char_data_buffer + sizeof(_char_data_buffer), 0);
+                std::copy(param->write.value, param->write.value + param->write.len, _char_data_buffer);
+                if (std::all_of(_char_data_buffer, _char_data_buffer + sizeof(_char_data_buffer), [](uint8_t x) { return x == 0; })) {
                     //receiving empty message to check timeout
                     ESP_LOGI(BLE_TAGS::TAG_GATTS, "Received empty message, ignoring");
                     break;
                 }
                 else {
                 
-                    _char_value.attr_value[param->write.len] = '\0';
+                    _char_data_buffer[param->write.len] = '\0';
                     _new_data_rcv = true;
                 }
             }
@@ -534,7 +535,7 @@ bool BLE_Server::receive(uint8_t *data) {
     if (_new_data_rcv) {
         // Clear the new data received flag
         _new_data_rcv = false;
-        std::copy(_char_value.attr_value, _char_value.attr_value + _char_value.attr_len, data);
+        std::copy(_char_data_buffer, _char_data_buffer + sizeof(_char_data_buffer), data);
         return true;
     } else {
         // If no new data is received, return false

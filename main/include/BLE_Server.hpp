@@ -59,6 +59,8 @@ private:
    */
   uint8_t _char_data_buffer[BLE_Defaults::MTU_DEFAULT-3] = "Hello Server!";
 
+  uint8_t _characteristic_value[BLE_Defaults::MTU_DEFAULT-3] = {0}; /**< Buffer for characteristic value. */
+
   /**
    * @brief Buffer for BLE characteristic descriptor data.
    */
@@ -115,8 +117,8 @@ private:
    */
   esp_attr_value_t _char_value = {            
     .attr_max_len = ESP_GATT_MAX_ATTR_LEN,    /**< Maximum length of characteristic value */
-    .attr_len = sizeof(_char_data_buffer),    /**< Current length of characteristic value */
-    .attr_value = _char_data_buffer           /**< Pointer to characteristic value array */
+    .attr_len = sizeof(_characteristic_value),    /**< Current length of characteristic value */
+    .attr_value = _characteristic_value           /**< Pointer to characteristic value array */
   };
 
   /**
