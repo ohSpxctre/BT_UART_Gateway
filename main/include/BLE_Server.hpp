@@ -1,13 +1,25 @@
 /**
-* @file BLE_Server.hpp
-* @brief BLE Server class inheriting from Bluetooth.
-*/
+ * @file BLE_Server.hpp
+ * @brief Header file for the BLE_Server class, which implements a Bluetooth Low Energy (BLE) server.
+ * 
+ * This file defines the BLE_Server class, which is responsible for managing BLE server functionality.
+ * The class provides methods for setting up BLE connections, handling GATT and GAP events, and sending
+ * data over BLE.
+ * 
+ * Usage:
+ * - Create an instance of the BLE_Server class.
+ * - Call the `connSetup()` method to initialize the BLE server.
+ * - Use `sendTask` methods for a Task to transmit data over BLE.
+ * - Receiving data is handled through the event handler methods and written directly into the message queue.
+ * 
+ * @note This class is designed for use with the ESP32 platform and the ESP-IDF framework.
+ * @note The class is intended to be used with a message handler for managing by using message queues.
+ * @note The class provides functionality, including advertising, connection management, and data transmission for a BLE server. 
+ * 
+ * @author hoyed1
+ * @date 09.04.2025
+ */
 
-//idf.py flash wenn error weben odb server
-
-//-----------------------------------------------------
-// idea to maybe use constexpr helper functions to generate all the structs?
-//------------------------------------------------------
 
 #ifndef BLE_SERVER_HPP
 #define BLE_SERVER_HPP
@@ -17,87 +29,46 @@
 
 #include <cstdint> // Include for fixed-width integer types
 
-constexpr char CHAR_VALUE_DEFAULT [ESP_BLE_ADV_NAME_LEN_MAX] = "ESP_GATT_Server_Default";
-
-constexpr esp_gatt_srvc_id_t SERVICE_ID_DEFAULT = {
-  .id = {
-      .uuid = SERVICE_UUID_DEFAULT,
-      .inst_id = SERVICE_INST_ID,  // Usually set to 0 unless multiple instances are needed
-  },
-  .is_primary = true // Define it as a primary service
-};
-
-constexpr esp_attr_value_t GATTS_CHAR_VALUE_DEFAULT = {
-  .attr_max_len = ESP_GATT_MAX_ATTR_LEN,
-  .attr_len = 0,
-  .attr_value = nullptr
-};
-
-constexpr esp_ble_adv_params_t ADV_PARAMS_DEFAULT = {
-  .adv_int_min = 0x190,                                   //minimum intervall is 100ms
-  .adv_int_max = 0x320,                                   //max interval is 200ms
-  .adv_type = ADV_TYPE_IND,                               //Connectable undirected advertisement (any device can connect)
-  .own_addr_type = BLE_ADDR_TYPE_PUBLIC,                  //own address is public
-  //.peer_addr = ;                                        //not used because any device can connect
-  //.peer_addr_type = ;                                   //not used ...
-  .channel_map = ADV_CHNL_ALL,
-  .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY //Allow scan and connect requests from any device.
-};
-
-
-constexpr esp_ble_adv_data_t ADV_DATA_DEFAULT = {
-  .set_scan_rsp = false,
-  .include_name = true,
-  .include_txpower = false,
-  .min_interval = 0x190, //slave connection min interval, Time = min_interval * 1.25 msec
-  .max_interval = 0x320, //slave connection max interval, Time = max_interval * 1.25 msec
-  .appearance = 0x00,
-  .manufacturer_len = 0, //TEST_MANUFACTURER_DATA_LEN,
-  .p_manufacturer_data =  NULL, //&test_manufacturer[0],
-  .service_data_len = 0,
-  .p_service_data = NULL,
-  .service_uuid_len = 0,
-  .p_service_uuid = NULL,
-  .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
-};
-
-struct gatts_profile_inst {
-  esp_gatts_cb_t gatts_cb;
-  uint16_t gatts_if;
-  uint16_t app_id;
-  uint16_t conn_id;
-  uint16_t service_handle;
-  
-  esp_gatt_srvc_id_t service_id;
-  uint16_t char_handle;
-  esp_bt_uuid_t char_uuid;
-  esp_attr_control_t char_resp_ctrl;
-
-  esp_gatt_perm_t perm;
-  esp_gatt_char_prop_t property;
-  uint16_t descr_handle;
-  uint16_t descr_value;
-  esp_bt_uuid_t descr_uuid;
-  uint16_t local_mtu;
-};
 
 /**
-* @class BLE_Server
-* @brief BLE Server implementation.
-*/
-
+ * @class BLE_Server
+ * @brief A class that implements a Bluetooth Low Energy (BLE) server.
+ * 
+ * This class provides functionality to set up and manage a BLE server, including
+ * advertising, handling GATT events, and sending/receiving data.
+ */
 class BLE_Server : public Bluetooth {
 
 private:
 
-  static BLE_Server* Server_instance; // Static instance pointer
+  /**
+   * @brief Static instance pointer for the BLE_Server class.
+   */
+  static BLE_Server* Server_instance;
 
+  /**
+   * @brief Buffer for BLE advertising data.
+   */
   uint8_t _adv_data_buffer[ESP_BLE_ADV_DATA_LEN_MAX] = "Hello World!";
+
+  /**
+   * @brief Buffer for BLE characteristic data.
+   */
   uint8_t _char_data_buffer[MTU_DEFAULT-3] = "Hello Server!";
+
+  /**
+   * @brief Buffer for BLE characteristic descriptor data.
+   */
   uint8_t _descr_data_buffer[128] = "Characteristic Descriptor Data";
+
+  /**
+   * @brief Buffer for receiving BLE characteristic data.
+   */
   uint8_t _char_rcv_buffer[MTU_DEFAULT-3] = {0};
 
-
+  /**
+   * @brief GATT profile instance structure.
+   */
   gatts_profile_inst _gatts_profile_inst = {
     .gatts_cb = gatts_event_handler,
     .gatts_if = ESP_GATT_IF_NONE,
@@ -116,43 +87,164 @@ private:
     .local_mtu = MTU_DEFAULT,
   };
 
+  /**
+   * @brief BLE advertising parameters.
+   */
   esp_ble_adv_params_t _adv_params;
+
+  /**
+   * @brief BLE advertising data.
+   */
   esp_ble_adv_data_t _adv_data;
 
+  /**
+   * @brief Flag indicating whether the server is advertising.
+   */
   bool _is_advertising = false;
+
+  /**
+   * @brief Flag indicating whether the server is connected to a client.
+   */
   bool _is_connected = false;
 
+  /**
+   * @brief BLE characteristic value attribute.
+   */
   esp_attr_value_t _char_value = {
     .attr_max_len = ESP_GATT_MAX_ATTR_LEN,
     .attr_len = sizeof(_char_data_buffer),
     .attr_value = _char_data_buffer
   };
 
+  /**
+   * @brief BLE characteristic descriptor value attribute.
+   */
   esp_attr_value_t _descr_value = {
     .attr_max_len = ESP_GATT_MAX_ATTR_LEN,
     .attr_len = sizeof(_descr_data_buffer),
     .attr_value = _descr_data_buffer
   };
 
-  const char* get_gatts_event_name(esp_gatts_cb_event_t);
-  const char* get_gap_event_name(esp_gap_ble_cb_event_t);
+  /**
+   * @brief Static handler for GAP events.
+   * 
+   * This static method calls the non-static event handler function.
+   * It is used to register the callback function which has to be static and then calls the non-static event handler.
+   * 
+   * @param event The GAP event.
+   * @param param The GAP callback parameters.
+   */
+  static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
 
-  static void gatts_event_handler (esp_gatts_cb_event_t, esp_gatt_if_t, esp_ble_gatts_cb_param_t *);
-  static void gap_event_handler(esp_gap_ble_cb_event_t, esp_ble_gap_cb_param_t *);
 
-  void handle_event_gatts(esp_gatts_cb_event_t, esp_gatt_if_t, esp_ble_gatts_cb_param_t *);
-  void handle_event_gap(esp_gap_ble_cb_event_t, esp_ble_gap_cb_param_t *);
+  /**
+   * @brief Static handler for GATT server events.
+   * 
+   * This static function calls the non-static event handler function.
+   * It is used to register the callback function which has to be static. It then calls the non-static event handler.
+   * 
+   * @param event The GATT server event.
+   * @param gatts_if The GATT interface.
+   * @param param The GATT server callback parameters.
+   */
+  static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+
+  /**
+   * @brief Handle GAP events.
+   * 
+   * The function handles the GAP events and calls the appropriate functions to handle them.
+   * 
+   * Key responsibilities:
+   * - Advertising to devices
+   * - Establishing and terminating connections
+   * - Handling connection parameters (interval, latency, timeout)
+   * 
+   * @param event The GAP event.
+   * @param param The GAP callback parameters.
+   */
+  void handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
+
+  /**
+   * @brief Handle GATT server events.
+   * 
+   * The GATT Server defines how BLE devices exchange data using concepts like 
+   * services, characteristics, and descriptors. It stores and provides access 
+   * to structured data that remote GATT Clients can read or write.
+   * 
+   * Key responsibilities:
+   * - Hosting services and characteristics
+   * - Handling read/write requests from clients
+   * - Sending notifications or indications when data changes
+   * - Defining the data model accessible over BLE
+   * 
+   * @param event The GATT server event.
+   * @param gatts_if The GATT interface.
+   * @param param The GATT server callback parameters.
+   */
+  void handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+
+  /**
+   * @brief Get the name of a GATT server event.
+   * @param event The GATT server event.
+   * @return The name of the event as a string.
+   */
+  const char* get_gatts_event_name(esp_gatts_cb_event_t event);
+
+  /**
+   * @brief Get the name of a GAP event.
+   * @param event The GAP event.
+   * @return The name of the event as a string.
+   */
+  const char* get_gap_event_name(esp_gap_ble_cb_event_t event);
 
 public:
-    BLE_Server( esp_ble_adv_params_t adv_params = ADV_PARAMS_DEFAULT,
-                esp_ble_adv_data_t adv_data = ADV_DATA_DEFAULT,
-                MessageHandler* msgHandler = nullptr);
+  /**
+   * @brief Constructor for the BLE_Server class.
+   * 
+   * In the Constructor the initialization of nvs flash, Bluetooth controller initialization and
+   * Bluedroid stack initialization is done.
+   * 
+   * @param adv_params BLE advertising parameters (default: ADV_PARAMS_DEFAULT).
+   * @param adv_data BLE advertising data (default: ADV_DATA_DEFAULT).
+   * @param msgHandler Pointer to a message handler (default: nullptr).
+   */
+  BLE_Server(esp_ble_adv_params_t adv_params = ADV_PARAMS_DEFAULT,
+             esp_ble_adv_data_t adv_data = ADV_DATA_DEFAULT,
+             MessageHandler* msgHandler = nullptr);
 
-    ~BLE_Server();
+  /**
+   * @brief Destructor for the BLE_Server class.
+   * 
+   * This method deinitializes the Bluetooth stack and frees resources.
+   */
+  ~BLE_Server();
 
-    void connSetup(void) override;
-    void send(const char *data) override;
-    void sendTask(MessageHandler* msgHandler) override;  
+  /**
+   * @brief Set up the BLE connection.
+   * 
+   * This function registers the callback method, registers the BLE server application
+   * and sets the local MTU size
+   */
+  void connSetup(void) override;
+
+  /**
+   * @brief Send data over BLE.
+   * 
+   * If a BLE connection is established, this method sends the data over BLE.
+   * 
+   * @param data The data to send.
+   */
+  void send(const char *data) override;
+
+  /**
+   * @brief Task to send data using a message handler.
+   * 
+   * This Task reads data from the message handler's queue and sends it over BLE.
+   * If no data is available, it will send dummy packets to keep the connection alive.
+   * 
+   * @param msgHandler Pointer to the message handler.
+   */
+  void sendTask(MessageHandler* msgHandler) override;  
 };
 
 

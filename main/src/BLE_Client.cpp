@@ -1,8 +1,29 @@
 /**
  * @file BLE_Client.cpp
- * @brief Implementation of BLE_Client class.
+ * @brief Implementation of the BLE_Client class for managing BLE client functionality.
+ *
+ * This file contains the implementation of the BLE_Client class, which provides
+ * functionality for initializing and managing a BLE client, handling GAP and GATT
+ * events, and sending/receiving data over BLE. The class uses the ESP-IDF framework
+ * for BLE operations and integrates with a MessageHandler for communication with
+ * other system components.
+ *
+ * Usage:
+ * - Instantiate the BLE_Client class with appropriate parameters.
+ * - Call `connSetup()` to initialize the BLE client and register callbacks.
+ * - Use `send()` to send data to the connected BLE server.
+ * - Use `sendTask()` to process messages from the BLE queue and send them to the server.
+ * 
+ * @note This implementation is designed for use with the ESP-IDF framework.
+ * @note The class manages initialization and deinitialization of BLE resources.
+ * @note The class handles GAP and GATT events and provides a message queue interface for communication.
+ * @note The class handles BLE connection and disconnection events, including MTU size exchange.
+ * @note The class manages data transmission and reception over BLE characteristics.
+ *
+ * @author hoyed1
+ * @date 09.04.2025
  */
-#if 1
+
  #include "BLE_Client.hpp"
  #include <iostream>
 
@@ -741,5 +762,3 @@ const char* BLE_Client::get_gap_event_name(esp_gap_ble_cb_event_t event) {
         default: return "UNKNOWN_GAP_EVENT";
     }
 }
-
- #endif

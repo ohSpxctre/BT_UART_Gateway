@@ -1,6 +1,28 @@
 /**
  * @file BLE_Server.cpp
- * @brief Implementation of BLE_Server class.
+ * @brief Implementation of the BLE_Server class for managing BLE server functionality.
+ *
+ * This file contains the implementation of the BLE_Server class, which provides
+ * functionality for initializing and managing a BLE server, handling GAP and GATT
+ * events, and sending/receiving data over BLE. The class uses the ESP-IDF framework
+ * for BLE operations and integrates with a MessageHandler for communication with
+ * other system components.
+ *
+ * Features:
+ * - BLE initialization and configuration
+ * - GAP and GATT event handling
+ * - Advertising and connection management
+ * - Sending and receiving data via BLE characteristics
+ * - Integration with a message queue for inter-component communication
+ *
+ * Usage:
+ * - Instantiate the BLE_Server class with appropriate parameters.
+ * - Call `connSetup()` to initialize the BLE server and register callbacks.
+ * - Use `send()` to send data to connected BLE clients.
+ * - Use `sendTask()` to process messages from the BLE queue and send them to clients.
+ *
+ * @author hoyed1
+ * @date 09.04.2025
  */
 
 #include "BLE_Server.hpp"
@@ -151,24 +173,14 @@ void BLE_Server::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
     // GAP event for connection parameters update
     //--------------------------------------------------------------------------------------------------------
     case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
-        // log the connection parameters after update
-        //ESP_LOGI(TAG_GAP, "Connection parameters updated: addr= %d, min_int= %d, max_int= %d, latency= %d, timeout= %d",
-        //    param->update_conn_params.bda,
-        //    param->update_conn_params.min_int,
-        //    param->update_conn_params.max_int,
-        //    param->update_conn_params.latency,
-        //    param->update_conn_params.timeout);
+        ESP_LOGI(TAG_GAP, "Connection parameters updated");
     break;
 
     //--------------------------------------------------------------------------------------------------------
     // GAP event for packet length update
     //--------------------------------------------------------------------------------------------------------
     case ESP_GAP_BLE_SET_PKT_LENGTH_COMPLETE_EVT:
-        // log the packet length update status and parameters
-        //ESP_LOGI(TAG_GAP, "Packet length update, status %d, rx %d, tx %d",
-        //    param->pkt_data_length_cmpl.status,
-        //    param->pkt_data_length_cmpl.params.rx_len,
-        //    param->pkt_data_length_cmpl.params.tx_len);
+        ESP_LOGI(TAG_GAP, "Packet length set successfully");
     break;
     
     //--------------------------------------------------------------------------------------------------------
