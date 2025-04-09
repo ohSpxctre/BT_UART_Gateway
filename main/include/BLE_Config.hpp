@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "Bluetooth.hpp"¨
+#include "Bluetooth.hpp"
 
 namespace BLE_TAGS{
 /**
