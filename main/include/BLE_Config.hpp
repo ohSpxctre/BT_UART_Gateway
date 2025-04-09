@@ -19,12 +19,12 @@
  * @author hoyed1
  * @date 09.04.2025
  */
-#ifndef BLE_CONFIG_HPP
-#define BLE_CONFIG_HPP
 
+#pragma once
 
-#include "Bluetooth.hpp"
+#include "Bluetooth.hpp"¨
 
+namespace BLE_TAGS{
 /**
  * @brief Tag used for logging messages related to the BLE server.
  */
@@ -44,16 +44,14 @@ constexpr const char* TAG_GAP = "GAP";
  * @brief Tag used for logging messages related to GATT (Generic Attribute Profile) server events.
  */
 constexpr const char* TAG_GATTS = "GATT";
+}
+
+namespace BLE_Defaults {
 
 /**
  * @brief Default name for the BLE server device during advertising.
  */
 constexpr char DEVICE_NAME_SERVER[ESP_BLE_ADV_NAME_LEN_MAX] = "ESP_GATT_Server";
-
-/**
- * @brief Default name for the BLE client device during advertising.
- */
-constexpr char DEVICE_NAME_CLIENT[ESP_BLE_ADV_NAME_LEN_MAX] = "ESP_GATT_Client";
 
 /**
  * @brief Application ID for the BLE profile.
@@ -114,33 +112,33 @@ constexpr std::string_view BT_status_DC = "Bluetooth disconnected";
  * @brief Default UUID for the BLE service.
  */
 constexpr esp_bt_uuid_t SERVICE_UUID_DEFAULT = {
-  .len = ESP_UUID_LEN_128,
-  .uuid = {.uuid128 = {
+  .len = ESP_UUID_LEN_128,                            /**< length of the UUID */
+  .uuid = {.uuid128 = {                         
     0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
     0x34, 0x12, 0x78, 0x56, 0x78, 0x56, 0x34, 0x12
-  }}
+  }}                                                 //*< UUID value */
 };
 
 /**
  * @brief Default UUID for the BLE characteristic.
  */
 constexpr esp_bt_uuid_t CHAR_UUID_DEFAULT = {
-  .len = ESP_UUID_LEN_128,
+  .len = ESP_UUID_LEN_128,                          /**< length of the UUID */
   .uuid = {.uuid128 = {
     0xF1, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
     0x34, 0x12, 0x78, 0x56, 0x78, 0x56, 0x34, 0x12
-  }}
+  }}                                                //*< UUID value */
 };
 
 /**
  * @brief Default UUID for the BLE characteristic descriptor.
  */
 constexpr esp_bt_uuid_t DESCR_UUID_DEFAULT = {
-  .len = ESP_UUID_LEN_128,
+  .len = ESP_UUID_LEN_128,                        /**< length of the UUID */
   .uuid = {.uuid128 = {
     0xF2, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
     0x34, 0x12, 0x78, 0x56, 0x78, 0x56, 0x34, 0x12
-  }}
+  }}                                             //*< UUID value */
 };
 
 
@@ -154,19 +152,10 @@ constexpr esp_bt_uuid_t DESCR_UUID_DEFAULT = {
  */
 constexpr esp_gatt_srvc_id_t SERVICE_ID_DEFAULT = {
   .id = {
-      .uuid = SERVICE_UUID_DEFAULT,
-      .inst_id = SERVICE_INST_ID,  // Usually set to 0 unless multiple instances are needed
-  },
-  .is_primary = true // Define it as a primary service
-};
-
-/**
- * @brief Default characteristic value.
- */
-constexpr esp_attr_value_t GATTS_CHAR_VALUE_DEFAULT = {
-  .attr_max_len = ESP_GATT_MAX_ATTR_LEN,
-  .attr_len = 0,
-  .attr_value = nullptr
+      .uuid = SERVICE_UUID_DEFAULT,   
+      .inst_id = SERVICE_INST_ID,     
+  },                    /**< UUID and instance ID for the service */
+  .is_primary = true    /**< Define this service as primary service */        
 };
 
 /**
@@ -175,14 +164,14 @@ constexpr esp_attr_value_t GATTS_CHAR_VALUE_DEFAULT = {
  */
 
 constexpr esp_ble_adv_params_t ADV_PARAMS_DEFAULT = {
-  .adv_int_min = 0x190,                                   //minimum intervall is 100ms
-  .adv_int_max = 0x320,                                   //max interval is 200ms
-  .adv_type = ADV_TYPE_IND,                               //Connectable undirected advertisement (any device can connect)
-  .own_addr_type = BLE_ADDR_TYPE_PUBLIC,                  //own address is public
-  //.peer_addr = ;                                        //not used because any device can connect
-  //.peer_addr_type = ;                                   //not used ...
-  .channel_map = ADV_CHNL_ALL,
-  .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY //Allow scan and connect requests from any device.
+  .adv_int_min = 0x190,                                   /**< minimal interval time for advertisement */
+  .adv_int_max = 0x320,                                   /**< maximal interval time for advertisement */
+  .adv_type = ADV_TYPE_IND,                               /**< advertisement type is connectable undirected advertisement */
+  .own_addr_type = BLE_ADDR_TYPE_PUBLIC,                  /**< own address is public */
+  //.peer_addr = ;                                        
+  //.peer_addr_type = ;                                   
+  .channel_map = ADV_CHNL_ALL,                            /**< use all channels for advertisement */
+  .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY  /**< Allow any device to scan and connect */
 };
 
 /**
@@ -191,19 +180,19 @@ constexpr esp_ble_adv_params_t ADV_PARAMS_DEFAULT = {
  */
 
 constexpr esp_ble_adv_data_t ADV_DATA_DEFAULT = {
-  .set_scan_rsp = false,
-  .include_name = true,
-  .include_txpower = false,
-  .min_interval = 0x190, //slave connection min interval, Time = min_interval * 1.25 msec
-  .max_interval = 0x320, //slave connection max interval, Time = max_interval * 1.25 msec
-  .appearance = 0x00,
-  .manufacturer_len = 0, //TEST_MANUFACTURER_DATA_LEN,
-  .p_manufacturer_data =  NULL, //&test_manufacturer[0],
-  .service_data_len = 0,
-  .p_service_data = NULL,
-  .service_uuid_len = 0,
-  .p_service_uuid = NULL,
-  .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
+  .set_scan_rsp = false,                                                  /**< no scan response enabled */
+  .include_name = true,                                                   /**< name included in advertisement */
+  .include_txpower = false,                                               /**< tx power not included in advertisement */
+  .min_interval = 0x190,                                                  /**< minimal interval time * 1.25ms */
+  .max_interval = 0x320,                                                  /**< maximal interval time * 1.25ms */
+  .appearance = 0x00,                                                     /**< 0 because no default group of BLE */
+  .manufacturer_len = 0,                                                  /**< no manufacturer data included */
+  .p_manufacturer_data =  NULL,                                           /**< no manufacturer data included */
+  .service_data_len = 0,                                                  /**< default 0 (is defined in Constructor of Server Class) */
+  .p_service_data = NULL,                                                 /**< default nullptr (is defined in Constructor of Server Class)*/
+  .service_uuid_len = 0,                                                  /**< default 0 (is defined in Constructor of Server Class) */
+  .p_service_uuid = NULL,                                                 /**< default nullptr (is defined in Constructor of Server Class) */
+  .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),   /**< general discoverable mode and BR/EDR not supported */
 };
 
 /**
@@ -211,23 +200,22 @@ constexpr esp_ble_adv_data_t ADV_DATA_DEFAULT = {
  */
 
 struct gatts_profile_inst {
-  esp_gatts_cb_t gatts_cb;
-  uint16_t gatts_if;
-  uint16_t app_id;
-  uint16_t conn_id;
-  uint16_t service_handle;
-  
-  esp_gatt_srvc_id_t service_id;
-  uint16_t char_handle;
-  esp_bt_uuid_t char_uuid;
-  esp_attr_control_t char_resp_ctrl;
+  esp_gatts_cb_t gatts_cb;              /**< callback event handler method */   
+  uint16_t gatts_if;                    /**< BLE Interface*/
+  uint16_t app_id;                      /**< Application ID */
+  uint16_t conn_id;                     /**< Connection ID */
+  uint16_t service_handle;              /**< Handle for BLE Service*/
+  esp_gatt_srvc_id_t service_id;        /**< Structure with ID for Service */
+  uint16_t char_handle;                 /**< Handle for BLE Characteristic */
+  esp_bt_uuid_t char_uuid;              /**< Structure with UUID for Characteristic */
+  esp_attr_control_t char_resp_ctrl;    /**< Response control for characteristic */
 
-  esp_gatt_perm_t perm;
-  esp_gatt_char_prop_t property;
-  uint16_t descr_handle;
-  uint16_t descr_value;
-  esp_bt_uuid_t descr_uuid;
-  uint16_t local_mtu;
+  esp_gatt_perm_t perm;                 /**< Permissions for characteristic */
+  esp_gatt_char_prop_t property;        /**< Properties for characteristic */
+  uint16_t descr_handle;                /**< Handle for characteristic descriptor */
+  uint16_t descr_value;                 /**< Value for characteristic descriptor, (Indication / Notification saved here)*/
+  esp_bt_uuid_t descr_uuid;             /**< Structure with UUID for characteristic descriptor */
+  uint16_t local_mtu;                   /**< Local MTU size (Describes size of data paket to send) */
 };
 
 
@@ -259,12 +247,12 @@ struct gatts_profile_inst {
   * @brief Default scan parameters for active BLE scanning.
   */
  constexpr esp_ble_scan_params_t BLE_SCAN_PARAMS_DEFAULT = {
-     .scan_type              = BLE_SCAN_TYPE_ACTIVE,
-     .own_addr_type          = BLE_ADDR_TYPE_PUBLIC,
-     .scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL,
-     .scan_interval          = 0x50,
-     .scan_window            = 0x30,
-     .scan_duplicate         = BLE_SCAN_DUPLICATE_DISABLE
+     .scan_type              = BLE_SCAN_TYPE_ACTIVE,       /**< Active Scanning */ 
+     .own_addr_type          = BLE_ADDR_TYPE_PUBLIC,       /**< Own address is public */
+     .scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL,  /**< no filter, scanning every device */
+     .scan_interval          = 0x50,                       /**< Scan interval time */  
+     .scan_window            = 0x30,                       /**< Scan window time */  
+     .scan_duplicate         = BLE_SCAN_DUPLICATE_DISABLE  /**< Send scan result for every received packet */
  };
  
  /**
@@ -275,11 +263,10 @@ struct gatts_profile_inst {
      uint16_t gattc_if;                  /**< GATT interface ID */
      uint16_t app_id;                    /**< Application ID */
      uint16_t conn_id;                   /**< Connection ID */
-     uint16_t service_start_handle;     /**< Start handle of discovered service */
-     uint16_t service_end_handle;       /**< End handle of discovered service */
-     uint16_t char_handle;              /**< Handle of the target characteristic */
-     esp_bd_addr_t remote_bda;          /**< Bluetooth address of the remote device */
-     uint16_t local_mtu;                /**< Local MTU size */
+     uint16_t service_start_handle;      /**< Start handle of discovered service */
+     uint16_t service_end_handle;        /**< End handle of discovered service */
+     uint16_t char_handle;               /**< Handle of the target characteristic */
+     esp_bd_addr_t remote_bda;           /**< Bluetooth address of the remote device */
+     uint16_t local_mtu;                 /**< Local MTU size */
  };
-
-#endif // BLE_CONFIG_HPP
+} // namespace BLE_Config

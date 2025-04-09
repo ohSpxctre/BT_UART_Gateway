@@ -20,9 +20,7 @@
  * @date 09.04.2025
  */
 
-
-#ifndef BLE_SERVER_HPP
-#define BLE_SERVER_HPP
+ #pragma once
 
 #include "Bluetooth.hpp"
 #include "MessageHandler.hpp"
@@ -54,7 +52,7 @@ private:
   /**
    * @brief Buffer for BLE characteristic data.
    */
-  uint8_t _char_data_buffer[MTU_DEFAULT-3] = "Hello Server!";
+  uint8_t _char_data_buffer[BLE_Defaults::MTU_DEFAULT-3] = "Hello Server!";
 
   /**
    * @brief Buffer for BLE characteristic descriptor data.
@@ -64,27 +62,27 @@ private:
   /**
    * @brief Buffer for receiving BLE characteristic data.
    */
-  uint8_t _char_rcv_buffer[MTU_DEFAULT-3] = {0};
+  uint8_t _char_rcv_buffer[BLE_Defaults::MTU_DEFAULT-3] = {0};
 
   /**
    * @brief GATT profile instance structure.
    */
-  gatts_profile_inst _gatts_profile_inst = {
-    .gatts_cb = gatts_event_handler,
-    .gatts_if = ESP_GATT_IF_NONE,
-    .app_id = PROFILE_APP_ID,
-    .conn_id = 0,
-    .service_handle = 0,
-    .service_id = SERVICE_ID_DEFAULT,
-    .char_handle = 0,
-    .char_uuid = CHAR_UUID_DEFAULT,
-    .char_resp_ctrl = ESP_GATT_AUTO_RSP,
-    .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-    .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_INDICATE, 
-    .descr_handle = 0,
-    .descr_value = 0,
-    .descr_uuid = DESCR_UUID_DEFAULT,
-    .local_mtu = MTU_DEFAULT,
+  BLE_Defaults::gatts_profile_inst _gatts_profile_inst = {
+    .gatts_cb = gatts_event_handler,                                                                          /**< callback event handler method */
+    .gatts_if = ESP_GATT_IF_NONE,                                                                             /**< BLE Interface*/
+    .app_id = BLE_Defaults::PROFILE_APP_ID,                                                                   /**< Application ID */
+    .conn_id = 0,                                                                                             /**< Connection ID */
+    .service_handle = 0,                                                                                      /**< Handle for BLE Service*/
+    .service_id = BLE_Defaults::SERVICE_ID_DEFAULT,                                                           /**< Structure with ID for Service */
+    .char_handle = 0,                                                                                         /**< Handle for BLE Characteristic */
+    .char_uuid = BLE_Defaults::CHAR_UUID_DEFAULT,                                                             /**< Structure with UUID for Characteristic */
+    .char_resp_ctrl = ESP_GATT_AUTO_RSP,                                                                      /**< Response control for characteristic */
+    .perm = ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,                                                         /**< Permissions for characteristic */
+    .property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_INDICATE, /**< Properties for characteristic */
+    .descr_handle = 0,                                                                                        /**< Handle for characteristic descriptor */
+    .descr_value = 0,                                                                                          /**< Value for characteristic descriptor, (Indication / Notification saved here)*/
+    .descr_uuid = BLE_Defaults::DESCR_UUID_DEFAULT,                                                           /**< Structure with UUID for characteristic descriptor */
+    .local_mtu = BLE_Defaults::MTU_DEFAULT,                                                                   /**< Local MTU size (Describes size of data paket to send) */
   };
 
   /**
@@ -110,19 +108,19 @@ private:
   /**
    * @brief BLE characteristic value attribute.
    */
-  esp_attr_value_t _char_value = {
-    .attr_max_len = ESP_GATT_MAX_ATTR_LEN,
-    .attr_len = sizeof(_char_data_buffer),
-    .attr_value = _char_data_buffer
+  esp_attr_value_t _char_value = {            
+    .attr_max_len = ESP_GATT_MAX_ATTR_LEN,    /**< Maximum length of characteristic value */
+    .attr_len = sizeof(_char_data_buffer),    /**< Current length of characteristic value */
+    .attr_value = _char_data_buffer           /**< Pointer to characteristic value array */
   };
 
   /**
    * @brief BLE characteristic descriptor value attribute.
    */
   esp_attr_value_t _descr_value = {
-    .attr_max_len = ESP_GATT_MAX_ATTR_LEN,
-    .attr_len = sizeof(_descr_data_buffer),
-    .attr_value = _descr_data_buffer
+    .attr_max_len = ESP_GATT_MAX_ATTR_LEN,    /**< Maximum length of descriptor value */
+    .attr_len = sizeof(_descr_data_buffer),   /**< Current length of descriptor value */
+    .attr_value = _descr_data_buffer          /**< Pointer to descriptor value array */
   };
 
   /**
@@ -208,8 +206,8 @@ public:
    * @param adv_data BLE advertising data (default: ADV_DATA_DEFAULT).
    * @param msgHandler Pointer to a message handler (default: nullptr).
    */
-  BLE_Server(esp_ble_adv_params_t adv_params = ADV_PARAMS_DEFAULT,
-             esp_ble_adv_data_t adv_data = ADV_DATA_DEFAULT,
+  BLE_Server(esp_ble_adv_params_t adv_params = BLE_Defaults::ADV_PARAMS_DEFAULT,
+             esp_ble_adv_data_t adv_data = BLE_Defaults::ADV_DATA_DEFAULT,
              MessageHandler* msgHandler = nullptr);
 
   /**
@@ -246,7 +244,3 @@ public:
    */
   void sendTask(MessageHandler* msgHandler) override;  
 };
-
-
-
-#endif // BLE_SERVER_HPP

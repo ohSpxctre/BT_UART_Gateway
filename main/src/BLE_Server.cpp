@@ -44,7 +44,7 @@ BLE_Server::BLE_Server(esp_ble_adv_params_t adv_params, esp_ble_adv_data_t adv_d
     
     // Initialize the static instance pointer
     if (Server_instance != nullptr) {
-        ESP_LOGE(TAG_SERVER, "BLE_Server instance already exists!");
+        ESP_LOGE(BLE_TAGS::TAG_SERVER, "BLE_Server instance already exists!");
         return;
     }
     //save the pointer to the insantiated object
@@ -81,7 +81,7 @@ BLE_Server::~BLE_Server() {
     esp_bt_controller_disable();
     esp_bt_controller_deinit();
     nvs_flash_deinit();
-    ESP_LOGI(TAG_SERVER, "BLE Server Deinitialized");
+    ESP_LOGI(BLE_TAGS::TAG_SERVER, "BLE Server Deinitialized");
     _msgHandler = nullptr;
 }
 
@@ -92,8 +92,8 @@ void BLE_Server::connSetup() {
     // fill message with 0
     std::fill(msg.begin(), msg.end(), '\0');
     // copy not connected message
-    std::copy(BT_status_NC.begin(), BT_status_NC.end(), msg.begin());
-    msg[BT_status_NC.length()] = '\n';
+    std::copy(BLE_Defaults::BT_status_NC.begin(), BLE_Defaults::BT_status_NC.end(), msg.begin());
+    msg[BLE_Defaults::BT_status_NC.length()] = '\n';
     // Send not connected message to UART interface
     _msgHandler->send(MessageHandler::QueueType::UART_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
     
@@ -101,10 +101,10 @@ void BLE_Server::connSetup() {
     esp_ble_gap_register_callback(gap_event_handler);
     esp_ble_gatts_register_callback(gatts_event_handler);
     // Register the GATT server application
-    esp_ble_gatts_app_register(PROFILE_APP_ID);
+    esp_ble_gatts_app_register(BLE_Defaults::PROFILE_APP_ID);
     // Set the local MTU size
     esp_ble_gatt_set_local_mtu(_gatts_profile_inst.local_mtu);
-    ESP_LOGI(TAG_SERVER, "BLE Server initialized and callbacks registered");
+    ESP_LOGI(BLE_TAGS::TAG_SERVER, "BLE Server initialized and callbacks registered");
 }
 
  void BLE_Server::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
@@ -123,7 +123,7 @@ void BLE_Server::gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t g
 
 
 void BLE_Server::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
-    ESP_LOGW(TAG_SERVER, "GAP event: %s", get_gap_event_name(event));
+    ESP_LOGW(BLE_TAGS::TAG_SERVER, "GAP event: %s", get_gap_event_name(event));
     switch (event)
     {
     //--------------------------------------------------------------------------------------------------------
@@ -131,14 +131,6 @@ void BLE_Server::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
     //--------------------------------------------------------------------------------------------------------
     case ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT:
         // start advertising after setting adv data successfully
-        esp_ble_gap_start_advertising(&_adv_params);
-    break;    
-
-    //--------------------------------------------------------------------------------------------------------
-    // GAP event for setting scan response data (not used in this project)
-    //--------------------------------------------------------------------------------------------------------
-    case ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT:
-        // start advertising after setting scan response data successfully
         esp_ble_gap_start_advertising(&_adv_params);
     break;
 
@@ -148,9 +140,9 @@ void BLE_Server::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
     case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
         // advertising start complete event to indicate advertising start successfully or failed
         if (param->adv_start_cmpl.status != ESP_BT_STATUS_SUCCESS) {
-            ESP_LOGE(TAG_GAP, "Advertising start failed, status %d", param->adv_start_cmpl.status);
+            ESP_LOGE(BLE_TAGS::TAG_GAP, "Advertising start failed, status %d", param->adv_start_cmpl.status);
         } else {
-            ESP_LOGI(TAG_GAP, "Advertising start successfully");
+            ESP_LOGI(BLE_TAGS::TAG_GAP, "Advertising start successfully");
         }
         break;
     //--------------------------------------------------------------------------------------------------------
@@ -161,11 +153,11 @@ void BLE_Server::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
         if (param->adv_stop_cmpl.status != ESP_BT_STATUS_SUCCESS) {
             //if advertising stop failed, set the advertising flag to true
             _is_advertising = true;
-            ESP_LOGE(TAG_GAP, "Advertising stop failed: %s", esp_err_to_name(param->adv_stop_cmpl.status));
+            ESP_LOGE(BLE_TAGS::TAG_GAP, "Advertising stop failed: %s", esp_err_to_name(param->adv_stop_cmpl.status));
         } else {
             // if advertising stop successfully, set the advertising flag to false
             _is_advertising = false;
-            ESP_LOGI(TAG_GAP, "Advertising stopped successfully");
+            ESP_LOGI(BLE_TAGS::TAG_GAP, "Advertising stopped successfully");
         }
     break;
     
@@ -173,21 +165,21 @@ void BLE_Server::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
     // GAP event for connection parameters update
     //--------------------------------------------------------------------------------------------------------
     case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
-        ESP_LOGI(TAG_GAP, "Connection parameters updated");
+        ESP_LOGI(BLE_TAGS::TAG_GAP, "Connection parameters updated");
     break;
 
     //--------------------------------------------------------------------------------------------------------
     // GAP event for packet length update
     //--------------------------------------------------------------------------------------------------------
     case ESP_GAP_BLE_SET_PKT_LENGTH_COMPLETE_EVT:
-        ESP_LOGI(TAG_GAP, "Packet length set successfully");
+        ESP_LOGI(BLE_TAGS::TAG_GAP, "Packet length set successfully");
     break;
     
     //--------------------------------------------------------------------------------------------------------
     // GAP default case
     //--------------------------------------------------------------------------------------------------------
     default:
-        ESP_LOGE(TAG_GAP, "Unhandled GAP event: %s", get_gap_event_name(event));
+        ESP_LOGE(BLE_TAGS::TAG_GAP, "Unhandled GAP event: %s", get_gap_event_name(event));
     break;
     }
 }
@@ -209,7 +201,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     MessageHandler::Message msg;
     
     //Loging event type
-    ESP_LOGW(TAG_SERVER, "GATT event: %s", get_gatts_event_name(event));
+    ESP_LOGW(BLE_TAGS::TAG_SERVER, "GATT event: %s", get_gatts_event_name(event));
 
     switch (event)
     {
@@ -219,27 +211,27 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     case ESP_GATTS_REG_EVT:
         // save the bluetooth interfache after app registration
         _gatts_profile_inst.gatts_if = gatts_if;        
-        ESP_LOGI(TAG_GATTS, "Device Name: %s", DEVICE_NAME_SERVER);
+        ESP_LOGI(BLE_TAGS::TAG_GATTS, "Device Name: %s", BLE_Defaults::DEVICE_NAME_SERVER);
         // set device name
-        ret = esp_ble_gap_set_device_name(DEVICE_NAME_SERVER);
+        ret = esp_ble_gap_set_device_name(BLE_Defaults::DEVICE_NAME_SERVER);
 
         //check if the device name was set successfully
         if (ret){
-            ESP_LOGE(TAG_GATTS, "set device name failed, error code = %x", ret);
+            ESP_LOGE(BLE_TAGS::TAG_GATTS, "set device name failed, error code = %x", ret);
         }
         
         // set advertising data
         ret = esp_ble_gap_config_adv_data(&_adv_data);
         // Check if the advertising data was set successfully
         if (ret) {
-            ESP_LOGE(TAG_GATTS, "set adv data failed, error code = %x", ret);
+            ESP_LOGE(BLE_TAGS::TAG_GATTS, "set adv data failed, error code = %x", ret);
         }
 
         // creating the gatt service
-        ret = esp_ble_gatts_create_service(gatts_if, &_gatts_profile_inst.service_id, HANDLE_NUM);
+        ret = esp_ble_gatts_create_service(gatts_if, &_gatts_profile_inst.service_id, BLE_Defaults::HANDLE_NUM);
         // Check if the service was created successfully
         if(ret) {
-            ESP_LOGE(TAG_GATTS, "create service failed, error code = %x", ret);
+            ESP_LOGE(BLE_TAGS::TAG_GATTS, "create service failed, error code = %x", ret);
         }
     break;
 
@@ -247,7 +239,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     // GATT Server create service event
     //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_CREATE_EVT:
-        ESP_LOGI(TAG_GATTS, "Service create, status %d, service_handle %d", param->create.status, param->create.service_handle);
+        ESP_LOGI(BLE_TAGS::TAG_GATTS, "Service create, status %d, service_handle %d", param->create.status, param->create.service_handle);
         
         //saving the service handle
         _gatts_profile_inst.service_handle = param->create.service_handle;
@@ -255,7 +247,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         ret = esp_ble_gatts_start_service(_gatts_profile_inst.service_handle);
         if (ret)
         {
-            ESP_LOGE(TAG_GATTS, "start service failed, error code = %x", ret);
+            ESP_LOGE(BLE_TAGS::TAG_GATTS, "start service failed, error code = %x", ret);
         }
     break;
 
@@ -263,34 +255,34 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     // GATT Write event
     //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_WRITE_EVT:
-        ESP_LOGI(TAG_GATTS, "Characteristic write, conn_id %d, trans_id %" PRIu32 ", handle %d", param->write.conn_id, param->write.trans_id, param->write.handle);
+        ESP_LOGI(BLE_TAGS::TAG_GATTS, "Characteristic write, conn_id %d, trans_id %" PRIu32 ", handle %d", param->write.conn_id, param->write.trans_id, param->write.handle);
         // if not prepare write event
         if (!param->write.is_prep) {
 
-            ESP_LOGI(TAG_GATTS, "value len %d, value ", param->write.len);
-            ESP_LOG_BUFFER_HEX(TAG_GATTS, param->write.value, param->write.len);
+            ESP_LOGI(BLE_TAGS::TAG_GATTS, "value len %d, value ", param->write.len);
+            ESP_LOG_BUFFER_HEX(BLE_TAGS::TAG_GATTS, param->write.value, param->write.len);
 
             // check if write handle & value is for descriptor
             if (_gatts_profile_inst.descr_handle == param->write.handle && param->write.len == 2) {
                 _gatts_profile_inst.descr_value = param->write.value[1]<<8 | param->write.value[0];
-                ESP_LOGI(TAG_GATTS, "Descriptor value: %d", _gatts_profile_inst.descr_value);
+                ESP_LOGI(BLE_TAGS::TAG_GATTS, "Descriptor value: %d", _gatts_profile_inst.descr_value);
                 // decide if the write event is for notify or indication
                 switch (_gatts_profile_inst.descr_value) {
                     case 0x0001: // Notification enable
                         if (_gatts_profile_inst.property & ESP_GATT_CHAR_PROP_BIT_NOTIFY) {
-                            ESP_LOGI(TAG_GATTS, "Notification enabled should not happen!");
+                            ESP_LOGI(BLE_TAGS::TAG_GATTS, "Notification enabled should not happen!");
                             }
                         break;
                     case 0x0002: // Indication enable
                         if (_gatts_profile_inst.property & ESP_GATT_CHAR_PROP_BIT_INDICATE) {
-                            ESP_LOGI(TAG_GATTS, "Indication enabled");
+                            ESP_LOGI(BLE_TAGS::TAG_GATTS, "Indication enabled");
                             }
                         break;
                     case 0x0000: // both disable
-                        ESP_LOGI(TAG_GATTS, "Notification/Indication disabled");
+                        ESP_LOGI(BLE_TAGS::TAG_GATTS, "Notification/Indication disabled");
                         break;
                     default:
-                        ESP_LOGI(TAG_GATTS, "Unknown descriptor value: %d", _gatts_profile_inst.descr_value);
+                        ESP_LOGI(BLE_TAGS::TAG_GATTS, "Unknown descriptor value: %d", _gatts_profile_inst.descr_value);
                         break;
                 }
             }
@@ -301,7 +293,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                 // add 0 terminator to string
                 if (std::all_of(_char_rcv_buffer, _char_rcv_buffer + param->write.len, [](uint8_t x) { return x == 0; })) {
                     //receiving empty message to check timeout
-                    ESP_LOGI(TAG_GATTS, "Received empty message, ignoring");
+                    ESP_LOGI(BLE_TAGS::TAG_GATTS, "Received empty message, ignoring");
                     break;
                 }
                 else {
@@ -312,11 +304,11 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                     std::copy(_char_rcv_buffer, _char_rcv_buffer + param->write.len, msg.begin());
                     //Send received message to message  queue for data parser 
                     _msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
-                    ESP_LOGI(TAG_GATTS, "Received value: %.*s", param->write.len, _char_data_buffer);
+                    ESP_LOGI(BLE_TAGS::TAG_GATTS, "Received value: %.*s", param->write.len, _char_data_buffer);
                 }
             }
             else {
-                ESP_LOGI(TAG_GATTS, "Unknown handle: %d", param->write.handle);
+                ESP_LOGI(BLE_TAGS::TAG_GATTS, "Unknown handle: %d", param->write.handle);
             }
         }
     break;
@@ -326,7 +318,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_MTU_EVT:
         // Exchange of MTU size between server and client
-        ESP_LOGI(TAG_GATTS, "MTU exchange, MTU %d", param->mtu.mtu);
+        ESP_LOGI(BLE_TAGS::TAG_GATTS, "MTU exchange, MTU %d", param->mtu.mtu);
         // save the MTU size
         _gatts_profile_inst.local_mtu = param->mtu.mtu;
     break;
@@ -337,12 +329,12 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     case ESP_GATTS_START_EVT:
         // check if start service was successful
         if (param->start.status != ESP_GATT_OK) {    
-            ESP_LOGI(TAG_GATTS, "Service start failed: %s", esp_err_to_name(param->start.status));
+            ESP_LOGI(BLE_TAGS::TAG_GATTS, "Service start failed: %s", esp_err_to_name(param->start.status));
         } else {
-            ESP_LOGI(TAG_GATTS, "Service started successfully");     
-            ESP_LOGI(TAG_GATTS, "Service handle: %d", param->start.service_handle);
-            ESP_LOGI(TAG_GATTS, "Service UUID: %s", _gatts_profile_inst.service_id.id.uuid.uuid.uuid128);
-            ESP_LOGI(TAG_GATTS, "Characteristic UUID: %s", _gatts_profile_inst.char_uuid.uuid.uuid128);
+            ESP_LOGI(BLE_TAGS::TAG_GATTS, "Service started successfully");     
+            ESP_LOGI(BLE_TAGS::TAG_GATTS, "Service handle: %d", param->start.service_handle);
+            ESP_LOGI(BLE_TAGS::TAG_GATTS, "Service UUID: %s", _gatts_profile_inst.service_id.id.uuid.uuid.uuid128);
+            ESP_LOGI(BLE_TAGS::TAG_GATTS, "Characteristic UUID: %s", _gatts_profile_inst.char_uuid.uuid.uuid128);
 
             // add characteristic to the service
             ret = esp_ble_gatts_add_char(_gatts_profile_inst.service_handle,
@@ -354,10 +346,10 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
             
             // check if the characteristic was added successfully
             if (ret == ESP_OK) {
-                ESP_LOGI(TAG_GATTS, "Char add okey, result: %d", ret);
+                ESP_LOGI(BLE_TAGS::TAG_GATTS, "Char add okey, result: %d", ret);
             }
             else {
-                ESP_LOGE(TAG_GATTS, "add char failed, error code = %x", ret);
+                ESP_LOGE(BLE_TAGS::TAG_GATTS, "add char failed, error code = %x", ret);
             }
         }
     break;
@@ -367,18 +359,18 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     //--------------------------------------------------------------------------------------------------------
     case ESP_GATTS_ADD_CHAR_EVT:
         // check if the characteristic was added successfully
-        ESP_LOGI(TAG_GATTS, "Characteristic add, status %d, attr_handle %d, service_handle %d",
+        ESP_LOGI(BLE_TAGS::TAG_GATTS, "Characteristic add, status %d, attr_handle %d, service_handle %d",
             param->add_char.status, param->add_char.attr_handle, param->add_char.service_handle);
         // save the charakteristic handle
         _gatts_profile_inst.char_handle = param->add_char.attr_handle;
         // check if the characteristic handle is valid
         ret = esp_ble_gatts_get_attr_value(param->add_char.attr_handle,  &length, &prf_char);
         if (ret == ESP_FAIL){
-            ESP_LOGE(TAG_GATTS, "ILLEGAL HANDLE");
+            ESP_LOGE(BLE_TAGS::TAG_GATTS, "ILLEGAL HANDLE");
         }
         else{
-            ESP_LOGI(TAG_GATTS, "Char handle: %d", param->add_char.attr_handle);
-            ESP_LOGI(TAG_GATTS, "Char value length: %d", length);
+            ESP_LOGI(BLE_TAGS::TAG_GATTS, "Char handle: %d", param->add_char.attr_handle);
+            ESP_LOGI(BLE_TAGS::TAG_GATTS, "Char value length: %d", length);
         }
         // add charakteristic descriptor to the service
         ret = esp_ble_gatts_add_char_descr(_gatts_profile_inst.service_handle,
@@ -388,10 +380,10 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                                             NULL);
         // check if the descriptor was added successfully
         if (ret) {
-            ESP_LOGE(TAG_GATTS, "Add descriptor failed, error code = %x", ret);
+            ESP_LOGE(BLE_TAGS::TAG_GATTS, "Add descriptor failed, error code = %x", ret);
         }
         else {
-            ESP_LOGI(TAG_GATTS, "Descriptor added successfully, handle: %d", param->add_char.attr_handle);
+            ESP_LOGI(BLE_TAGS::TAG_GATTS, "Descriptor added successfully, handle: %d", param->add_char.attr_handle);
         }
     break;
 
@@ -401,7 +393,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     case ESP_GATTS_ADD_CHAR_DESCR_EVT:
         // check if the descriptor was added successfully
         _gatts_profile_inst.descr_handle = param->add_char_descr.attr_handle;
-        ESP_LOGI(TAG_GATTS, "Descriptor add, status %d, attr_handle %d, service_handle %d",
+        ESP_LOGI(BLE_TAGS::TAG_GATTS, "Descriptor add, status %d, attr_handle %d, service_handle %d",
                 param->add_char_descr.status, param->add_char_descr.attr_handle, param->add_char_descr.service_handle);
     break;
 
@@ -422,24 +414,24 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         conn_params.latency = 0;
         conn_params.min_int = 0x10;    // min_int = 0x10*1.25ms = 20ms
         conn_params.max_int = 0x20;    // max_int = 0x20*1.25ms = 40ms
-        conn_params.timeout = TIMEOUT_DEFAULT;    // timeout = 400*10ms = 4000ms
+        conn_params.timeout = BLE_Defaults::TIMEOUT_DEFAULT;    // timeout = 400*10ms = 4000ms
         // update the connection parameters
         ret = esp_ble_gap_update_conn_params(&conn_params);
         // check if the connection parameters were updated successfully
         if (ret) {
-            ESP_LOGE(TAG_GATTS, "Update connection params failed, error code = %x", ret);
+            ESP_LOGE(BLE_TAGS::TAG_GATTS, "Update connection params failed, error code = %x", ret);
         }
         // stop advertising after connection is established
         ret = esp_ble_gap_stop_advertising();
         if (ret) {
-            ESP_LOGE(TAG_GATTS, "Stop advertising failed, error code = %x", ret);
+            ESP_LOGE(BLE_TAGS::TAG_GATTS, "Stop advertising failed, error code = %x", ret);
         }
 
         // fill message with 0
         std::fill(msg.begin(), msg.end(), '\0');
         // copy connected message
-        std::copy(BT_status_C.begin(), BT_status_C.end(), msg.begin());
-        msg[BT_status_C.length()] = '\n';
+        std::copy(BLE_Defaults::BT_status_C.begin(), BLE_Defaults::BT_status_C.end(), msg.begin());
+        msg[BLE_Defaults::BT_status_C.length()] = '\n';
         // send message to the UART interface
         _msgHandler->send(MessageHandler::QueueType::UART_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
     break;
@@ -454,15 +446,15 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         ret = esp_ble_gap_start_advertising(&_adv_params);
         // check if the advertising was started successfully
         if (ret) {
-            ESP_LOGE(TAG_GATTS, "Start advertising failed");
+            ESP_LOGE(BLE_TAGS::TAG_GATTS, "Start advertising failed");
         }
         // set advertising flag to true
         _is_advertising = true;
         // send disconnect message to the UART interface
         std::fill(msg.begin(), msg.end(), '\0');
         // copy disconnected message
-        std::copy(BT_status_DC.begin(), BT_status_DC.end(), msg.begin());
-        msg[BT_status_DC.length()] = '\n';
+        std::copy(BLE_Defaults::BT_status_DC.begin(), BLE_Defaults::BT_status_DC.end(), msg.begin());
+        msg[BLE_Defaults::BT_status_DC.length()] = '\n';
         // send message to the UART interface
         _msgHandler->send(MessageHandler::QueueType::UART_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
     break;
@@ -473,9 +465,9 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     case ESP_GATTS_CONF_EVT:
         // check if the status after confirmation event
         if (param->conf.status != ESP_GATT_OK) {
-            ESP_LOGE(TAG_GATTS, "Confirm failed, status %d", param->conf.status);
+            ESP_LOGE(BLE_TAGS::TAG_GATTS, "Confirm failed, status %d", param->conf.status);
         } else {
-            ESP_LOGI(TAG_GATTS, "Confirm success, handle %d", param->conf.handle);
+            ESP_LOGI(BLE_TAGS::TAG_GATTS, "Confirm success, handle %d", param->conf.handle);
         }
     break;
 
@@ -483,7 +475,7 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     // default case
     //--------------------------------------------------------------------------------------------------------
     default:
-        ESP_LOGE(TAG_GATTS, "Unhandled GATTS event: %s", get_gatts_event_name(event));
+        ESP_LOGE(BLE_TAGS::TAG_GATTS, "Unhandled GATTS event: %s", get_gatts_event_name(event));
         break;
     }
 }
@@ -495,23 +487,23 @@ void BLE_Server::send(const char * data) {
 
     if (_is_connected) {
         // if indications are enabled
-        if (_gatts_profile_inst.descr_value == INDICATION){
+        if (_gatts_profile_inst.descr_value == BLE_Defaults::INDICATION){
             // Send indication to the client
             esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, true);
         }
         // if notifications are enabled
-        else if (_gatts_profile_inst.descr_value == NOTIFICATION){
+        else if (_gatts_profile_inst.descr_value == BLE_Defaults::NOTIFICATION){
             //send notification to the client
             esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, false);
         }
         else{
             // if notifications and indications are disabled, do not send data
-            ESP_LOGI(TAG_SERVER, "Notification/Indication disabled, not sending data");
+            ESP_LOGI(BLE_TAGS::TAG_SERVER, "Notification/Indication disabled, not sending data");
         }
         
     } else {
         // if not connected to a client, do not send data
-        ESP_LOGI(TAG_SERVER, "Cannot send data, not connected to a client");
+        ESP_LOGI(BLE_TAGS::TAG_SERVER, "Cannot send data, not connected to a client");
     }
 }
 
@@ -522,10 +514,10 @@ void BLE_Server::sendTask(MessageHandler* msgHandler) {
     if (msgHandler->receive(MessageHandler::QueueType::BLE_QUEUE, message)) {
         // Process the received message
         const char* data(message.data());
-        ESP_LOGI(TAG_SERVER, "Sending data: %s", data);
+        ESP_LOGI(BLE_TAGS::TAG_SERVER, "Sending data: %s", data);
         this->send(data);
     } else {
-        ESP_LOGI(TAG_SERVER, "No message to send");
+        ESP_LOGI(BLE_TAGS::TAG_SERVER, "No message to send");
         // send empty message to the client
         const char data[20] = {0};
         this->send(data);

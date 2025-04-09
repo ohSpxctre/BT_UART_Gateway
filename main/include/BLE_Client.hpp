@@ -20,8 +20,7 @@
  * @date 09.04.2025
  */
 
- #ifndef BLE_CLIENT_HPP
- #define BLE_CLIENT_HPP
+ #pragma once
  
  #include "Bluetooth.hpp"
  #include "MessageHandler.hpp"
@@ -43,16 +42,16 @@
      /**
       * @brief GATT client profile instance configuration.
       */
-     gattc_profile_inst _gattc_profile_inst = {
-         .gattc_cb = gattc_event_handler,
-         .gattc_if = ESP_GATT_IF_NONE,
-         .app_id = PROFILE_APP_ID,
-         .conn_id = 0,
-         .service_start_handle = 0,
-         .service_end_handle = 0,
-         .char_handle = 0,
-         .remote_bda = {0},
-         .local_mtu = MTU_DEFAULT,
+     BLE_Defaults::gattc_profile_inst _gattc_profile_inst = {
+         .gattc_cb = gattc_event_handler,                            /**< callback event handler method */
+         .gattc_if = ESP_GATT_IF_NONE,                               /**< BLE Interface */
+         .app_id = BLE_Defaults::PROFILE_APP_ID,                     /**< Application ID */
+         .conn_id = 0,                                               /**< Connection ID */
+         .service_start_handle = 0,                                  /**< Start handle of the remote service */
+         .service_end_handle = 0,                                    /**< End handle of the remote service */
+         .char_handle = 0,                                           /**< Handle for the remote characteristic */
+         .remote_bda = {0},                                          /**< Bluetooth address of the remote device */
+         .local_mtu = BLE_Defaults::MTU_DEFAULT,                     /**< Local MTU size (Defines data packet size) */
      };
  
      /**
@@ -177,10 +176,10 @@
       * @param remote_descr_uuid UUID of the descriptor associated with the characteristic.
       * @param msgHandler Optional pointer to a message handler for async tasks.
       */
-     BLE_Client(esp_ble_scan_params_t scan_params = BLE_SCAN_PARAMS_DEFAULT,
-                 esp_bt_uuid_t remote_service_uuid = REMOTE_FILTER_SERVICE_UUID,
-                 esp_bt_uuid_t remote_char_uuid = REMOTE_FILTER_CHAR_UUID,
-                 esp_bt_uuid_t remote_descr_uuid = REMOTE_DESCR_UUID_DEFAULT,
+     BLE_Client(esp_ble_scan_params_t scan_params = BLE_Defaults::BLE_SCAN_PARAMS_DEFAULT,
+                 esp_bt_uuid_t remote_service_uuid = BLE_Defaults::REMOTE_FILTER_SERVICE_UUID,
+                 esp_bt_uuid_t remote_char_uuid = BLE_Defaults::REMOTE_FILTER_CHAR_UUID,
+                 esp_bt_uuid_t remote_descr_uuid = BLE_Defaults::REMOTE_DESCR_UUID_DEFAULT,
                  MessageHandler* msgHandler = nullptr
      );
  
@@ -217,6 +216,5 @@
       */
      void sendTask(MessageHandler* msgHandler) override;
  };
- 
- #endif // BLE_CLIENT_HPP
+
  
