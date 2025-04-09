@@ -56,6 +56,7 @@ std::string CommandHandler::processCommand(Command cmd) {
             break;
         }
         default: {
+            result = "Unknown command\n";
             ESP_LOGI("CommandHandler", "Unknown command");
             break;
         }
