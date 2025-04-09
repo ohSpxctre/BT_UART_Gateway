@@ -93,6 +93,13 @@ public:
      */
     virtual void sendTask(MessageHandler* msgHandler) = 0;
 
+    virtual bool receive(uint8_t *data) =0;
+
+    virtual void receiveTask(MessageHandler* msgHandler) = 0;
+
+    virtual void logBleState (MessageHandler * msgHandler) =0;
+
+
     /**
      * @brief Sets the message handler for communication.
      * 

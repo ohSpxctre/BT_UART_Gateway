@@ -54,6 +54,11 @@
         .local_mtu = BLE_Defaults::MTU_DEFAULT,                     /**< Local MTU size (Defines data packet size) */
     };
  
+    bool _new_data_rcv = false; /**< Flag indicating if new data has been received. */
+
+    BLE_Defaults::ConnectionState _conn_state = BLE_Defaults::ConnectionState::DISCONNECTED; /**< Current connection state of the server. */
+    bool _conn_state_change = true;  /**< Flag indicating if the connection state has changed. */
+
     /**
      * @brief BLE scan parameters.
      */
@@ -73,16 +78,11 @@
      * @brief UUID of the target remote descriptor.
      */
     esp_bt_uuid_t _remote_descr_uuid;
- 
-    /**
-     * @brief Buffer to store outgoing data for BLE transmission.
-     */
-    uint8_t _char_send_buffer[ESP_GATT_MAX_ATTR_LEN] = {"Hello from ESP32 BLE Client"};
- 
+
     /**
      * @brief Buffer to store incoming data received via BLE.
      */
-    uint8_t _char_recv_buffer[ESP_GATT_MAX_ATTR_LEN] = {0};
+    uint8_t _char_recv_buffer[BLE_Defaults::MTU_DEFAULT-3] = {0};
  
     /**
      * @brief Flag indicating whether the client is currently connected.
@@ -176,6 +176,7 @@
       * @param remote_descr_uuid UUID of the descriptor associated with the characteristic.
       * @param msgHandler Optional pointer to a message handler for async tasks.
       */
+
      BLE_Client(esp_ble_scan_params_t scan_params = BLE_Defaults::BLE_SCAN_PARAMS_DEFAULT,
                  esp_bt_uuid_t remote_service_uuid = BLE_Defaults::REMOTE_FILTER_SERVICE_UUID,
                  esp_bt_uuid_t remote_char_uuid = BLE_Defaults::REMOTE_FILTER_CHAR_UUID,
@@ -215,6 +216,12 @@
       * @param msgHandler Pointer to the message handler.
       */
      void sendTask(MessageHandler* msgHandler) override;
+
+     bool receive(uint8_t *data) override;
+
+     void receiveTask(MessageHandler* msgHandler) override;
+
+     void logBleState (MessageHandler * msgHandler) override;
  };
 
  

@@ -39,6 +39,11 @@ class BLE_Server : public Bluetooth {
 
 private:
 
+  bool _new_data_rcv = false; /**< Flag indicating if new data is available. */
+
+  BLE_Defaults::ConnectionState _conn_state = BLE_Defaults::ConnectionState::NOT_CONNECTED; /**< Current connection state of the server. */
+  bool _conn_state_change = true;  /**< Flag indicating if the connection state has changed. */
+
   /**
    * @brief Static instance pointer for the BLE_Server class.
    */
@@ -243,4 +248,10 @@ public:
    * @param msgHandler Pointer to the message handler.
    */
   void sendTask(MessageHandler* msgHandler) override;  
+
+  bool receive(uint8_t *data) override;
+
+  void receiveTask(MessageHandler* msgHandler) override; // Receive data from the BLE device and send it to the UART interface
+
+  void logBleState (MessageHandler * msgHandler) override; // Log the BLE state to the UART interface
 };

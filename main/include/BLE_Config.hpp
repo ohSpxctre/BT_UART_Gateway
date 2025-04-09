@@ -97,14 +97,24 @@ constexpr std::string_view BT_status_C = "Bluetooth connected";
 constexpr std::string_view BT_status_DC = "Bluetooth disconnected";
 
 /**
+ * @brief Enum representing the connection states for Bluetooth.
+ */
+enum class ConnectionState {
+  NOT_CONNECTED, /**< Bluetooth is not connected */
+  CONNECTED,     /**< Bluetooth is connected */
+  DISCONNECTED   /**< Bluetooth is disconnected */
+};
+
+/**
  * @brief Default UUID for the BLE service.
  */
+
 constexpr esp_bt_uuid_t SERVICE_UUID_DEFAULT = {
   .len = ESP_UUID_LEN_128,                            /**< length of the UUID */
   .uuid = {.uuid128 = {                         
     0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
     0x34, 0x12, 0x78, 0x56, 0x78, 0x56, 0x34, 0x12
-  }}                                                 //*< UUID value */
+   }}                                            //*< UUID value */
 };
 
 /**

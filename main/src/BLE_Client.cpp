@@ -91,11 +91,12 @@ void BLE_Client::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t g
 
 void BLE_Client:: connSetup() {
     // Send not connected message to UART interface
-    MessageHandler::Message msg;
-    std::fill(msg.begin(), msg.end(), '\0');
-    std::copy(BLE_Defaults::BT_status_NC.begin(), BLE_Defaults::BT_status_NC.end(), msg.begin());
-    msg[BLE_Defaults::BT_status_NC.length()] = '\n';
-    _msgHandler->send(MessageHandler::QueueType::UART_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
+    //MessageHandler::Message msg;
+    //std::fill(msg.begin(), msg.end(), '\0');
+    //std::copy(BLE_Defaults::BT_status_NC.begin(), BLE_Defaults::BT_status_NC.end(), msg.begin());
+    //msg[BLE_Defaults::BT_status_NC.length()] = '\n';
+    //_msgHandler->send(MessageHandler::QueueType::UART_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
+
     // Register callback functions
     esp_ble_gap_register_callback(gap_event_handler);
     esp_ble_gattc_register_callback(gattc_event_handler);
@@ -248,9 +249,6 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
     esp_gatt_status_t status = ESP_GATT_OK;
     esp_err_t ret = ESP_OK;
 
-    // Message object to send bluetooth status to UART interface
-    MessageHandler::Message msg;
-
     // temporary variable to count the number of attributes
     uint16_t count = 0;
     
@@ -299,11 +297,8 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
                 break;
             }
             ESP_LOGI(BLE_TAGS::TAG_GATTS, "Open successfully");
-            // send conncetion message to the UART interface
-            std::fill(msg.begin(), msg.end(), '\0');
-            std::copy(BLE_Defaults::BT_status_C.begin(), BLE_Defaults::BT_status_C.end(), msg.begin());
-            msg[BLE_Defaults::BT_status_C.length()] = '\n';
-            _msgHandler->send(MessageHandler::QueueType::UART_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
+            _conn_state_change = true;
+            _conn_state = BLE_Defaults::ConnectionState::CONNECTED;
         break;
 
         //------------------------------------------------------------------------------------------------------------
@@ -544,11 +539,6 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
             }else{
                 ESP_LOGI(BLE_TAGS::TAG_GATTS, "Indication received");
             }
-            ESP_LOGI(BLE_TAGS::TAG_GATTS, "Received value: %.*s", p_data->notify.value_len, _char_recv_buffer);
-
-            // Clear message buffer
-            MessageHandler::Message msg;
-            std::fill(msg.begin(), msg.end(), '\0');
 
             if (std::all_of(p_data->notify.value, p_data->notify.value + p_data->notify.value_len, [](uint8_t x) { return x == 0; })) {
                 //receiving empty message to check timeout
@@ -556,10 +546,11 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
                 break;
             }
             else {
+                _new_data_rcv = true;
                  // Copy the received data into the message buffer
-                std::copy(p_data->notify.value, p_data->notify.value + p_data->notify.value_len, msg.begin());
-                // send received message to message queue for data parser
-                _msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
+                std::copy(p_data->notify.value, p_data->notify.value + p_data->notify.value_len, _char_recv_buffer);
+                _char_recv_buffer[p_data->notify.value_len] = '\0'; // Null-terminate the string
+                
             }
         break;
         
@@ -617,11 +608,8 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
             else {
                 ESP_LOGI(BLE_TAGS::TAG_GATTS, "start scan successfully");
             }
-            // send disconnection message to UART interface
-            std::fill(msg.begin(), msg.end(), '\0');
-            std::copy(BLE_Defaults::BT_status_DC.begin(), BLE_Defaults::BT_status_DC.end(), msg.begin());
-            msg[BLE_Defaults::BT_status_DC.length()] = '\n';
-            _msgHandler->send(MessageHandler::QueueType::UART_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
+            _conn_state_change = true;
+            _conn_state = BLE_Defaults::ConnectionState::DISCONNECTED;
         break;
         
         //------------------------------------------------------------------------------------------------------------
@@ -632,6 +620,49 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
         break;
     }
 }
+
+
+void BLE_Client::logBleState (MessageHandler * msgHandler) {
+    // create message
+    MessageHandler::Message message;
+    // fill message with 0
+    std::fill(message.begin(), message.end(), '\0');
+    if (_conn_state_change) {
+        // reset the flag
+        _conn_state_change = false;
+        switch (_conn_state) {
+            case BLE_Defaults::ConnectionState::DISCONNECTED:
+                std::fill(message.begin(), message.end(), '\0');
+                // copy disconnected message
+                std::copy(BLE_Defaults::BT_status_DC.begin(), BLE_Defaults::BT_status_DC.end(), message.begin());
+                message[BLE_Defaults::BT_status_DC.length()] = '\n';
+                // send message to the UART interface
+                msgHandler->send(MessageHandler::QueueType::UART_QUEUE, message, MessageHandler::ParserMessageID::MSG_ID_BLE);
+                break;
+            case BLE_Defaults::ConnectionState::CONNECTED:
+                // fill message with 0
+                std::fill(message.begin(), message.end(), '\0');
+                // copy connected message
+                std::copy(BLE_Defaults::BT_status_C.begin(), BLE_Defaults::BT_status_C.end(), message.begin());
+                message[BLE_Defaults::BT_status_C.length()] = '\n';
+                // send message to the UART interface
+                msgHandler->send(MessageHandler::QueueType::UART_QUEUE, message, MessageHandler::ParserMessageID::MSG_ID_BLE);
+            break;
+            case BLE_Defaults::ConnectionState::NOT_CONNECTED:
+                // fill message with 0
+                std::fill(message.begin(), message.end(), '\0');
+                // copy not connected message
+                std::copy(BLE_Defaults::BT_status_NC.begin(), BLE_Defaults::BT_status_NC.end(), message.begin());
+                message[BLE_Defaults::BT_status_NC.length()] = '\n';
+                // send message to the UART interface
+                msgHandler->send(MessageHandler::QueueType::UART_QUEUE, message, MessageHandler::ParserMessageID::MSG_ID_BLE);
+            break;
+        }
+    }
+}
+
+
+
 
 void BLE_Client::send(const char *data) {
     // Check if the client is connected to the server
@@ -668,6 +699,34 @@ void BLE_Client::sendTask(MessageHandler* msgHandler) {
        const char data[20] = {0};
        this->send(data);
     }
+}
+
+bool BLE_Client::receive(uint8_t *data) {
+    // Check if new data is received
+    if (_new_data_rcv) {
+        // Clear the new data received flag
+        _new_data_rcv = false;
+        std::copy(_char_recv_buffer, _char_recv_buffer + sizeof(_char_recv_buffer), data);
+        return true;
+    } else {
+        // If no new data is received, return false
+        return false;
+    }
+}
+
+void BLE_Client::receiveTask(MessageHandler* msgHandler) {
+
+    uint8_t recv_buffer[BLE_Defaults::MTU_DEFAULT-3] = {0};
+    MessageHandler::Message msg;
+
+    if (this->receive(recv_buffer)) {
+        // Send the received data to the UART interface
+        std::fill(msg.begin(), msg.end(), '\0');
+        std::copy(recv_buffer, recv_buffer + sizeof(recv_buffer), msg.begin());
+        msgHandler->send(MessageHandler::QueueType::UART_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
+    }
+
+    this->logBleState(msgHandler);
 }
  
 

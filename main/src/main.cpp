@@ -59,6 +59,15 @@ void dataParserTask(DataParser &dataParser, MessageHandler &msgHandler)
     }
 }
 
+void bleReceiveTask(Bluetooth &bluetooth, MessageHandler &msgHandler) 
+{
+    // Receive data from the Bluetooth interface and send it to the UART interface
+    while (true) {
+        bluetooth.receiveTask(&msgHandler);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
+
 void bleSendTask(Bluetooth &bluetooth, MessageHandler &msgHandler) 
 {
     // Send data to the Bluetooth interface from the command handler
@@ -134,6 +143,10 @@ extern "C" void app_main(void) {
     esp_pthread_set_cfg(&cfg);
     std::thread bleSendThread(bleSendTask, std::ref(*bleInterface), std::ref(msgHandler));
 
+    cfg = create_config("bleReceiveTask", 4096, 4);
+    esp_pthread_set_cfg(&cfg);
+    std::thread bleReceiveThread(bleReceiveTask, std::ref(*bleInterface), std::ref(msgHandler));
+    
     while (true)
     {
         // Main loop to keep the internal tasks running
