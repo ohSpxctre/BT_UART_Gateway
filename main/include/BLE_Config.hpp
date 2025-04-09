@@ -26,23 +26,11 @@
 
 namespace BLE_TAGS{
 /**
- * @brief Tag used for logging messages related to the BLE server.
+ * @brief Tags used for logging messages related to BLE operations.
  */
 constexpr const char* TAG_SERVER = "BLE_Server";
-
-/**
- * @brief Tag used for logging messages related to the BLE client.
- */
 constexpr const char* TAG_CLIENT = "BLE_Client";
-
-/**
- * @brief Tag used for logging messages related to GAP (Generic Access Profile) events.
- */
 constexpr const char* TAG_GAP = "GAP";
-
-/**
- * @brief Tag used for logging messages related to GATT (Generic Attribute Profile) server events.
- */
 constexpr const char* TAG_GATTS = "GATT";
 }
 

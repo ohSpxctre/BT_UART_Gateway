@@ -34,65 +34,65 @@
  class BLE_Client : public Bluetooth {
  private:
  
-     /**
-      * @brief Static instance pointer for singleton-like access.
-      */
-     static BLE_Client* Client_instance;
+    /**
+     * @brief Static instance pointer for singleton-like access.
+     */
+    static BLE_Client* Client_instance;
  
-     /**
-      * @brief GATT client profile instance configuration.
-      */
-     BLE_Defaults::gattc_profile_inst _gattc_profile_inst = {
-         .gattc_cb = gattc_event_handler,                            /**< callback event handler method */
-         .gattc_if = ESP_GATT_IF_NONE,                               /**< BLE Interface */
-         .app_id = BLE_Defaults::PROFILE_APP_ID,                     /**< Application ID */
-         .conn_id = 0,                                               /**< Connection ID */
-         .service_start_handle = 0,                                  /**< Start handle of the remote service */
-         .service_end_handle = 0,                                    /**< End handle of the remote service */
-         .char_handle = 0,                                           /**< Handle for the remote characteristic */
-         .remote_bda = {0},                                          /**< Bluetooth address of the remote device */
-         .local_mtu = BLE_Defaults::MTU_DEFAULT,                     /**< Local MTU size (Defines data packet size) */
-     };
+    /**
+     * @brief GATT client profile instance configuration.
+     */
+    BLE_Defaults::gattc_profile_inst _gattc_profile_inst = {
+        .gattc_cb = gattc_event_handler,                            /**< callback event handler method */
+        .gattc_if = ESP_GATT_IF_NONE,                               /**< BLE Interface */
+        .app_id = BLE_Defaults::PROFILE_APP_ID,                     /**< Application ID */
+        .conn_id = 0,                                               /**< Connection ID */
+        .service_start_handle = 0,                                  /**< Start handle of the remote service */
+        .service_end_handle = 0,                                    /**< End handle of the remote service */
+        .char_handle = 0,                                           /**< Handle for the remote characteristic */
+        .remote_bda = {0},                                          /**< Bluetooth address of the remote device */
+        .local_mtu = BLE_Defaults::MTU_DEFAULT,                     /**< Local MTU size (Defines data packet size) */
+    };
  
-     /**
-      * @brief BLE scan parameters.
-      */
-     esp_ble_scan_params_t _scan_params;
+    /**
+     * @brief BLE scan parameters.
+     */
+    esp_ble_scan_params_t _scan_params;
  
-     /**
-      * @brief UUID of the target remote service.
-      */
-     esp_bt_uuid_t _remote_service_uuid;
+    /**
+     * @brief UUID of the target remote service.
+     */
+    esp_bt_uuid_t _remote_service_uuid;
  
-     /**
-      * @brief UUID of the target remote characteristic.
-      */
-     esp_bt_uuid_t _remote_char_uuid;
+    /**
+     * @brief UUID of the target remote characteristic.
+     */
+    esp_bt_uuid_t _remote_char_uuid;
  
-     /**
-      * @brief UUID of the target remote descriptor.
-      */
-     esp_bt_uuid_t _remote_descr_uuid;
+    /**
+     * @brief UUID of the target remote descriptor.
+     */
+    esp_bt_uuid_t _remote_descr_uuid;
  
-     /**
-      * @brief Buffer to store outgoing data for BLE transmission.
-      */
-     uint8_t _char_send_buffer[ESP_GATT_MAX_ATTR_LEN] = {"Hello from ESP32 BLE Client"};
+    /**
+     * @brief Buffer to store outgoing data for BLE transmission.
+     */
+    uint8_t _char_send_buffer[ESP_GATT_MAX_ATTR_LEN] = {"Hello from ESP32 BLE Client"};
  
-     /**
-      * @brief Buffer to store incoming data received via BLE.
-      */
-     uint8_t _char_recv_buffer[ESP_GATT_MAX_ATTR_LEN] = {0};
+    /**
+     * @brief Buffer to store incoming data received via BLE.
+     */
+    uint8_t _char_recv_buffer[ESP_GATT_MAX_ATTR_LEN] = {0};
  
-     /**
-      * @brief Flag indicating whether the client is currently connected.
-      */
-     bool _is_connected = false;
+    /**
+     * @brief Flag indicating whether the client is currently connected.
+     */
+    bool _is_connected = false;
  
-     /**
-      * @brief Flag indicating whether the target GATT server has been found.
-      */
-     bool _get_server = false;
+    /**
+     * @brief Flag indicating whether the target GATT server has been found.
+     */
+    bool _get_server = false;
  
     /**
      * @brief Static handler for GAP events.
