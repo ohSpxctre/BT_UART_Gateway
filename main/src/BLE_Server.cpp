@@ -476,12 +476,13 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
 
 void BLE_Server::send(const char * data) {
     // save data to the buffer
-    std::fill(_char_value.attr_value, _char_value.attr_value + _char_value.attr_len, 0);
-    _char_value.attr_value = (uint8_t *)data;
+    std::fill(_char_value.attr_value, _char_value.attr_value + BLE_Defaults::MTU_DEFAULT - 3, '\0');
+    std::copy(data, data + strlen(data), _char_value.attr_value);
 
     if (_is_connected) {
         // if indications are enabled
         if (_gatts_profile_inst.descr_value == BLE_Defaults::INDICATION){
+            ESP_LOGI(BLE_TAGS::TAG_SERVER, "Sending indication to client: %s", _char_value.attr_value);
             // Send indication to the client
             esp_ble_gatts_send_indicate(_gatts_profile_inst.gatts_if, _gatts_profile_inst.conn_id, _gatts_profile_inst.char_handle, _char_value.attr_len, _char_value.attr_value, true);
         }
