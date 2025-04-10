@@ -548,23 +548,16 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
             }else{
                 ESP_LOGI(BLE_TAGS::TAG_GATTS, "Indication received");
             }
-            ESP_LOGI(BLE_TAGS::TAG_GATTS, "Received value: %.*s", p_data->notify.value_len, _char_recv_buffer);
+            ESP_LOGI(BLE_TAGS::TAG_GATTS, "Received value: %.*s", p_data->notify.value_len, p_data->notify.value);
 
             // Clear message buffer
-            MessageHandler::Message msg;
             std::fill(msg.begin(), msg.end(), '\0');
 
-            if (std::all_of(p_data->notify.value, p_data->notify.value + p_data->notify.value_len, [](uint8_t x) { return x == 0; })) {
-                //receiving empty message to check timeout
-                ESP_LOGI(BLE_TAGS::TAG_GATTS, "Received empty message, ignoring");
-                break;
-            }
-            else {
-                 // Copy the received data into the message buffer
-                std::copy(p_data->notify.value, p_data->notify.value + p_data->notify.value_len, msg.begin());
-                // send received message to message queue for data parser
-                _msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
-            }
+            // Copy the received data into the message buffer
+            std::copy(p_data->notify.value, p_data->notify.value + p_data->notify.value_len, msg.begin());
+            // send received message to message queue for data parser
+            _msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
+
         break;
         
         //------------------------------------------------------------------------------------------------------------
@@ -665,12 +658,6 @@ void BLE_Client::sendTask(MessageHandler* msgHandler) {
 
     if (msgHandler->receive(MessageHandler::QueueType::BLE_QUEUE, msg)) {
         this->send(msg.data());
-    }
-    else {
-        ESP_LOGW(BLE_TAGS::TAG_CLIENT, "Failed to receive message from queue");
-       // send empty message to the client
-       const char data[20] = {0};
-       this->send(data);
     }
 }
  

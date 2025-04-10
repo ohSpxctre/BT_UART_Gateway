@@ -289,23 +289,17 @@ void BLE_Server::handle_event_gatts(esp_gatts_cb_event_t event, esp_gatt_if_t ga
             // check if write handle is charakteristic handle
             else if (_gatts_profile_inst.char_handle == param->write.handle) {
                 // if handle is charakteristic handle, read value
-                memcpy(_char_rcv_buffer, param->write.value, param->write.len);
-                // add 0 terminator to string
-                if (std::all_of(_char_rcv_buffer, _char_rcv_buffer + param->write.len, [](uint8_t x) { return x == 0; })) {
-                    //receiving empty message to check timeout
-                    ESP_LOGI(BLE_TAGS::TAG_GATTS, "Received empty message, ignoring");
-                    break;
-                }
-                else {
-                    _char_data_buffer[param->write.len] = '\0';
-                    // fill message with 0
-                    std::fill(msg.begin(), msg.end(), '\0');
-                    // copy received message
-                    std::copy(_char_rcv_buffer, _char_rcv_buffer + param->write.len, msg.begin());
-                    //Send received message to message  queue for data parser 
-                    _msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
-                    ESP_LOGI(BLE_TAGS::TAG_GATTS, "Received value: %.*s", param->write.len, _char_data_buffer);
-                }
+                
+                // fill message with 0
+                std::fill(msg.begin(), msg.end(), '\0');
+                std::copy(param->write.value, param->write.value + param->write.len, msg.begin());
+
+                // copy received message
+                //std::copy(_char_rcv_buffer, _char_rcv_buffer + param->write.len, msg.begin());
+
+                //Send received message to message  queue for data parser 
+                _msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, msg, MessageHandler::ParserMessageID::MSG_ID_BLE);
+                ESP_LOGI(BLE_TAGS::TAG_GATTS, "Received value: %.*s", param->write.len, param->write.value);
             }
             else {
                 ESP_LOGI(BLE_TAGS::TAG_GATTS, "Unknown handle: %d", param->write.handle);
@@ -515,11 +509,6 @@ void BLE_Server::sendTask(MessageHandler* msgHandler) {
         // Process the received message
         const char* data(message.data());
         ESP_LOGI(BLE_TAGS::TAG_SERVER, "Sending data: %s", data);
-        this->send(data);
-    } else {
-        ESP_LOGI(BLE_TAGS::TAG_SERVER, "No message to send");
-        // send empty message to the client
-        const char data[20] = {0};
         this->send(data);
     }
 }
