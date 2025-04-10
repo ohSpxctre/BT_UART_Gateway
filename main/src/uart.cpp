@@ -73,49 +73,48 @@ void Uart::sendTask(MessageHandler* msgHandler)
 
 void Uart::receiveTask(MessageHandler* msgHandler)
 {
-    char data[uartConfig::UART_BUFFER_SIZE];
+    char tempBuf[uartConfig::UART_BUFFER_SIZE];
     MessageHandler::Message message;
-    
-    int bytesReceived = 0;
-    bool isEndOfLine = false;
+    int msgPos = 0;
 
-    // Clear the message buffer
-    std::fill(data, data + uartConfig::UART_BUFFER_SIZE, '\0');
     std::fill(message.begin(), message.end(), '\0');
 
-    while (!isEndOfLine && bytesReceived < uartConfig::UART_BUFFER_SIZE - 1) {
-        int received = this->receive(data + bytesReceived);
-        for (int i = 0; i < received; ++i) {
-            char ch = data[bytesReceived + i];
+    while (msgPos < message.size() - 1) {
+        int received = this->receive(tempBuf);
+        if (received <= 0) break;
 
-            // Handle backspace or delete key
-            if (ch == '\b' || ch == 0x7F) {
-                if (bytesReceived > 0) {
-                    bytesReceived--;
-                    this->send("\b \b", 3);
-                }
+        for (int i = 0; i < received; ++i) {
+            char ch = tempBuf[i];
+
+            // Handle backspace
+            if ((ch == '\b' || ch == 0x7F) && msgPos > 0) {
+                msgPos--;
+                this->send("\b \b", 3);
                 continue;
             }
 
-            // Echo back each character (local terminal-style interaction)
+            // Echo
             this->send(&ch, 1);
 
-            // Store character
-            data[bytesReceived++] = ch;
+            // Save character
+            message[msgPos++] = ch;
 
-            // Check for newline or carriage return
+            // End of line
             if (ch == '\r' || ch == '\n') {
-                isEndOfLine = true;
-                break; // Skip rest of received buffer
+                message[msgPos] = '\0'; // Null-terminate
+                msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, message, MessageHandler::ParserMessageID::MSG_ID_UART);
+                ESP_LOGI(pcTaskGetName(nullptr), "Received: %s", message.data());
+                return;
             }
         }
     }
 
-    std::copy(data, data + bytesReceived, message.begin());
-    msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, message, MessageHandler::ParserMessageID::MSG_ID_UART);
-
-    ESP_LOGI(pcTaskGetName(nullptr), "Received data: %s", data);
-    
+    // If buffer filled before newline
+    if (msgPos > 0) {
+        message[msgPos] = '\0';
+        msgHandler->send(MessageHandler::QueueType::DATA_PARSER_QUEUE, message, MessageHandler::ParserMessageID::MSG_ID_UART);
+        ESP_LOGW(pcTaskGetName(nullptr), "Received (no newline): %s", message.data());
+    }
 }
 
 int Uart::send(const char* data, size_t len)
@@ -178,7 +177,6 @@ size_t Uart::uart_event_handler(char* data)
     // Waiting for UART event.
     if (xQueueReceive(*_uart_queue, (void *)&event, portMAX_DELAY))
     {
-        bzero(data, (size_t)sizeof(data));
         switch(event.type) {
             // Event of UART receiving data
             case UART_DATA:

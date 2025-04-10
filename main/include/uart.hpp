@@ -36,7 +36,7 @@ namespace uartConfig {
 /* Defines the size of the UART ring buffer */
 constexpr unsigned int UART_BUFFER_SIZE = 256;
 /* Defines the maximum number of events that can be held in the event queue */
-constexpr int EVENT_QUEUE_SIZE = 10;
+constexpr int EVENT_QUEUE_SIZE = 20;
 constexpr uart_port_t DEFAULT_PORT = UART_NUM_0;
 constexpr gpio_num_t DEFAULT_TX_PIN = GPIO_NUM_16;
 constexpr gpio_num_t DEFAULT_RX_PIN = GPIO_NUM_17;
