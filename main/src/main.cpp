@@ -68,7 +68,7 @@ void dataParserTask(DataParser &dataParser, MessageHandler &msgHandler)
     }
 }
 
-void bleSendTask(Bluetooth &bluetooth, MessageHandler &msgHandler) 
+void bleSendTask(Bluetooth &bluetooth) 
 {
     // Send data to the Bluetooth interface from the command handler
     while (true) {
@@ -141,7 +141,7 @@ extern "C" void app_main(void) {
     /* Create a thread for BLE send task */ 
     cfg = create_config("bleSendTask", 4096, 5);
     esp_pthread_set_cfg(&cfg);
-    std::thread bleSendThread(bleSendTask, std::ref(*bleInterface), std::ref(msgHandler));
+    std::thread bleSendThread(bleSendTask, std::ref(*bleInterface));
 
     while (true)
     {
