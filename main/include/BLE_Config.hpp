@@ -229,7 +229,7 @@ struct gatts_profile_inst {
  /**
   * @brief BLE scan duration in seconds.
   */
- constexpr uint32_t SCAN_DURATION = 30; // seconds
+ constexpr uint32_t SCAN_DURATION = 0; // seconds
  
  /**
   * @brief Default scan parameters for active BLE scanning.
@@ -239,7 +239,7 @@ struct gatts_profile_inst {
      .own_addr_type          = BLE_ADDR_TYPE_PUBLIC,       /**< Own address is public */
      .scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL,  /**< no filter, scanning every device */
      .scan_interval          = 0x50,                       /**< Scan interval time */  
-     .scan_window            = 0x30,                       /**< Scan window time */  
+     .scan_window            = 0x50,                       /**< Scan window time */  
      .scan_duplicate         = BLE_SCAN_DUPLICATE_DISABLE  /**< Send scan result for every received packet */
  };
  

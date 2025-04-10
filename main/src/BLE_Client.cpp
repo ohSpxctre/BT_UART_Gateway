@@ -183,8 +183,6 @@ void BLE_Client::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
                 if (strlen(BLE_Defaults::DEVICE_NAME_SERVER) == adv_name_len && strncmp((char *)adv_name, BLE_Defaults::DEVICE_NAME_SERVER, adv_name_len) == 0) {
                     ESP_LOGI(BLE_TAGS::TAG_GAP, "Device found %s", BLE_Defaults::DEVICE_NAME_SERVER);
                     if (_is_connected == false) {
-                        // stop scanning
-                        esp_ble_gap_stop_scanning();
                         // connect to the device
                         ret = esp_ble_gattc_open(_gattc_profile_inst.gattc_if, scan_result->scan_rst.bda, scan_result->scan_rst.ble_addr_type, true);
                         if (ret != ESP_OK) {
@@ -197,10 +195,7 @@ void BLE_Client::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
                         }
                     }                  
                 }
-                else {
-                    // if the device name does not match, continue scanning
-                    esp_ble_gap_start_scanning(BLE_Defaults::SCAN_DURATION);
-                }
+
             }
         break;
 
@@ -214,13 +209,6 @@ void BLE_Client::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
                 break;
             }
             ESP_LOGI(BLE_TAGS::TAG_GAP, "Scanning stop successfully");
-            if (!_is_connected) {
-                // if not connected, start scanning again
-                ret = esp_ble_gap_start_scanning(BLE_Defaults::SCAN_DURATION);
-                if (ret){
-                    ESP_LOGE(BLE_TAGS::TAG_GAP, "Restart scanning failed, error code = %d", ret);
-                }
-            }
         break;
         
         //--------------------------------------------------------------------------------------------------------
@@ -283,6 +271,7 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
         case ESP_GATTC_CONNECT_EVT:
             // check if the connection was successful
             ESP_LOGI(BLE_TAGS::TAG_GATTS, "Connected, conn_id %d", p_data->connect.conn_id);
+            esp_ble_gap_stop_scanning();
             // save the connection ID and remote address
             _gattc_profile_inst.conn_id = p_data->connect.conn_id;
             memcpy(_gattc_profile_inst.remote_bda, p_data->connect.remote_bda, sizeof(esp_bd_addr_t));
@@ -477,6 +466,7 @@ void BLE_Client::handle_event_gattc(esp_gattc_cb_event_t event, esp_gatt_if_t ga
                                                     _gattc_profile_inst.service_end_handle, 
                                                     _gattc_profile_inst.char_handle,
                                                     &count);
+                                                    
                 // check if the attribute count was successful
                 if (ret != ESP_GATT_OK){
                     ESP_LOGE(BLE_TAGS::TAG_GATTS, "esp_ble_gattc_get_attr_count error");
