@@ -242,5 +242,5 @@ public:
    * 
    * @param msgHandler Pointer to the message handler.
    */
-  void sendTask(MessageHandler* msgHandler) override;  
+  void sendTask() override;  
 };

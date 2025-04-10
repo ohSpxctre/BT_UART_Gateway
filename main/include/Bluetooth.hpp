@@ -91,7 +91,7 @@ public:
      * 
      * @param msgHandler Pointer to the message handler.
      */
-    virtual void sendTask(MessageHandler* msgHandler) = 0;
+    virtual void sendTask() = 0;
 
     /**
      * @brief Sets the message handler for communication.

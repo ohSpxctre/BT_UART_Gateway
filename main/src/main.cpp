@@ -72,7 +72,7 @@ void bleSendTask(Bluetooth &bluetooth, MessageHandler &msgHandler)
 {
     // Send data to the Bluetooth interface from the command handler
     while (true) {
-        bluetooth.sendTask(&msgHandler);
+        bluetooth.sendTask();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }

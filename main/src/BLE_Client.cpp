@@ -652,11 +652,11 @@ void BLE_Client::send(const char *data) {
     }
 }
 
-void BLE_Client::sendTask(MessageHandler* msgHandler) {
+void BLE_Client::sendTask() {
     // Get message from the queue and send it to the BLE server
     MessageHandler::Message msg;
 
-    if (msgHandler->receive(MessageHandler::QueueType::BLE_QUEUE, msg)) {
+    if (_msgHandler->receive(MessageHandler::QueueType::BLE_QUEUE, msg)) {
         this->send(msg.data());
     }
 }

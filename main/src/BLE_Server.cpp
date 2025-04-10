@@ -501,11 +501,11 @@ void BLE_Server::send(const char * data) {
     }
 }
 
-void BLE_Server::sendTask(MessageHandler* msgHandler) {
+void BLE_Server::sendTask() {
     // create message
     MessageHandler::Message message;
 
-    if (msgHandler->receive(MessageHandler::QueueType::BLE_QUEUE, message)) {
+    if (_msgHandler->receive(MessageHandler::QueueType::BLE_QUEUE, message)) {
         // Process the received message
         const char* data(message.data());
         ESP_LOGI(BLE_TAGS::TAG_SERVER, "Sending data: %s", data);
