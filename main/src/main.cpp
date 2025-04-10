@@ -1,10 +1,12 @@
 #include <thread>
 #include <chrono>
+#include <cstdio>
+#include <cstring>
 #include <esp_pthread.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <esp_log.h>
-#include <cstring>
+#include <esp_heap_caps.h>
 
 #include "uart.hpp"
 #include "MessageHandler.hpp"
@@ -13,6 +15,13 @@
 #include "Bluetooth.hpp"
 #include "BLE_Client.hpp"
 #include "BLE_Server.hpp"
+
+/* For using statistics set in menuconfig:
+    FREERTOS_USE_TRACE_FACILITY
+    FREERTOS_USE_STATS_FORMATTING_FUNCTIONS
+    FREERTOS_VTASKLIST_INCLUDE_COREID
+*/
+#define LOG_FREERTOS 0 // Set to 1 to enable FreeRTOS logging
 
 bool BLE_SERVER = false; // Default to client mode
 
@@ -136,24 +145,34 @@ extern "C" void app_main(void) {
 
     while (true)
     {
+        
+#ifdef LOG_FREERTOS   
+        // --- vTaskList() ---
         char taskList[1024];
-        char runTimeStats[1024];
-
-        // Print stack usage
         vTaskList(taskList);
+        const char *taskListHeader = "Task List:\n Task Name\tState\tPrio\tStack\tNum\tCore\n";
+        uart0.send(taskListHeader, strlen(taskListHeader));
+        uart0.send(taskList, strlen(taskList));
 
-        // Print CPU usage
-        vTaskGetRunTimeStats(runTimeStats);
+        // --- Heap Info ---
+        char buffer[64]; // temporary buffer for converting numbers to string
 
-        ESP_LOGI("Task List", "Task List:\n%s", taskList);
-        ESP_LOGI("Run Time Stats", "Run Time Stats:\n%s", runTimeStats);
+        uart0.send("Heap Info:\n", strlen("Heap Info:\n"));
 
+        size_t totalHeap = heap_caps_get_total_size(MALLOC_CAP_DEFAULT);
+        snprintf(buffer, sizeof(buffer), "Total Heap Size: %d bytes\n", (int)totalHeap);
+        uart0.send(buffer, strlen(buffer));
+
+        size_t freeHeap = heap_caps_get_free_size(MALLOC_CAP_DEFAULT);
+        snprintf(buffer, sizeof(buffer), "Free Heap Size: %d bytes\n", (int)freeHeap);
+        uart0.send(buffer, strlen(buffer));
+
+        size_t usedHeap = totalHeap - freeHeap;
+        snprintf(buffer, sizeof(buffer), "Used Heap Size: %d bytes\n", (int)usedHeap);
+        uart0.send(buffer, strlen(buffer));    
+#endif
         // Main loop to keep the internal tasks running
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-
-
-
+        std::this_thread::sleep_for(std::chrono::seconds(10));
     }
     
 }
