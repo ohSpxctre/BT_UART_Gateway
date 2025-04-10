@@ -136,8 +136,24 @@ extern "C" void app_main(void) {
 
     while (true)
     {
+        char taskList[1024];
+        char runTimeStats[1024];
+
+        // Print stack usage
+        vTaskList(taskList);
+
+        // Print CPU usage
+        vTaskGetRunTimeStats(runTimeStats);
+
+        ESP_LOGI("Task List", "Task List:\n%s", taskList);
+        ESP_LOGI("Run Time Stats", "Run Time Stats:\n%s", runTimeStats);
+
         // Main loop to keep the internal tasks running
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+
+
+
     }
     
 }
