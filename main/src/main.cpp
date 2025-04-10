@@ -146,11 +146,11 @@ extern "C" void app_main(void) {
     while (true)
     {
         
-#ifdef LOG_FREERTOS   
+#if LOG_FREERTOS   
         // --- vTaskList() ---
         char taskList[1024];
         vTaskList(taskList);
-        const char *taskListHeader = "Task List:\n Task Name\tState\tPrio\tStack\tNum\tCore\n";
+        const char *taskListHeader = "Task List:\nTask Name\tState\tPrio\tStack\tNum\tCore\n";
         uart0.send(taskListHeader, strlen(taskListHeader));
         uart0.send(taskList, strlen(taskList));
 
