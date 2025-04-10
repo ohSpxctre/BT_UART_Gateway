@@ -197,6 +197,10 @@ void BLE_Client::handle_event_gap(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
                         }
                     }                  
                 }
+                else {
+                    // if the device name does not match, continue scanning
+                    esp_ble_gap_start_scanning(BLE_Defaults::SCAN_DURATION);
+                }
             }
         break;
 
