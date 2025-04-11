@@ -1,0 +1,31 @@
+<map id="MessageHandler::send" name="MessageHandler::send">
+<area shape="rect" id="Node000001" title="Sends a message to the specified internal message queue." alt="" coords="699,150,869,175"/>
+<area shape="rect" id="Node000002" href="$classBLE__Client.html#a5d2a0279434b36e78bddad970082bbd1" title="Setup connection to BLE device." alt="" coords="7,42,174,67"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="696,150,650,143,174,69,175,64,651,137,697,145"/>
+<area shape="rect" id="Node000003" href="$classBLE__Server.html#ac7febc9f3fabef14344b8efeb05c5aa4" title="Set up the BLE connection." alt="" coords="5,150,176,175"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="685,162,651,161,437,159,224,161,176,162,176,157,224,156,437,154,651,156,685,157"/>
+<area shape="rect" id="Node000004" href="$classDataParser.html#a456ecb1ff09e80bf9280b628adc47239" title="Runs a continuous task that receives and processes messages from the parser queue." alt="" coords="452,309,651,334"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="762,187,713,230,652,276,585,311,582,306,649,271,710,226,758,183"/>
+<area shape="rect" id="Node000007" href="$classBLE__Client.html#a6d1fee70056dbaeccb08d2ca5b34fad8" title="Handle GATT client events." alt="" coords="480,5,623,45"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="756,143,708,105,649,66,610,48,612,43,652,62,711,101,760,139"/>
+<area shape="rect" id="Node000009" href="$classBLE__Server.html#a10fb545066a7d87cffc2bc7dcea2af93" title="Handle GATT server events." alt="" coords="478,171,625,211"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="685,177,625,185,625,179,684,172"/>
+<area shape="rect" id="Node000011" href="$classUart.html#a7e4639969ae7afcfddcf7908e0b29e54" title="Task function to read characters from UART and buffer input." alt="" coords="484,235,619,261"/>
+<area shape="poly" id="edge12_Node000001_Node000011" title=" " alt="" coords="747,184,652,225,609,238,608,233,650,220,745,179"/>
+<area shape="rect" id="Node000005" href="$main_8cpp.html#a92ec7e7e48c2ce7af99bb362b83e32a8" title=" " alt="" coords="254,334,374,359"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="438,336,375,343,374,338,438,331"/>
+<area shape="rect" id="Node000006" href="$main_8cpp.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="47,285,134,310"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="242,334,134,309,135,304,243,328"/>
+<area shape="rect" id="Node000008" href="$classBLE__Client.html#af5183e3a5182ee8fc94f8b7e6446f283" title="Static GATT client event handler." alt="" coords="226,5,402,45"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="466,28,402,28,402,23,466,23"/>
+<area shape="poly" id="edge8_Node000008_Node000002" title=" " alt="" coords="212,41,175,46,174,41,212,36"/>
+<area shape="rect" id="Node000010" href="$classBLE__Server.html#aefba7a76c89cbf2e1a77b6a4803b9480" title="Static handler for GATT server events." alt="" coords="224,171,404,211"/>
+<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="464,193,404,193,404,188,464,188"/>
+<area shape="poly" id="edge11_Node000010_Node000003" title=" " alt="" coords="210,180,176,176,176,171,211,175"/>
+<area shape="rect" id="Node000012" href="$main_8cpp.html#ac672c86fb27ee5d971791cf8570ec137" title=" " alt="" coords="253,285,375,310"/>
+<area shape="poly" id="edge13_Node000011_Node000012" title=" " alt="" coords="477,266,376,287,375,282,476,261"/>
+<area shape="rect" id="Node000013" href="$main_8cpp.html#ad6d6c8ccee27b130f7eb2c9a3c8765a1" title=" " alt="" coords="249,235,379,261"/>
+<area shape="poly" id="edge15_Node000011_Node000013" title=" " alt="" coords="470,251,379,251,379,245,470,245"/>
+<area shape="poly" id="edge14_Node000012_Node000006" title=" " alt="" coords="239,300,134,300,134,295,239,295"/>
+<area shape="poly" id="edge16_Node000013_Node000006" title=" " alt="" coords="243,266,135,290,134,285,242,261"/>
+</map>

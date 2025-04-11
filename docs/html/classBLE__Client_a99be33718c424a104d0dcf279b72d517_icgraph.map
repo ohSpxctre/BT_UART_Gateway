@@ -1,0 +1,9 @@
+<map id="BLE_Client::get_gattc_event_name" name="BLE_Client::get_gattc_event_name">
+<area shape="rect" id="Node000001" title="Utility function to get a readable GATT client event name." alt="" coords="635,5,795,45"/>
+<area shape="rect" id="Node000002" href="$classBLE__Client.html#a6d1fee70056dbaeccb08d2ca5b34fad8" title="Handle GATT client events." alt="" coords="444,5,587,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="621,28,587,28,587,23,621,23"/>
+<area shape="rect" id="Node000003" href="$classBLE__Client.html#af5183e3a5182ee8fc94f8b7e6446f283" title="Static GATT client event handler." alt="" coords="220,5,396,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="430,28,396,28,396,23,430,23"/>
+<area shape="rect" id="Node000004" href="$classBLE__Client.html#a5d2a0279434b36e78bddad970082bbd1" title="Setup connection to BLE device." alt="" coords="5,13,172,38"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="206,28,172,28,172,23,206,23"/>
+</map>

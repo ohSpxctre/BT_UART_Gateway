@@ -1,0 +1,23 @@
+<map id="rtos::msToTicks" name="rtos::msToTicks">
+<area shape="rect" id="Node000001" title=" " alt="" coords="460,153,583,179"/>
+<area shape="rect" id="Node000002" href="$classrtos_1_1EventFlags.html#ab116cd2d7ececd95692d7d072196e750" title=" " alt="" coords="216,5,404,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="503,143,465,92,440,66,411,44,386,33,389,28,413,40,443,62,469,89,508,140"/>
+<area shape="rect" id="Node000003" href="$classrtos_1_1EventFlags.html#a50debabc2b39bedcae7ef5309d3936f1" title=" " alt="" coords="212,55,408,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="493,147,456,119,411,94,379,83,381,78,413,89,459,115,496,142"/>
+<area shape="rect" id="Node000004" href="$classrtos_1_1Task.html#a9dafe565e8f67f1320dc18b9bfde88fe" title=" " alt="" coords="247,104,373,129"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="453,153,365,132,366,127,454,148"/>
+<area shape="rect" id="Node000006" href="$classrtos_1_1Semaphore.html#ae8d9dbad4634a1ff69f0dbee9e0ad553" title=" " alt="" coords="208,153,412,179"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="446,169,412,169,412,163,446,163"/>
+<area shape="rect" id="Node000007" href="$classrtos_1_1Mutex.html#addf641dce7f9248af60efc72a1c3e6ef" title=" " alt="" coords="234,203,386,228"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="454,184,366,205,365,200,453,179"/>
+<area shape="rect" id="Node000008" href="$classrtos_1_1MessageQueue.html#a88aba7a35bda8c6023100b57744232a4" title=" " alt="" coords="233,253,387,293"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="495,189,457,216,413,242,382,255,380,250,411,237,454,212,492,185"/>
+<area shape="rect" id="Node000010" href="$classrtos_1_1MessageQueue.html#ab78416fbafa530b9a7fd8ca3eff7d403" title=" " alt="" coords="233,317,387,357"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="509,192,471,250,445,280,414,307,389,320,386,316,410,302,441,277,467,246,505,189"/>
+<area shape="rect" id="Node000005" href="$classrtos_1_1Task.html#a18067e1a8d17e835aab11b7fa10c05d4" title=" " alt="" coords="15,104,150,129"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="232,119,150,119,150,114,232,114"/>
+<area shape="rect" id="Node000009" href="$classrtos_1_1MessageQueue.html#a595587ac6a72ea32cfe7188a35166f7c" title=" " alt="" coords="5,253,160,293"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="219,275,160,275,160,270,219,270"/>
+<area shape="rect" id="Node000011" href="$classrtos_1_1MessageQueue.html#a3e7a02bd3bdf2bebcb3ef832632f1a7e" title=" " alt="" coords="5,317,160,357"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="219,339,160,339,160,334,219,334"/>
+</map>

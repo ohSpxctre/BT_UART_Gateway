@@ -1,0 +1,20 @@
+<map id="main/include/BLE_Config.hpp" name="main/include/BLE_Config.hpp">
+<area shape="rect" id="Node000001" title="Configuration file containing default values and structures for BLE server and client." alt="" coords="245,5,456,31"/>
+<area shape="rect" id="Node000002" href="$Bluetooth_8hpp.html" title="Defines the Bluetooth abstract base class for BLE communication." alt="" coords="250,79,451,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="345,44,346,78,341,79,339,45"/>
+<area shape="poly" id="edge5_Node000002_Node000001" title=" " alt="" coords="357,65,355,31,360,31,362,65"/>
+<area shape="rect" id="Node000003" href="$BLE__Client_8hpp.html" title="Header file for the BLE_Client class, which implements a BLE (Bluetooth Low Energy) client." alt="" coords="35,152,242,177"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="305,111,174,154,172,149,303,106"/>
+<area shape="rect" id="Node000005" href="$main_8cpp.html" title=" " alt="" coords="209,225,351,251"/>
+<area shape="poly" id="edge10_Node000002_Node000005" title=" " alt="" coords="333,116,308,153,293,192,285,226,279,225,288,191,303,151,329,113"/>
+<area shape="rect" id="Node000006" href="$BLE__Server_8hpp.html" title="Header file for the BLE_Server class, which implements a Bluetooth Low Energy (BLE) server." alt="" coords="317,152,528,177"/>
+<area shape="poly" id="edge6_Node000002_Node000006" title=" " alt="" coords="374,112,413,150,409,154,371,116"/>
+<area shape="rect" id="Node000008" href="$Bluetooth_8cpp.html" title="Implementation of the Bluetooth base class." alt="" coords="553,152,725,177"/>
+<area shape="poly" id="edge9_Node000002_Node000008" title=" " alt="" coords="411,105,593,149,591,154,409,110"/>
+<area shape="rect" id="Node000004" href="$BLE__Client_8cpp.html" title="Implementation of the BLE_Client class for managing BLE client functionality." alt="" coords="5,225,184,251"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="126,191,104,227,100,224,122,188"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="175,181,258,223,256,227,172,186"/>
+<area shape="poly" id="edge8_Node000006_Node000005" title=" " alt="" coords="389,186,305,227,302,223,386,181"/>
+<area shape="rect" id="Node000007" href="$BLE__Server_8cpp.html" title="Implementation of the BLE_Server class for managing BLE server functionality." alt="" coords="376,225,557,251"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="439,188,462,224,457,227,435,191"/>
+</map>

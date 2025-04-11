@@ -1,0 +1,5 @@
+<map id="BLE_Server::send" name="BLE_Server::send">
+<area shape="rect" id="Node000001" title="Send data over BLE." alt="" coords="216,5,351,31"/>
+<area shape="rect" id="Node000002" href="$classBLE__Server.html#abf68e2a971c885eecea8a3f15a5cdd52" title="Task to send data using a message handler." alt="" coords="5,5,168,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="202,21,168,21,168,15,202,15"/>
+</map>

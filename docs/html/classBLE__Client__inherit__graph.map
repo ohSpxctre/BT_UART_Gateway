@@ -1,0 +1,5 @@
+<map id="BLE_Client" name="BLE_Client">
+<area shape="rect" id="Node000001" title="BLE Client implementation." alt="" coords="5,248,389,1207"/>
+<area shape="rect" id="Node000002" href="$classBluetooth.html" title="Abstract base class for BLE communication." alt="" coords="78,5,317,200"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="200,214,200,248,195,248,195,214"/>
+</map>

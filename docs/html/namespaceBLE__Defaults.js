@@ -1,0 +1,28 @@
+var namespaceBLE__Defaults =
+[
+    [ "gattc_profile_inst", "structBLE__Defaults_1_1gattc__profile__inst.html", "structBLE__Defaults_1_1gattc__profile__inst" ],
+    [ "gatts_profile_inst", "structBLE__Defaults_1_1gatts__profile__inst.html", "structBLE__Defaults_1_1gatts__profile__inst" ],
+    [ "ADV_DATA_DEFAULT", "namespaceBLE__Defaults.html#a0d37cb130550f86889f1d9f373268c24", null ],
+    [ "ADV_PARAMS_DEFAULT", "namespaceBLE__Defaults.html#aab6167cb3ad98aa37fe7e774c81420b1", null ],
+    [ "BLE_SCAN_PARAMS_DEFAULT", "namespaceBLE__Defaults.html#a0979115399b9a02fda189cc6873639f3", null ],
+    [ "BT_status_C", "namespaceBLE__Defaults.html#a988559335e6ca6c40ad1fe20fa52f610", null ],
+    [ "BT_status_DC", "namespaceBLE__Defaults.html#a84cc9a110dcf29009f24d694e3d2ef17", null ],
+    [ "BT_status_NC", "namespaceBLE__Defaults.html#a870793680d0a7837a68fb60910cf8871", null ],
+    [ "CHAR_INST_ID", "namespaceBLE__Defaults.html#a0259875ac19c93baf27d88961fd6695d", null ],
+    [ "CHAR_UUID_DEFAULT", "namespaceBLE__Defaults.html#a07b2a166aa5b1fdfd74bd8e0fa473422", null ],
+    [ "DESCR_UUID_DEFAULT", "namespaceBLE__Defaults.html#a8649b92a68a811ec2bccc633bb5d6844", null ],
+    [ "DEVICE_NAME_SERVER", "namespaceBLE__Defaults.html#a8497eebc5caa419864e74d3457a10c67", null ],
+    [ "HANDLE_NUM", "namespaceBLE__Defaults.html#aac8b5576ca7946685fa8e6e1b31f0a30", null ],
+    [ "INDICATION", "namespaceBLE__Defaults.html#a110678f6fbc5cab5db804f80b3f86036", null ],
+    [ "MTU_DEFAULT", "namespaceBLE__Defaults.html#ab1bb1282456c450698de0dbc7d8ec9b6", null ],
+    [ "NOTIFICATION", "namespaceBLE__Defaults.html#a71ed75f447a172055d14a133ad904469", null ],
+    [ "PROFILE_APP_ID", "namespaceBLE__Defaults.html#a7fee576cfd20a4b8f17111255dfdef0b", null ],
+    [ "REMOTE_DESCR_UUID_DEFAULT", "namespaceBLE__Defaults.html#a53aa9bdb204f2a16c2d6a5d95cd681ef", null ],
+    [ "REMOTE_FILTER_CHAR_UUID", "namespaceBLE__Defaults.html#a2a7eacd88370db2815d7a9ca9064cce7", null ],
+    [ "REMOTE_FILTER_SERVICE_UUID", "namespaceBLE__Defaults.html#aa87ccad602e26eb7b438d931cf18d3d0", null ],
+    [ "SCAN_DURATION", "namespaceBLE__Defaults.html#a817e1067fb1f9482646c2bb357db89c8", null ],
+    [ "SERVICE_ID_DEFAULT", "namespaceBLE__Defaults.html#af26ac2813568ffc6db5908cbe1bb48d9", null ],
+    [ "SERVICE_INST_ID", "namespaceBLE__Defaults.html#a68dd269d36c24489741ccb61f75ab7e8", null ],
+    [ "SERVICE_UUID_DEFAULT", "namespaceBLE__Defaults.html#adf45e5b03df6fc9a953a906cd741422e", null ],
+    [ "TIMEOUT_DEFAULT", "namespaceBLE__Defaults.html#a3913321231fe1bd0f814d607600894ae", null ]
+];

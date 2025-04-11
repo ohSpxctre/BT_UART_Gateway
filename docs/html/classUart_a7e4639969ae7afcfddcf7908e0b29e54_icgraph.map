@@ -1,0 +1,10 @@
+<map id="Uart::receiveTask" name="Uart::receiveTask">
+<area shape="rect" id="Node000001" title="Task function to read characters from UART and buffer input." alt="" coords="317,31,452,56"/>
+<area shape="rect" id="Node000002" href="$main_8cpp.html#ac672c86fb27ee5d971791cf8570ec137" title=" " alt="" coords="143,5,266,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="303,35,266,29,267,24,304,29"/>
+<area shape="rect" id="Node000004" href="$main_8cpp.html#ad6d6c8ccee27b130f7eb2c9a3c8765a1" title=" " alt="" coords="140,55,269,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="304,57,270,61,269,56,304,51"/>
+<area shape="rect" id="Node000003" href="$main_8cpp.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,31,92,56"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="130,33,92,39,92,34,129,28"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="126,58,92,53,93,47,127,53"/>
+</map>

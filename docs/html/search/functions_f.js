@@ -1,0 +1,18 @@
+var searchData=
+[
+  ['semaphore_0',['semaphore',['../classrtos_1_1Semaphore.html#acc1680b47782c76f115f449f29e010fe',1,'rtos::Semaphore::Semaphore(uint32_t count, uint32_t initial=0)'],['../classrtos_1_1Semaphore.html#a03764704f79b64c44a10afdb6295b912',1,'rtos::Semaphore::Semaphore()'],['../classrtos_1_1Semaphore.html#aa1ba5b6efcd5c1dcac8ee61de8ec3815',1,'rtos::Semaphore::Semaphore(Semaphore &amp;&amp;)=delete'],['../classrtos_1_1Semaphore.html#a70226f5a7932c9579685f095cf39364c',1,'rtos::Semaphore::Semaphore(const Semaphore &amp;)=delete']]],
+  ['send_1',['send',['../classBLE__Client.html#a9880db65fd90431c7e5ec203e6638389',1,'BLE_Client::send()'],['../classBLE__Server.html#a0f7174a232ed5b6133f79b32984bc83e',1,'BLE_Server::send()'],['../classBluetooth.html#ad07a20e88592e04bf56d8c6148d64106',1,'Bluetooth::send()'],['../classMessageHandler.html#a43e563eaac4cb8183d977678d7fdd5aa',1,'MessageHandler::send()'],['../classUart.html#a27d16b401f6af6f830a5da8993d09ad3',1,'Uart::send()'],['../classrtos_1_1IItemSender.html#a7dad76a40c2b857e9aa5bf391380223d',1,'rtos::IItemSender::send()'],['../classrtos_1_1MessageQueue.html#a3e7a02bd3bdf2bebcb3ef832632f1a7e',1,'rtos::MessageQueue::send()']]],
+  ['sendtask_2',['sendtask',['../classBLE__Client.html#a76b22fa8ec94b8475dfda8e01e36bf64',1,'BLE_Client::sendTask()'],['../classBLE__Server.html#abf68e2a971c885eecea8a3f15a5cdd52',1,'BLE_Server::sendTask()'],['../classBluetooth.html#a3eea28e42d7ddc3eec9f4f11ad79d4c1',1,'Bluetooth::sendTask()'],['../classUart.html#a1e251525523677bf41341371c4a240f6',1,'Uart::sendTask()']]],
+  ['set_3',['set',['../classrtos_1_1Flags.html#a156600f89c881c8b305b36f404f48ba5',1,'rtos::Flags::set()'],['../classrtos_1_1EventFlags.html#acf45662672f507b1f019baf84a1d3b69',1,'rtos::EventFlags::set(std::initializer_list&lt; T &gt; flags)'],['../classrtos_1_1EventFlags.html#ac6262ced9404c2f1a3987eea4b331ed0',1,'rtos::EventFlags::set(uint32_t flags)'],['../classrtos_1_1EventFlags.html#a6f8ddf1649b14a1a31ffd303515164fb',1,'rtos::EventFlags::set(T flag)']]],
+  ['setmessagehandler_4',['setMessageHandler',['../classBluetooth.html#aa75468a0d1c39964b41e4814514f8071',1,'Bluetooth']]],
+  ['setnewlineexpansion_5',['setNewlineExpansion',['../classUart.html#abce0d2801c97ff573780394e8ca69892',1,'Uart']]],
+  ['sharedpin_6',['sharedpin',['../classrtos_1_1SharedPin.html#aed799dddf8f1acd4699395443c925235',1,'rtos::SharedPin::SharedPin(T *item)'],['../classrtos_1_1SharedPin.html#a715e0a23050574c6b92285b46364e52e',1,'rtos::SharedPin::SharedPin()=delete'],['../classrtos_1_1SharedPin.html#ab044e83021b6648307ba9bce21aeba01',1,'rtos::SharedPin::SharedPin(const SharedPin &amp;)=default'],['../classrtos_1_1SharedPin.html#a9875b319c763cb189a4b2b003594bb47',1,'rtos::SharedPin::SharedPin(SharedPin &amp;&amp;)=default']]],
+  ['sleep_7',['sleep',['../classrtos_1_1Task.html#a9dafe565e8f67f1320dc18b9bfde88fe',1,'rtos::Task']]],
+  ['sleeps_8',['sleepS',['../classrtos_1_1Task.html#a18067e1a8d17e835aab11b7fa10c05d4',1,'rtos::Task']]],
+  ['spawn_9',['spawn',['../classrtos_1_1TaskBuilder.html#a3176a1354a8d8400cfa91de8930f727e',1,'rtos::TaskBuilder']]],
+  ['stackhighwatermark_10',['stackHighWaterMark',['../classrtos_1_1Task.html#abc5e6931bfa675798887cec5472fdb80',1,'rtos::Task']]],
+  ['stacksize_11',['stackSize',['../classrtos_1_1TaskBuilder.html#a48feaff19b7df9e1fdbd145f4d04d896',1,'rtos::TaskBuilder']]],
+  ['startscheduler_12',['startScheduler',['../namespacertos.html#ada66579dd4cbe83da353905d56f1435e',1,'rtos']]],
+  ['suspend_13',['suspend',['../classrtos_1_1Task.html#a8754c2eea942aa596efa67019131849f',1,'rtos::Task']]],
+  ['suspendall_14',['suspendAll',['../classrtos_1_1Task.html#aa89bbcec08e060ebc0bd4bd9f80327c4',1,'rtos::Task']]]
+];

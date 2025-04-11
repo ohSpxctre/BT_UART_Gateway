@@ -1,0 +1,9 @@
+<map id="BLE_Client::sendTask" name="BLE_Client::sendTask">
+<area shape="rect" id="Node000001" title="Handles periodic sending tasks using the provided MessageHandler." alt="" coords="5,31,164,56"/>
+<area shape="rect" id="Node000002" href="$classMessageHandler.html#a86ae4992eac980513acf1fe723f98238" title="Receives a message from the specified internal queue." alt="" coords="212,5,399,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,32,198,28,199,33,164,37"/>
+<area shape="rect" id="Node000004" href="$classBLE__Client.html#a9880db65fd90431c7e5ec203e6638389" title="Send data over BLE to connected device." alt="" coords="240,55,371,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="164,49,226,56,226,61,164,55"/>
+<area shape="rect" id="Node000003" href="$classMessageHandler.html#afb781c303001059d81235464ae91e0bd" title="Internal helper to retrieve the appropriate message queue." alt="" coords="447,5,649,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="399,15,433,15,433,21,399,21"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="Bluetooth" name="Bluetooth">
+<area shape="rect" id="Node000001" title="Abstract base class for BLE communication." alt="" coords="26,592,234,787"/>
+<area shape="rect" id="Node000002" href="$classMessageHandler.html" title="A class to handle message queues for different communication types." alt="" coords="5,5,255,529"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,529,133,576,127,576,127,529"/>
+</map>

@@ -1,0 +1,46 @@
+<map id="MessageHandler::getQueue" name="MessageHandler::getQueue">
+<area shape="rect" id="Node000001" title="Internal helper to retrieve the appropriate message queue." alt="" coords="933,286,1136,311"/>
+<area shape="rect" id="Node000002" href="$classMessageHandler.html#a86ae4992eac980513acf1fe723f98238" title="Receives a message from the specified internal queue." alt="" coords="699,365,885,390"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="982,318,833,367,831,362,981,313"/>
+<area shape="rect" id="Node000011" href="$classMessageHandler.html#a43e563eaac4cb8183d977678d7fdd5aa" title="Sends a message to the specified internal message queue." alt="" coords="707,182,877,207"/>
+<area shape="poly" id="edge12_Node000001_Node000011" title=" " alt="" coords="990,283,822,210,824,205,992,278"/>
+<area shape="rect" id="Node000003" href="$classDataParser.html#a456ecb1ff09e80bf9280b628adc47239" title="Runs a continuous task that receives and processes messages from the parser queue." alt="" coords="452,289,651,314"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="737,363,592,317,593,312,739,358"/>
+<area shape="rect" id="Node000006" href="$main_8cpp.html#ac672c86fb27ee5d971791cf8570ec137" title=" " alt="" coords="253,338,375,363"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="685,374,376,357,376,351,685,369"/>
+<area shape="rect" id="Node000007" href="$classBLE__Client.html#a76b22fa8ec94b8475dfda8e01e36bf64" title="Handles periodic sending tasks using the provided MessageHandler." alt="" coords="472,390,631,415"/>
+<area shape="poly" id="edge7_Node000002_Node000007" title=" " alt="" coords="685,391,631,397,631,392,685,386"/>
+<area shape="rect" id="Node000008" href="$classBLE__Server.html#abf68e2a971c885eecea8a3f15a5cdd52" title="Task to send data using a message handler." alt="" coords="470,489,633,514"/>
+<area shape="poly" id="edge8_Node000002_Node000008" title=" " alt="" coords="768,401,717,441,652,480,621,491,619,486,650,475,714,437,765,397"/>
+<area shape="rect" id="Node000009" href="$classUart.html#a1e251525523677bf41341371c4a240f6" title="Task function to transmit data from a queue to UART." alt="" coords="492,439,611,465"/>
+<area shape="poly" id="edge9_Node000002_Node000009" title=" " alt="" coords="746,398,651,431,610,442,608,437,650,426,745,393"/>
+<area shape="rect" id="Node000004" href="$main_8cpp.html#a92ec7e7e48c2ce7af99bb362b83e32a8" title=" " alt="" coords="254,289,374,314"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="438,304,374,304,374,299,438,299"/>
+<area shape="rect" id="Node000005" href="$main_8cpp.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="47,313,134,338"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="240,312,134,323,134,318,240,307"/>
+<area shape="poly" id="edge6_Node000006_Node000005" title=" " alt="" coords="239,345,134,333,134,328,239,340"/>
+<area shape="rect" id="Node000010" href="$main_8cpp.html#a9a1ff8d552650f42d63d78590253bf6d" title=" " alt="" coords="259,413,369,438"/>
+<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="478,447,369,434,369,429,479,441"/>
+<area shape="poly" id="edge11_Node000010_Node000005" title=" " alt="" coords="271,409,119,341,121,336,273,405"/>
+<area shape="poly" id="edge15_Node000011_Node000003" title=" " alt="" coords="763,217,713,249,652,280,617,291,615,286,650,275,710,245,760,213"/>
+<area shape="rect" id="Node000012" href="$classBLE__Client.html#a5d2a0279434b36e78bddad970082bbd1" title="Setup connection to BLE device." alt="" coords="7,39,174,65"/>
+<area shape="poly" id="edge13_Node000011_Node000012" title=" " alt="" coords="774,172,754,141,725,107,690,75,650,50,582,28,511,14,438,9,367,9,300,15,238,23,141,42,140,37,237,18,299,9,367,4,439,3,511,9,583,23,652,46,693,71,729,104,758,138,779,169"/>
+<area shape="rect" id="Node000013" href="$classBLE__Server.html#ac7febc9f3fabef14344b8efeb05c5aa4" title="Set up the BLE connection." alt="" coords="5,154,176,179"/>
+<area shape="poly" id="edge14_Node000011_Node000013" title=" " alt="" coords="733,181,650,165,521,156,392,154,176,163,176,157,392,149,521,151,651,160,734,176"/>
+<area shape="rect" id="Node000014" href="$classBLE__Client.html#a6d1fee70056dbaeccb08d2ca5b34fad8" title="Handle GATT client events." alt="" coords="480,60,623,100"/>
+<area shape="poly" id="edge16_Node000011_Node000014" title=" " alt="" coords="756,178,650,121,606,103,608,98,652,116,759,173"/>
+<area shape="rect" id="Node000016" href="$classBLE__Server.html#a10fb545066a7d87cffc2bc7dcea2af93" title="Handle GATT server events." alt="" coords="478,175,625,215"/>
+<area shape="poly" id="edge19_Node000011_Node000016" title=" " alt="" coords="693,197,625,197,625,192,693,192"/>
+<area shape="rect" id="Node000018" href="$classUart.html#a7e4639969ae7afcfddcf7908e0b29e54" title="Task function to read characters from UART and buffer input." alt="" coords="484,239,619,265"/>
+<area shape="poly" id="edge22_Node000011_Node000018" title=" " alt="" coords="725,213,606,242,605,237,724,208"/>
+<area shape="rect" id="Node000015" href="$classBLE__Client.html#af5183e3a5182ee8fc94f8b7e6446f283" title="Static GATT client event handler." alt="" coords="226,60,402,100"/>
+<area shape="poly" id="edge17_Node000014_Node000015" title=" " alt="" coords="466,83,402,83,402,77,466,77"/>
+<area shape="poly" id="edge18_Node000015_Node000012" title=" " alt="" coords="212,70,174,65,175,60,212,65"/>
+<area shape="rect" id="Node000017" href="$classBLE__Server.html#aefba7a76c89cbf2e1a77b6a4803b9480" title="Static handler for GATT server events." alt="" coords="224,175,404,215"/>
+<area shape="poly" id="edge20_Node000016_Node000017" title=" " alt="" coords="464,197,404,197,404,192,464,192"/>
+<area shape="poly" id="edge21_Node000017_Node000013" title=" " alt="" coords="210,184,176,180,176,175,211,179"/>
+<area shape="poly" id="edge23_Node000018_Node000006" title=" " alt="" coords="472,271,453,280,439,291,430,304,421,316,405,329,377,342,375,337,403,324,417,313,426,300,435,288,451,275,470,266"/>
+<area shape="rect" id="Node000019" href="$main_8cpp.html#ad6d6c8ccee27b130f7eb2c9a3c8765a1" title=" " alt="" coords="249,239,379,265"/>
+<area shape="poly" id="edge24_Node000018_Node000019" title=" " alt="" coords="470,255,379,255,379,249,470,249"/>
+<area shape="poly" id="edge25_Node000019_Node000005" title=" " alt="" coords="253,271,225,280,126,315,124,310,223,275,252,266"/>
+</map>

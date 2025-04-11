@@ -1,0 +1,49 @@
+<map id="components/rtos_cpp/include/api/IItemSender.h" name="components/rtos_cpp/include/api/IItemSender.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="551,5,741,45"/>
+<area shape="rect" id="Node000002" href="$MessageQueue_8h.html" title=" " alt="" coords="551,93,741,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="649,59,649,93,643,93,643,59"/>
+<area shape="rect" id="Node000003" href="$rtos_8h.html" title=" " alt="" coords="565,181,727,221"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="649,147,649,181,643,181,643,147"/>
+<area shape="rect" id="Node000004" href="$Mutex_8cpp.html" title=" " alt="" coords="288,269,449,309"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="573,228,430,272,429,267,572,223"/>
+<area shape="rect" id="Node000005" href="$Semaphore_8cpp.html" title=" " alt="" coords="473,269,635,309"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="618,233,576,271,573,267,614,229"/>
+<area shape="rect" id="Node000006" href="$rtos_8cpp.html" title=" " alt="" coords="659,269,820,309"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="679,229,720,267,717,271,675,233"/>
+<area shape="rect" id="Node000007" href="$MessageHandler_8hpp.html" title="Declaration of the MessageHandler class for managing message queues between components." alt="" coords="844,277,1091,302"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="730,222,925,274,924,279,729,227"/>
+<area shape="rect" id="Node000008" href="$BLE__Client_8hpp.html" title="Header file for the BLE_Client class, which implements a BLE (Bluetooth Low Energy) client." alt="" coords="5,431,212,456"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="874,306,832,312,714,324,621,331,530,341,413,360,262,397,144,433,142,428,261,392,412,355,529,335,621,326,713,319,831,307,873,301"/>
+<area shape="rect" id="Node000010" href="$main_8cpp.html" title=" " alt="" coords="871,504,1013,529"/>
+<area shape="poly" id="edge27_Node000007_Node000010" title=" " alt="" coords="1104,295,1233,311,1296,324,1351,340,1395,361,1412,373,1423,387,1429,403,1429,420,1422,438,1408,458,1388,469,1352,478,1247,494,1014,514,1013,509,1246,489,1351,473,1386,464,1404,454,1417,436,1424,419,1424,404,1418,390,1408,377,1392,365,1349,345,1294,329,1232,316,1104,301"/>
+<area shape="rect" id="Node000011" href="$BLE__Server_8hpp.html" title="Header file for the BLE_Server class, which implements a Bluetooth Low Energy (BLE) server." alt="" coords="237,431,447,456"/>
+<area shape="poly" id="edge10_Node000007_Node000011" title=" " alt="" coords="872,306,832,312,727,320,644,322,563,330,517,342,464,360,432,376,401,395,356,432,353,428,398,391,429,371,462,355,516,337,562,325,644,317,726,315,831,307,872,301"/>
+<area shape="rect" id="Node000013" href="$Bluetooth_8hpp.html" title="Defines the Bluetooth abstract base class for BLE communication." alt="" coords="476,357,677,383"/>
+<area shape="poly" id="edge13_Node000007_Node000013" title=" " alt="" coords="898,307,634,360,633,355,897,302"/>
+<area shape="rect" id="Node000016" href="$DataParser_8hpp.html" title="Declaration of the DataParser class for parsing and executing commands." alt="" coords="1074,357,1282,383"/>
+<area shape="poly" id="edge20_Node000007_Node000016" title=" " alt="" coords="1012,304,1148,355,1146,360,1010,309"/>
+<area shape="rect" id="Node000018" href="$uart_8hpp.html" title="Declaration of the Uart class for managing UART communication on the ESP32&#45;C6." alt="" coords="885,357,1049,383"/>
+<area shape="poly" id="edge23_Node000007_Node000018" title=" " alt="" coords="970,316,970,357,965,357,965,316"/>
+<area shape="rect" id="Node000020" href="$MessageHandler_8cpp.html" title="Implementation of the MessageHandler class." alt="" coords="1469,357,1687,383"/>
+<area shape="poly" id="edge26_Node000007_Node000020" title=" " alt="" coords="1070,301,1489,355,1489,360,1069,306"/>
+<area shape="rect" id="Node000009" href="$BLE__Client_8cpp.html" title="Implementation of the BLE_Client class for managing BLE client functionality." alt="" coords="19,504,198,529"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="111,470,111,504,106,504,106,470"/>
+<area shape="poly" id="edge9_Node000008_Node000010" title=" " alt="" coords="226,453,870,507,870,512,226,459"/>
+<area shape="poly" id="edge12_Node000011_Node000010" title=" " alt="" coords="452,455,871,504,870,510,451,460"/>
+<area shape="rect" id="Node000012" href="$BLE__Server_8cpp.html" title="Implementation of the BLE_Server class for managing BLE server functionality." alt="" coords="251,504,433,529"/>
+<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="345,470,345,504,339,504,339,470"/>
+<area shape="poly" id="edge14_Node000013_Node000008" title=" " alt="" coords="488,387,184,433,184,428,487,382"/>
+<area shape="poly" id="edge19_Node000013_Node000010" title=" " alt="" coords="692,381,808,400,857,413,891,428,910,445,924,466,941,503,936,505,919,468,906,449,889,433,855,418,806,405,691,386"/>
+<area shape="poly" id="edge17_Node000013_Node000011" title=" " alt="" coords="527,389,381,433,379,428,525,384"/>
+<area shape="rect" id="Node000014" href="$BLE__Config_8hpp.html" title="Configuration file containing default values and structures for BLE server and client." alt="" coords="471,431,682,456"/>
+<area shape="poly" id="edge15_Node000013_Node000014" title=" " alt="" coords="571,396,572,430,567,431,565,397"/>
+<area shape="rect" id="Node000015" href="$Bluetooth_8cpp.html" title="Implementation of the Bluetooth base class." alt="" coords="707,431,879,456"/>
+<area shape="poly" id="edge18_Node000013_Node000015" title=" " alt="" coords="625,384,759,428,757,433,624,389"/>
+<area shape="poly" id="edge16_Node000014_Node000013" title=" " alt="" coords="583,417,581,383,586,383,588,417"/>
+<area shape="poly" id="edge22_Node000016_Node000010" title=" " alt="" coords="1179,397,1172,428,1165,444,1155,458,1123,482,1087,498,1050,509,1014,515,1013,510,1049,504,1086,493,1120,477,1151,454,1161,441,1167,427,1174,396"/>
+<area shape="rect" id="Node000017" href="$DataParser_8cpp.html" title="Implementation of the DataParser class." alt="" coords="1215,431,1394,456"/>
+<area shape="poly" id="edge21_Node000016_Node000017" title=" " alt="" coords="1212,387,1285,428,1283,433,1209,392"/>
+<area shape="poly" id="edge24_Node000018_Node000010" title=" " alt="" coords="966,397,947,504,941,503,960,396"/>
+<area shape="rect" id="Node000019" href="$uart_8cpp.html" title="Implementation of the Uart class for UART communication on ESP32&#45;C6." alt="" coords="1005,431,1140,456"/>
+<area shape="poly" id="edge25_Node000018_Node000019" title=" " alt="" coords="997,388,1057,428,1054,433,994,393"/>
+</map>

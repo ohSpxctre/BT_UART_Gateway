@@ -1,0 +1,21 @@
+<map id="components/rtos_cpp/include/MessageQueue.h" name="components/rtos_cpp/include/MessageQueue.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="371,5,561,45"/>
+<area shape="rect" id="Node000002" href="$IItemReceiver_8h.html" title=" " alt="" coords="5,93,153,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="374,48,150,93,149,88,373,43"/>
+<area shape="rect" id="Node000004" href="$IItemSender_8h.html" title=" " alt="" coords="178,93,314,119"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="414,48,292,91,290,86,412,43"/>
+<area shape="rect" id="Node000005" href="$Core_8h.html" title=" " alt="" coords="339,93,428,119"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="448,47,407,86,404,82,444,44"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="349,167,500,192"/>
+<area shape="poly" id="edge7_Node000001_Node000006" title=" " alt="" coords="463,47,434,154,429,153,458,45"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="504,93,633,119"/>
+<area shape="poly" id="edge8_Node000001_Node000007" title=" " alt="" coords="492,43,544,83,541,87,489,48"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="657,93,744,119"/>
+<area shape="poly" id="edge9_Node000001_Node000008" title=" " alt="" coords="523,43,654,87,653,92,521,48"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="769,93,846,119"/>
+<area shape="poly" id="edge10_Node000001_Node000009" title=" " alt="" coords="548,43,756,90,754,95,547,48"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="130,167,197,192"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="95,117,141,155,137,160,91,121"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="234,121,189,160,186,155,231,117"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="392,118,413,153,409,156,388,120"/>
+</map>

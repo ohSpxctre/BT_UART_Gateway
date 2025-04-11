@@ -1,0 +1,66 @@
+<map id="app_main" name="app_main">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,316,92,341"/>
+<area shape="rect" id="Node000002" href="$main_8cpp.html#a656d2a2008560a0c59a7da1e97a3985f" title=" " alt="" coords="201,119,304,144"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="50,315,59,282,76,238,102,192,119,171,138,153,162,140,187,133,188,138,164,145,142,157,123,175,106,195,81,240,64,284,55,317"/>
+<area shape="rect" id="Node000004" href="$main_8cpp.html#a8b7770dfc4f526899320fd15691b32c4" title=" " alt="" coords="198,168,307,193"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="53,314,84,260,108,229,139,202,160,191,184,184,185,189,162,196,141,207,112,232,88,263,58,317"/>
+<area shape="rect" id="Node000005" href="$main_8cpp.html#a92ec7e7e48c2ce7af99bb362b83e32a8" title=" " alt="" coords="193,217,313,243"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="60,314,93,282,139,252,178,238,180,243,141,256,96,287,63,318"/>
+<area shape="rect" id="Node000019" href="$main_8cpp.html#ac672c86fb27ee5d971791cf8570ec137" title=" " alt="" coords="191,267,314,292"/>
+<area shape="poly" id="edge19_Node000001_Node000019" title=" " alt="" coords="92,314,139,301,177,292,179,297,141,306,93,319"/>
+<area shape="rect" id="Node000023" href="$classUart.html#a27d16b401f6af6f830a5da8993d09ad3" title="Send raw data over UART." alt="" coords="725,425,814,451"/>
+<area shape="poly" id="edge29_Node000001_Node000023" title=" " alt="" coords="54,341,61,378,76,427,102,476,120,497,141,514,179,534,218,549,259,559,301,564,386,563,471,550,551,528,624,503,732,455,734,459,626,508,553,533,472,555,387,568,300,569,258,564,216,554,177,539,139,519,116,501,98,479,71,429,56,379,49,342"/>
+<area shape="rect" id="Node000024" href="$classMessageHandler.html#ac4caf644b2113c686482da7a168dacf5" title="Gets the UART event queue." alt="" coords="140,366,365,406"/>
+<area shape="poly" id="edge27_Node000001_Node000024" title=" " alt="" coords="93,338,169,360,167,365,91,343"/>
+<area shape="rect" id="Node000025" href="$classUart.html#a61b526991bd3b2bf3d01db9486b06b22" title="Initializes the UART interface and installs the driver." alt="" coords="213,431,292,456"/>
+<area shape="poly" id="edge28_Node000001_Node000025" title=" " alt="" coords="61,340,94,378,116,399,141,416,170,428,200,435,199,440,168,433,139,420,113,403,90,382,57,344"/>
+<area shape="rect" id="Node000026" href="$main_8cpp.html#ad6d6c8ccee27b130f7eb2c9a3c8765a1" title=" " alt="" coords="188,316,317,341"/>
+<area shape="poly" id="edge30_Node000001_Node000026" title=" " alt="" coords="92,326,174,326,174,331,92,331"/>
+<area shape="rect" id="Node000027" href="$main_8cpp.html#a9a1ff8d552650f42d63d78590253bf6d" title=" " alt="" coords="198,480,307,505"/>
+<area shape="poly" id="edge32_Node000001_Node000027" title=" " alt="" coords="57,340,86,401,110,436,142,465,162,476,185,483,183,489,160,481,138,470,106,439,81,404,52,343"/>
+<area shape="rect" id="Node000003" href="$classBluetooth.html#a3eea28e42d7ddc3eec9f4f11ad79d4c1" title="Pure virtual method for sending a task to the message handler." alt="" coords="436,119,589,144"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="304,129,422,129,422,134,304,134"/>
+<area shape="rect" id="Node000006" href="$classDataParser.html#a456ecb1ff09e80bf9280b628adc47239" title="Runs a continuous task that receives and processes messages from the parser queue." alt="" coords="413,217,612,243"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="313,227,400,227,400,233,313,233"/>
+<area shape="rect" id="Node000007" href="$classDataParser.html#ace3045f2c668ba902bad75ab3b30b7ac" title="Executes the given command and stores the result in the output string." alt="" coords="660,145,879,171"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="549,215,659,179,692,171,693,176,661,185,551,220"/>
+<area shape="rect" id="Node000015" href="$classDataParser.html#a79e5245aac486b566b17e521645d5894" title="Parses the input data string to detect and classify command keywords." alt="" coords="701,195,838,220"/>
+<area shape="poly" id="edge14_Node000006_Node000015" title=" " alt="" coords="612,219,686,212,687,217,612,224"/>
+<area shape="rect" id="Node000016" href="$classMessageHandler.html#a86ae4992eac980513acf1fe723f98238" title="Receives a message from the specified internal queue." alt="" coords="676,293,863,319"/>
+<area shape="poly" id="edge15_Node000006_Node000016" title=" " alt="" coords="556,240,613,259,661,278,695,287,693,293,659,283,611,265,554,245"/>
+<area shape="rect" id="Node000018" href="$classMessageHandler.html#a43e563eaac4cb8183d977678d7fdd5aa" title="Sends a message to the specified internal message queue." alt="" coords="684,244,855,269"/>
+<area shape="poly" id="edge17_Node000006_Node000018" title=" " alt="" coords="612,238,670,244,670,249,612,243"/>
+<area shape="rect" id="Node000008" href="$classCommandHandler.html#a665ecc3d0185cf173d567e00331c0200" title="Processes a command." alt="" coords="927,145,1192,171"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="879,155,913,155,913,161,879,161"/>
+<area shape="rect" id="Node000009" href="$classCommandHandler.html#ac8beafb4e158b175c60256b58f89fa7f" title="Gets the chip information." alt="" coords="1269,5,1492,31"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="1074,143,1143,93,1189,65,1239,41,1268,32,1269,37,1241,46,1192,69,1146,97,1077,147"/>
+<area shape="rect" id="Node000010" href="$classCommandHandler.html#aaa524249c62f3c5bf2fc192575a249d2" title="Gets the clock speed in MHz." alt="" coords="1278,55,1483,95"/>
+<area shape="poly" id="edge9_Node000008_Node000010" title=" " alt="" coords="1103,143,1239,105,1275,96,1277,101,1241,110,1104,148"/>
+<area shape="rect" id="Node000011" href="$classCommandHandler.html#ac790edbe2bf25d3e09ae3b43f0948204" title="Gets the free heap size." alt="" coords="1265,120,1496,145"/>
+<area shape="poly" id="edge10_Node000008_Node000011" title=" " alt="" coords="1192,145,1251,140,1252,145,1192,150"/>
+<area shape="rect" id="Node000012" href="$classCommandHandler.html#aacc693ccd17d6450b53c11dd8c348fe3" title="Gets the free internal heap size." alt="" coords="1240,169,1521,195"/>
+<area shape="poly" id="edge11_Node000008_Node000012" title=" " alt="" coords="1192,165,1227,168,1226,173,1192,171"/>
+<area shape="rect" id="Node000013" href="$classCommandHandler.html#a84ae2c9bac0c26056bf404a7e907142a" title="Gets the free minimum heap size." alt="" coords="1253,219,1508,244"/>
+<area shape="poly" id="edge12_Node000008_Node000013" title=" " alt="" coords="1105,168,1241,203,1291,214,1289,219,1239,209,1104,173"/>
+<area shape="rect" id="Node000014" href="$classCommandHandler.html#a85571f4b4a8c2ca92146f167c08c6c94" title="Gets the IDF version." alt="" coords="1263,268,1498,293"/>
+<area shape="poly" id="edge13_Node000008_Node000014" title=" " alt="" coords="1081,169,1150,210,1194,233,1241,253,1274,262,1272,268,1239,258,1192,238,1147,215,1078,173"/>
+<area shape="rect" id="Node000017" href="$classMessageHandler.html#afb781c303001059d81235464ae91e0bd" title="Internal helper to retrieve the appropriate message queue." alt="" coords="958,269,1161,295"/>
+<area shape="poly" id="edge16_Node000016_Node000017" title=" " alt="" coords="863,296,944,289,945,294,863,301"/>
+<area shape="poly" id="edge18_Node000018_Node000017" title=" " alt="" coords="855,261,945,269,944,275,855,267"/>
+<area shape="poly" id="edge20_Node000019_Node000016" title=" " alt="" coords="315,280,662,298,662,303,314,285"/>
+<area shape="rect" id="Node000020" href="$classUart.html#a7e4639969ae7afcfddcf7908e0b29e54" title="Task function to read characters from UART and buffer input." alt="" coords="445,319,580,344"/>
+<area shape="poly" id="edge21_Node000019_Node000020" title=" " alt="" coords="315,289,435,313,434,319,314,294"/>
+<area shape="poly" id="edge26_Node000019_Node000023" title=" " alt="" coords="315,283,341,290,367,301,383,314,392,328,400,341,415,353,470,375,549,395,712,426,711,432,548,400,468,380,412,358,396,345,387,331,379,318,364,306,340,295,314,288"/>
+<area shape="poly" id="edge25_Node000020_Node000018" title=" " alt="" coords="546,316,659,278,691,270,693,275,661,283,548,321"/>
+<area shape="rect" id="Node000021" href="$classUart.html#af8aea729bcd4c5d755f9547727255706" title="Receive data from UART event." alt="" coords="716,343,823,368"/>
+<area shape="poly" id="edge22_Node000020_Node000021" title=" " alt="" coords="580,335,703,346,702,352,580,340"/>
+<area shape="poly" id="edge24_Node000020_Node000023" title=" " alt="" coords="556,342,613,362,732,417,730,422,611,367,554,347"/>
+<area shape="rect" id="Node000022" href="$classUart.html#acb4c1007450e416d51f7099cb314597b" title="Internal UART event handler that reads data on RX events." alt="" coords="967,343,1151,368"/>
+<area shape="poly" id="edge23_Node000021_Node000022" title=" " alt="" coords="823,353,953,353,953,358,823,358"/>
+<area shape="poly" id="edge31_Node000026_Node000020" title=" " alt="" coords="318,327,432,328,432,333,318,332"/>
+<area shape="poly" id="edge33_Node000027_Node000023" title=" " alt="" coords="307,487,445,476,612,459,711,445,711,450,612,465,446,481,308,492"/>
+<area shape="rect" id="Node000028" href="$classUart.html#a1e251525523677bf41341371c4a240f6" title="Task function to transmit data from a queue to UART." alt="" coords="453,425,572,451"/>
+<area shape="poly" id="edge34_Node000027_Node000028" title=" " alt="" coords="307,479,439,451,440,456,308,484"/>
+<area shape="poly" id="edge35_Node000028_Node000016" title=" " alt="" coords="526,423,581,376,618,350,659,328,678,320,679,325,661,332,621,354,584,380,529,427"/>
+<area shape="poly" id="edge36_Node000028_Node000023" title=" " alt="" coords="572,435,711,435,711,441,572,441"/>
+</map>

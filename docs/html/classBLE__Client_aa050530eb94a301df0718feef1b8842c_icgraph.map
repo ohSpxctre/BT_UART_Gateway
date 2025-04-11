@@ -1,0 +1,7 @@
+<map id="BLE_Client::handle_event_gap" name="BLE_Client::handle_event_gap">
+<area shape="rect" id="Node000001" title="Handles GAP events." alt="" coords="435,5,577,45"/>
+<area shape="rect" id="Node000002" href="$classBLE__Client.html#a15f30a5983ca2cefe5c5cb15a461f670" title="Static handler for GAP events." alt="" coords="220,5,387,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="421,28,387,28,387,23,421,23"/>
+<area shape="rect" id="Node000003" href="$classBLE__Client.html#a5d2a0279434b36e78bddad970082bbd1" title="Setup connection to BLE device." alt="" coords="5,13,172,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="206,28,172,28,172,23,206,23"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="BLE_Client::handle_event_gattc" name="BLE_Client::handle_event_gattc">
+<area shape="rect" id="Node000001" title="Handle GATT client events." alt="" coords="5,35,148,75"/>
+<area shape="rect" id="Node000002" href="$classBLE__Client.html#a99be33718c424a104d0dcf279b72d517" title="Utility function to get a readable GATT client event name." alt="" coords="201,5,361,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,42,187,36,188,41,148,47"/>
+<area shape="rect" id="Node000003" href="$classMessageHandler.html#a43e563eaac4cb8183d977678d7fdd5aa" title="Sends a message to the specified internal message queue." alt="" coords="196,70,367,95"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="148,62,183,66,182,72,148,67"/>
+<area shape="rect" id="Node000004" href="$classMessageHandler.html#afb781c303001059d81235464ae91e0bd" title="Internal helper to retrieve the appropriate message queue." alt="" coords="415,70,617,95"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="367,80,401,80,401,85,367,85"/>
+</map>

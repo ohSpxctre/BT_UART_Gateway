@@ -1,0 +1,5 @@
+<map id="BLE_Client::gattc_event_handler" name="BLE_Client::gattc_event_handler">
+<area shape="rect" id="Node000001" title="Static GATT client event handler." alt="" coords="220,5,396,45"/>
+<area shape="rect" id="Node000002" href="$classBLE__Client.html#a5d2a0279434b36e78bddad970082bbd1" title="Setup connection to BLE device." alt="" coords="5,13,172,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="206,28,172,28,172,23,206,23"/>
+</map>

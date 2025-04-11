@@ -1,0 +1,30 @@
+<map id="dataParserTask" name="dataParserTask">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,220,125,245"/>
+<area shape="rect" id="Node000002" href="$classDataParser.html#a456ecb1ff09e80bf9280b628adc47239" title="Runs a continuous task that receives and processes messages from the parser queue." alt="" coords="173,220,372,245"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="126,230,160,230,160,235,126,235"/>
+<area shape="rect" id="Node000003" href="$classDataParser.html#ace3045f2c668ba902bad75ab3b30b7ac" title="Executes the given command and stores the result in the output string." alt="" coords="420,145,639,171"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="306,217,419,179,451,171,453,176,421,185,308,222"/>
+<area shape="rect" id="Node000011" href="$classDataParser.html#a79e5245aac486b566b17e521645d5894" title="Parses the input data string to detect and classify command keywords." alt="" coords="461,195,598,220"/>
+<area shape="poly" id="edge10_Node000002_Node000011" title=" " alt="" coords="372,220,446,213,447,218,372,226"/>
+<area shape="rect" id="Node000012" href="$classMessageHandler.html#a86ae4992eac980513acf1fe723f98238" title="Receives a message from the specified internal queue." alt="" coords="436,244,623,269"/>
+<area shape="poly" id="edge11_Node000002_Node000012" title=" " alt="" coords="372,239,422,244,422,249,372,245"/>
+<area shape="rect" id="Node000014" href="$classMessageHandler.html#a43e563eaac4cb8183d977678d7fdd5aa" title="Sends a message to the specified internal message queue." alt="" coords="444,293,615,319"/>
+<area shape="poly" id="edge13_Node000002_Node000014" title=" " alt="" coords="311,243,421,278,457,288,456,293,419,283,309,248"/>
+<area shape="rect" id="Node000004" href="$classCommandHandler.html#a665ecc3d0185cf173d567e00331c0200" title="Processes a command." alt="" coords="687,145,952,171"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="639,155,673,155,673,161,639,161"/>
+<area shape="rect" id="Node000005" href="$classCommandHandler.html#ac8beafb4e158b175c60256b58f89fa7f" title="Gets the chip information." alt="" coords="1029,5,1252,31"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="834,143,903,93,949,65,999,41,1028,32,1029,37,1001,46,952,69,906,97,837,147"/>
+<area shape="rect" id="Node000006" href="$classCommandHandler.html#aaa524249c62f3c5bf2fc192575a249d2" title="Gets the clock speed in MHz." alt="" coords="1038,55,1243,95"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="863,143,999,105,1035,96,1037,101,1001,110,864,148"/>
+<area shape="rect" id="Node000007" href="$classCommandHandler.html#ac790edbe2bf25d3e09ae3b43f0948204" title="Gets the free heap size." alt="" coords="1025,120,1256,145"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="952,145,1011,140,1012,145,952,150"/>
+<area shape="rect" id="Node000008" href="$classCommandHandler.html#aacc693ccd17d6450b53c11dd8c348fe3" title="Gets the free internal heap size." alt="" coords="1000,169,1281,195"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="952,165,987,168,986,173,952,171"/>
+<area shape="rect" id="Node000009" href="$classCommandHandler.html#a84ae2c9bac0c26056bf404a7e907142a" title="Gets the free minimum heap size." alt="" coords="1013,219,1268,244"/>
+<area shape="poly" id="edge8_Node000004_Node000009" title=" " alt="" coords="865,168,1001,203,1051,214,1049,219,999,209,864,173"/>
+<area shape="rect" id="Node000010" href="$classCommandHandler.html#a85571f4b4a8c2ca92146f167c08c6c94" title="Gets the IDF version." alt="" coords="1023,268,1258,293"/>
+<area shape="poly" id="edge9_Node000004_Node000010" title=" " alt="" coords="841,169,910,210,954,233,1001,253,1034,262,1032,268,999,258,952,238,907,215,838,173"/>
+<area shape="rect" id="Node000013" href="$classMessageHandler.html#afb781c303001059d81235464ae91e0bd" title="Internal helper to retrieve the appropriate message queue." alt="" coords="718,268,921,293"/>
+<area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="623,262,705,269,704,274,623,267"/>
+<area shape="poly" id="edge14_Node000014_Node000013" title=" " alt="" coords="615,296,704,288,705,293,615,301"/>
+</map>

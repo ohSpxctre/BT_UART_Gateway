@@ -1,0 +1,7 @@
+<map id="rtos::Timer::Timer" name="rtos::Timer::Timer">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,144,31"/>
+<area shape="rect" id="Node000002" href="$classrtos_1_1Timer.html#aed92336ac21ecf95f7ea9783d708a365" title=" " alt="" coords="192,5,399,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="144,15,178,15,178,21,144,21"/>
+<area shape="rect" id="Node000003" href="$classrtos_1_1Timer.html#a6e17aafe3c7f751383264f6721d8f7f7" title=" " alt="" coords="447,5,592,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="399,15,433,15,433,21,399,21"/>
+</map>

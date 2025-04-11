@@ -1,0 +1,7 @@
+<map id="rtos::EventFlags::get" name="rtos::EventFlags::get">
+<area shape="rect" id="Node000001" title=" " alt="" coords="220,31,376,56"/>
+<area shape="rect" id="Node000002" href="$classrtos_1_1EventFlags.html#af22e5d379dd14fac839cfd289967d194" title=" " alt="" coords="5,5,172,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="206,35,172,31,173,25,207,30"/>
+<area shape="rect" id="Node000003" href="$classrtos_1_1EventFlags.html#a9574cf5cc66139268f7ea4cb980663d1" title=" " alt="" coords="5,55,172,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="206,56,173,60,172,55,206,51"/>
+</map>

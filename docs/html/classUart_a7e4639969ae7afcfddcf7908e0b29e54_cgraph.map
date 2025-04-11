@@ -1,0 +1,13 @@
+<map id="Uart::receiveTask" name="Uart::receiveTask">
+<area shape="rect" id="Node000001" title="Task function to read characters from UART and buffer input." alt="" coords="5,55,140,80"/>
+<area shape="rect" id="Node000002" href="$classUart.html#af8aea729bcd4c5d755f9547727255706" title="Receive data from UART event." alt="" coords="220,5,327,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="124,52,207,31,208,37,126,57"/>
+<area shape="rect" id="Node000004" href="$classUart.html#a27d16b401f6af6f830a5da8993d09ad3" title="Send raw data over UART." alt="" coords="229,55,318,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="140,65,215,65,215,70,140,70"/>
+<area shape="rect" id="Node000005" href="$classMessageHandler.html#a43e563eaac4cb8183d977678d7fdd5aa" title="Sends a message to the specified internal message queue." alt="" coords="188,104,359,129"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="126,77,208,98,207,103,124,83"/>
+<area shape="rect" id="Node000003" href="$classUart.html#acb4c1007450e416d51f7099cb314597b" title="Internal UART event handler that reads data on RX events." alt="" coords="416,5,600,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="327,15,402,15,402,21,327,21"/>
+<area shape="rect" id="Node000006" href="$classMessageHandler.html#afb781c303001059d81235464ae91e0bd" title="Internal helper to retrieve the appropriate message queue." alt="" coords="407,104,609,129"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="359,114,393,114,393,119,359,119"/>
+</map>

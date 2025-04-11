@@ -1,0 +1,13 @@
+<map id="CommandHandler::getFreeInternalHeap" name="CommandHandler::getFreeInternalHeap">
+<area shape="rect" id="Node000001" title="Gets the free internal heap size." alt="" coords="1135,5,1416,31"/>
+<area shape="rect" id="Node000002" href="$classCommandHandler.html#a665ecc3d0185cf173d567e00331c0200" title="Processes a command." alt="" coords="821,5,1087,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1121,21,1087,21,1087,15,1121,15"/>
+<area shape="rect" id="Node000003" href="$classDataParser.html#ace3045f2c668ba902bad75ab3b30b7ac" title="Executes the given command and stores the result in the output string." alt="" coords="555,5,773,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="808,21,774,21,774,15,808,15"/>
+<area shape="rect" id="Node000004" href="$classDataParser.html#a456ecb1ff09e80bf9280b628adc47239" title="Runs a continuous task that receives and processes messages from the parser queue." alt="" coords="308,5,507,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="541,21,507,21,507,15,541,15"/>
+<area shape="rect" id="Node000005" href="$main_8cpp.html#a92ec7e7e48c2ce7af99bb362b83e32a8" title=" " alt="" coords="140,5,260,31"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="294,21,260,21,260,15,294,15"/>
+<area shape="rect" id="Node000006" href="$main_8cpp.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,92,31"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="126,21,92,21,92,15,126,15"/>
+</map>

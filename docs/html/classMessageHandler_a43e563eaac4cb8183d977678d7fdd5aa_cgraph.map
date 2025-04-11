@@ -1,0 +1,5 @@
+<map id="MessageHandler::send" name="MessageHandler::send">
+<area shape="rect" id="Node000001" title="Sends a message to the specified internal message queue." alt="" coords="5,5,176,31"/>
+<area shape="rect" id="Node000002" href="$classMessageHandler.html#afb781c303001059d81235464ae91e0bd" title="Internal helper to retrieve the appropriate message queue." alt="" coords="224,5,427,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="176,15,210,15,210,21,176,21"/>
+</map>

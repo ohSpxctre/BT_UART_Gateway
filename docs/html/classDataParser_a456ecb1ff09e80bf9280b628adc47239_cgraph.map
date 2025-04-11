@@ -1,0 +1,28 @@
+<map id="DataParser::dataParserTask" name="DataParser::dataParserTask">
+<area shape="rect" id="Node000001" title="Runs a continuous task that receives and processes messages from the parser queue." alt="" coords="5,220,204,245"/>
+<area shape="rect" id="Node000002" href="$classDataParser.html#ace3045f2c668ba902bad75ab3b30b7ac" title="Executes the given command and stores the result in the output string." alt="" coords="252,145,471,171"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="138,217,251,179,283,171,285,176,253,185,140,222"/>
+<area shape="rect" id="Node000010" href="$classDataParser.html#a79e5245aac486b566b17e521645d5894" title="Parses the input data string to detect and classify command keywords." alt="" coords="293,195,430,220"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="204,220,278,213,279,218,204,226"/>
+<area shape="rect" id="Node000011" href="$classMessageHandler.html#a86ae4992eac980513acf1fe723f98238" title="Receives a message from the specified internal queue." alt="" coords="268,244,455,269"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="204,239,254,244,254,249,204,245"/>
+<area shape="rect" id="Node000013" href="$classMessageHandler.html#a43e563eaac4cb8183d977678d7fdd5aa" title="Sends a message to the specified internal message queue." alt="" coords="276,293,447,319"/>
+<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="143,243,253,278,289,288,288,293,251,283,141,248"/>
+<area shape="rect" id="Node000003" href="$classCommandHandler.html#a665ecc3d0185cf173d567e00331c0200" title="Processes a command." alt="" coords="519,145,784,171"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="471,155,505,155,505,161,471,161"/>
+<area shape="rect" id="Node000004" href="$classCommandHandler.html#ac8beafb4e158b175c60256b58f89fa7f" title="Gets the chip information." alt="" coords="861,5,1084,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="666,143,735,93,781,65,831,41,860,32,861,37,833,46,784,69,738,97,669,147"/>
+<area shape="rect" id="Node000005" href="$classCommandHandler.html#aaa524249c62f3c5bf2fc192575a249d2" title="Gets the clock speed in MHz." alt="" coords="870,55,1075,95"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="695,143,831,105,867,96,869,101,833,110,696,148"/>
+<area shape="rect" id="Node000006" href="$classCommandHandler.html#ac790edbe2bf25d3e09ae3b43f0948204" title="Gets the free heap size." alt="" coords="857,120,1088,145"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="784,145,843,140,844,145,784,150"/>
+<area shape="rect" id="Node000007" href="$classCommandHandler.html#aacc693ccd17d6450b53c11dd8c348fe3" title="Gets the free internal heap size." alt="" coords="832,169,1113,195"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="784,165,819,168,818,173,784,171"/>
+<area shape="rect" id="Node000008" href="$classCommandHandler.html#a84ae2c9bac0c26056bf404a7e907142a" title="Gets the free minimum heap size." alt="" coords="845,219,1100,244"/>
+<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="697,168,833,203,883,214,881,219,831,209,696,173"/>
+<area shape="rect" id="Node000009" href="$classCommandHandler.html#a85571f4b4a8c2ca92146f167c08c6c94" title="Gets the IDF version." alt="" coords="855,268,1090,293"/>
+<area shape="poly" id="edge8_Node000003_Node000009" title=" " alt="" coords="673,169,742,210,786,233,833,253,866,262,864,268,831,258,784,238,739,215,670,173"/>
+<area shape="rect" id="Node000012" href="$classMessageHandler.html#afb781c303001059d81235464ae91e0bd" title="Internal helper to retrieve the appropriate message queue." alt="" coords="550,268,753,293"/>
+<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="455,262,537,269,536,274,455,267"/>
+<area shape="poly" id="edge13_Node000013_Node000012" title=" " alt="" coords="447,296,536,288,537,293,447,301"/>
+</map>

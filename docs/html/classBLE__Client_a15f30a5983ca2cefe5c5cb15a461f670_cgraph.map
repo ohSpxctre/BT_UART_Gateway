@@ -1,0 +1,7 @@
+<map id="BLE_Client::gap_event_handler" name="BLE_Client::gap_event_handler">
+<area shape="rect" id="Node000001" title="Static handler for GAP events." alt="" coords="5,5,172,45"/>
+<area shape="rect" id="Node000002" href="$classBLE__Client.html#aa050530eb94a301df0718feef1b8842c" title="Handles GAP events." alt="" coords="220,5,363,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="173,23,206,23,206,28,173,28"/>
+<area shape="rect" id="Node000003" href="$classBLE__Client.html#a2c5f3f096f90b18ed8260d21d5b90bb7" title="Utility function to get a readable GAP event name." alt="" coords="411,5,561,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="363,23,397,23,397,28,363,28"/>
+</map>

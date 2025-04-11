@@ -1,0 +1,20 @@
+<map id="BLE_Client::connSetup" name="BLE_Client::connSetup">
+<area shape="rect" id="Node000001" title="Setup connection to BLE device." alt="" coords="5,77,172,102"/>
+<area shape="rect" id="Node000002" href="$classBLE__Client.html#a15f30a5983ca2cefe5c5cb15a461f670" title="Static handler for GAP events." alt="" coords="225,5,391,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,74,225,47,226,52,134,79"/>
+<area shape="rect" id="Node000005" href="$classBLE__Client.html#af5183e3a5182ee8fc94f8b7e6446f283" title="Static GATT client event handler." alt="" coords="220,69,396,109"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="173,87,206,87,206,92,173,92"/>
+<area shape="rect" id="Node000008" href="$classMessageHandler.html#a43e563eaac4cb8183d977678d7fdd5aa" title="Sends a message to the specified internal message queue." alt="" coords="635,134,805,159"/>
+<area shape="poly" id="edge9_Node000001_Node000008" title=" " alt="" coords="133,99,220,119,327,131,434,139,621,145,620,150,434,144,326,136,220,124,132,105"/>
+<area shape="rect" id="Node000003" href="$classBLE__Client.html#aa050530eb94a301df0718feef1b8842c" title="Handles GAP events." alt="" coords="444,5,587,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="391,23,430,23,430,28,391,28"/>
+<area shape="rect" id="Node000004" href="$classBLE__Client.html#a2c5f3f096f90b18ed8260d21d5b90bb7" title="Utility function to get a readable GAP event name." alt="" coords="645,5,795,45"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="587,23,631,23,631,28,587,28"/>
+<area shape="rect" id="Node000006" href="$classBLE__Client.html#a6d1fee70056dbaeccb08d2ca5b34fad8" title="Handle GATT client events." alt="" coords="444,69,587,109"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="396,87,430,87,430,92,396,92"/>
+<area shape="rect" id="Node000007" href="$classBLE__Client.html#a99be33718c424a104d0dcf279b72d517" title="Utility function to get a readable GATT client event name." alt="" coords="640,69,800,109"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="587,87,626,87,626,92,587,92"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="587,107,662,128,660,133,586,112"/>
+<area shape="rect" id="Node000009" href="$classMessageHandler.html#afb781c303001059d81235464ae91e0bd" title="Internal helper to retrieve the appropriate message queue." alt="" coords="853,134,1056,159"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="806,144,840,144,840,149,806,149"/>
+</map>

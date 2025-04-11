@@ -1,0 +1,5 @@
+<map id="BLE_Server" name="BLE_Server">
+<area shape="rect" id="Node000001" title="A class that implements a Bluetooth Low Energy (BLE) server." alt="" coords="5,248,256,1247"/>
+<area shape="rect" id="Node000002" href="$classBluetooth.html" title="Abstract base class for BLE communication." alt="" coords="11,5,250,200"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,214,133,248,128,248,128,214"/>
+</map>
